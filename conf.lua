@@ -1,3 +1,24 @@
+
+-- 获取窗口缩放比例
+local function getWindowSizeScale()
+	local sizeScale = 1
+
+	local file = io.open("../currentResolutionW.tmp", "r")
+	if nil == file then
+		print("getWindowSizeScale()".."open ../currentResolutionX.conf failed!")
+		return sizeScale
+	end
+
+	local currentResolutionWStr = file:read("*a") -- 读取的数据字符
+	file:close()
+	local currentResolutionW = tonumber(currentResolutionXStr)
+	if 0 < currentResolutionW then
+		sizeScale = currentResolutionW / 1920 --以1920x1080为基准缩放窗口尺寸
+	end
+
+	return sizeScale
+end
+
 function love.conf (t)
 	io.stdout:setvbuf("no")
 	t.window.title = "Dungeon Fighter Quest"
@@ -7,8 +28,11 @@ function love.conf (t)
 
 	t.window.borderless = false        -- 移除所有程序边框的视觉效果 (boolean)
 	t.window.resizable = false         -- 允许鼠标拖动调整窗口的宽度和高度 (boolean)
-	t.window.minwidth = 1280              -- 程序窗口的最小宽度，仅当t.window.resizable = true 时生效 (number)
-	t.window.minheight = 720             -- 程序窗口的最小高度，仅当t.window.resizable = true 时生效 (number)
+
+	-- 获取窗口缩放比例
+	local sizeScale = getWindowSizeScale()
+	t.window.minwidth = 1280 * sizeScale     -- 程序窗口的最小宽度，仅当t.window.resizable = true 时生效 (number)
+	t.window.minheight = 720 * sizeScale     -- 程序窗口的最小高度，仅当t.window.resizable = true 时生效 (number)
 	t.window.fullscreen = false        -- 打开程序后全屏运行游戏 (boolean)
 	t.window.fullscreentype = "desktop" -- Choose between "desktop" fullscreen or "exclusive" fullscreen mode (string)
 		                       -- 标准全屏或者桌面全屏 (string)
