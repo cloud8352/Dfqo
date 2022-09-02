@@ -3,15 +3,15 @@
 local function getWindowSizeScale()
 	local sizeScale = 1
 
-	local file = io.open("../currentResolutionW.tmp", "r")
+	local file = io.open("currentResolutionW.tmp", "r")
 	if nil == file then
-		print("getWindowSizeScale()".."open ../currentResolutionX.conf failed!")
+		print("getWindowSizeScale()".."open currentResolutionW.tmp failed!")
 		return sizeScale
 	end
 
 	local currentResolutionWStr = file:read("*a") -- 读取的数据字符
 	file:close()
-	local currentResolutionW = tonumber(currentResolutionXStr)
+	local currentResolutionW = tonumber(currentResolutionWStr)
 	if 0 < currentResolutionW then
 		sizeScale = currentResolutionW / 1920 --以1920x1080为基准缩放窗口尺寸
 	end
