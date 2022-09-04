@@ -1,8 +1,8 @@
 --[[
-	desc: Skill, actor's action.
-	author: Musoucrow
-	since: 2018-5-9
-	alter: 2019-9-13
+	desc: Can Prepare Skill, actor's action.
+	author: keke
+	since: 2022-9-4
+	alter: 2022-9-4
 ]]--
 
 local _TABLE = require("lib.table")
@@ -28,7 +28,9 @@ local _Timer = require("util.gear.timer")
 ---@field public isCombo boolean
 ---@field public hpRate number
 ---@field public isUltimate boolean
-local _Skill = require("core.class")()
+local _CanPrepareSkill = require("core.class")()
+
+local MaxPrepareTime = 500 -- 最大准备时间，500相当于实际1ms
 
 ---@param self Actor.Skill
 local function _OnBeaten(self)
@@ -40,7 +42,7 @@ end
 ---@param entity Actor.Entity
 ---@param key string
 ---@param data Actor.RESMGR.SkillData
-function _Skill:Ctor(entity, key, data)
+function _CanPrepareSkill:Ctor(entity, key, data)
     self._entity = entity
     self._data = data
     self._timer = _Timer.New()
@@ -56,6 +58,10 @@ function _Skill:Ctor(entity, key, data)
     self.isCombo = false
     self.hpRate = data.hpRate or 1
     self.isUltimate = data.isUltimate
+    -- 准备时间
+    self.prepareTime = 0
+    -- 是否可被键盘触发
+    self.canUseByKey = false
     
     if (data.nowTime) then
         self._timer:Enter(data.nowTime)
@@ -74,7 +80,12 @@ function _Skill:Ctor(entity, key, data)
     end
 end
 
-function _Skill:Update(dt)
+function _CanPrepareSkill:GetPrepareTime()
+    return self.prepareTime
+end
+
+function _CanPrepareSkill:Update(dt)
+    -- 计算技能冷却时间
     if (self._timer.isRunning) then
         self._timer:Update(dt)
 
@@ -88,18 +99,37 @@ function _Skill:Update(dt)
     end
 
     if (self:CanUse() and _INPUT.IsPressed(self._entity.input, self._key)) then
+        -- 开始计算准备时间
+        self.prepareTime = 0
+        self.canUseByKey = true
+    end
+
+    if (self:CanUse() and _INPUT.IsHold(self._entity.input, self._key)) then
+        -- 计算准备时间
+        self.prepareTime = self.prepareTime + dt
+
+        if (MaxPrepareTime <= self.prepareTime
+            and self.canUseByKey) then
+            self:Use()
+            self.canUseByKey = false
+        end
+    end
+
+    if (self:CanUse() and _INPUT.IsReleased(self._entity.input, self._key)
+        and self.canUseByKey) then
         self:Use()
+        self.canUseByKey = false
     end
 end
 
-function _Skill:Exit()
+function _CanPrepareSkill:Exit()
     if (self._data.beatenTime) then
         self._entity.battle.beatenCaller:DelListener(self, _OnBeaten)
     end
 end
 
 ---@param noKey boolean
-function _Skill:AITick(noKey)
+function _CanPrepareSkill:AITick(noKey)
     if (not self:CanUse() or not self._judgeAi) then
         return false
     end
@@ -110,12 +140,12 @@ function _Skill:AITick(noKey)
 end
 
 ---@return Actor.Entity
-function _Skill:GetAITarget()
+function _CanPrepareSkill:GetAITarget()
     return self._judgeAi.target
 end
 
 ---@param isForce boolean
-function _Skill:CoolDown(isForce)
+function _CanPrepareSkill:CoolDown(isForce)
     if (self.duraMax) then
         self.dura = self.dura - 1
     end
@@ -127,7 +157,7 @@ function _Skill:CoolDown(isForce)
     self._timer:Enter(self.time)
 end
 
-function _Skill:Reset()
+function _CanPrepareSkill:Reset()
     if (self.duraMax) then
         self.dura = 0
         self._timer:Enter(self.time)
@@ -139,24 +169,24 @@ function _Skill:Reset()
 end
 
 ---@return boolean
-function _Skill:IsActive()
+function _CanPrepareSkill:IsActive()
     return self:CanUse()
 end
 
 ---@return boolean
-function _Skill:CanUse()
+function _CanPrepareSkill:CanUse()
     local hasDura = not self.duraMax or (self.duraMax and self.dura > 0)
     return not self:InCoolDown() and hasDura and self:Cond() and self._entity.attributes.hp > 0 and self._entity.attributes.hp <= self._entity.attributes.maxHp * self.hpRate
 end
 
 ---@return boolean
-function _Skill:Cond()
+function _CanPrepareSkill:Cond()
     local isSame = self._entity.states.current:GetName() == self.state
     
     return _STATE.HasTag(self._entity.states, "free") or (self.isCombo and isSame) or (_STATE.HasTag(self._entity.states, "cancel") and not isSame)
 end
 
-function _Skill:Use()
+function _CanPrepareSkill:Use()
     self:CoolDown()
     self.isCombo = false
 
@@ -166,45 +196,45 @@ function _Skill:Use()
 end
 
 ---@return Actor.RESMGR.SkillData
-function _Skill:GetData()
+function _CanPrepareSkill:GetData()
     return self._data
 end
 
 ---@return Actor.RESMGR.SkillData
-function _Skill:ToData()
+function _CanPrepareSkill:ToData()
     local data = {nowTime = self._timer.to - self._timer.from}
     setmetatable(data, {__index = _TABLE.GetOrigin(self._data, true)})
 
     return data
 end
 
-function _Skill:Save()
+function _CanPrepareSkill:Save()
     return self._data.path
 end
 
 ---@return string
-function _Skill:GetKey()
+function _CanPrepareSkill:GetKey()
     return self._key
 end
 
 ---@return number
-function _Skill:GetProcess()
+function _CanPrepareSkill:GetProcess()
     return self._timer:GetProcess()
 end
 
 ---@return boolean
-function _Skill:InCoolDown()
+function _CanPrepareSkill:InCoolDown()
     return not self.duraMax and self._timer.isRunning
 end
 
 ---@return milli
-function _Skill:GetNowTime()
+function _CanPrepareSkill:GetNowTime()
     return self._timer.from
 end
 
 ---@param time milli
-function _Skill:SetNowTime(time)
+function _CanPrepareSkill:SetNowTime(time)
     self._timer.from = time
 end
 
-return _Skill
+return _CanPrepareSkill

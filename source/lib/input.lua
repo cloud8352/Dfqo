@@ -34,6 +34,7 @@ function _INPUT.IsReleased(map, key)
 	return map[key] == _INPUT.enum.released
 end
 
+-- 当键盘按下后会调用
 ---@param map map
 ---@param key string
 function _INPUT.OnPressed(map, key)
@@ -42,6 +43,7 @@ function _INPUT.OnPressed(map, key)
 	return true
 end
 
+-- 当键盘释放后会调用
 ---@param map map
 ---@param key string
 function _INPUT.OnReleased(map, key)

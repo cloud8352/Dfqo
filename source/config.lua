@@ -19,7 +19,7 @@ local _CONFIG = {
     },
     debug = {
         point = false,
-        collider = false,
+        collider = false, -- 碰撞起调试开关
         ai = false,
         fps = false,
         bgm = true,
