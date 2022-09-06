@@ -170,7 +170,7 @@ function npk.outputImgOffsetInfo(imgdir, fileName, ox, oy)
     outputFile = io.open(outputFilePath, "w+")
   end
 
-  local content = string.format("return {\n  ox = %d,\n  oy = %d\n}", ox, oy)
+  local content = string.format("return {\n    ox = %d,\n    oy = %d\n}", ox, oy)
   outputFile:write(content)
   outputFile:close()
 end
