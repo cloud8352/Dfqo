@@ -43,25 +43,32 @@ end
 
 
 --=========img文件格式==============
+-- 图片头部信息
 local NImgF_Header =  --占32个字节
 {
-	flag = "Neople Img File".."\0",  --[16]; // 文件标石"Neople Img File".."\0"
-	index_size=0, --;	//[4] 索引表大小，以字节为单位
-	unknown1=0,     --[4] 保留，4字节，为0
-	version=2,      --[4] 版本号，IMGV2文件结构中的版本号为2。
-	index_count=0,  --;//[4] 索引表数目
+	flag = "Neople Img File".."\0",  --[16]; // 文件标识"Neople Img File".."\0"
+	index_size = 0, --;	//[4] 索引表大小，以字节为单位
+	unknown1 = 0,     --[4] 保留，4字节，为0
+	version = 2,      --[4] 版本号，IMGV2文件结构中的版本号为2。
+	index_count = 0,  --;//[4] 索引表数目
 }
 
-local NImgF_Index = {}
-NImgF_Index.dwType = 0  --目前已知的类型有 0x0E(1555格式) 0x0F(4444格式) 0x10(8888格式) 0x11(指向型)
-NImgF_Index.dwCompress = 0 -- 目前已知的类型有 0x06(zlib压缩) 0x05(未压缩)
-NImgF_Index.width = 0        -- 宽度
-NImgF_Index.height = 0       -- 高度
-NImgF_Index.size = 0        -- 压缩时size为压缩后大小，未压缩时size为转换成8888格式时占用的内存大小
-NImgF_Index.key_x = 0        -- X关键点，当前图片在整图中的X坐标
-NImgF_Index.key_y = 0        -- Y关键点，当前图片在整图中的Y坐标
-NImgF_Index.max_width = 0    -- 整图的宽度
-NImgF_Index.max_height = 0   -- 整图的高度，有此数据是为了对齐精灵
+-- 图片信息
+---@class ImgInfo
+local ImgInfo = {
+  dwType = 0,             -- 图像类型，目前已知的类型有 0x0E(1555格式) 0x0F(4444格式) 0x10(8888格式) 0x11(指向型)
+  dwCompress = 0,         -- 数据压缩类型，目前已知的类型有 0x06(zlib压缩) 0x05(未压缩)
+  width = 0,              -- 宽度
+  height = 0,             -- 高度
+  size = 0,               -- 为压缩类型时，size为压缩后大小，未压缩时size为转换成8888格式时占用的内存大小
+  key_x = 0,              -- X关键点，当前图片在整图中的X坐标
+  key_y = 0,              -- Y关键点，当前图片在整图中的Y坐标
+  max_width = 0,          -- 整图的宽度
+  max_height = 0,         -- 整图的高度，有此数据是为了对齐精灵
+  linksn = 0,             -- 链接（指向）的序号
+  imgDataStr = "",        -- 图片字节数据
+  imgDataTable = {}
+}
 
 --深度拷贝Table
 function DeepCopy(obj)
@@ -80,6 +87,46 @@ function DeepCopy(obj)
   return Func(obj) --若表中有表，则把内嵌的表也复制了
 end
 
+---使用zlib解压字节数据
+---@param compressedDataStr string
+---@return string
+local function zUncompress(compressedDataStr)
+  local zlib = require("zlib")
+
+  local inflatedStr, eof, bytes_in, bytes_out = zlib.inflate()(compressedDataStr)
+
+  return inflatedStr
+end
+
+---comment
+---@param dataStr string
+---@return table<integer>
+local function createImgDataTableFromStr(dataStr)
+  local imgDataTable = {}
+
+  if 4 > string.len(dataStr) then
+    -- print("createImgDataTableFromStr() input dataStr error!")
+    return imgDataTable
+  end
+
+  for i = 1, string.len(dataStr) do
+    imgDataTable[i] = string.byte(dataStr, i)
+  end
+
+  return imgDataTable
+end
+
+---comment
+---@param filePath string
+---@param w integer
+---@param h integer
+---@param imgData table<integer>
+---@return boolean -- whether succeed
+local function savePNG(filePath, w, h, imgData)
+  local libsvpng = require("libsvpng")
+  return libsvpng.savePNG(filePath, w, h, imgData)
+end
+
 --提取npk，
 --入参：npk文件地址，string
 --返回：table型：npkAbstract = {imgfile1 = {}, imgfile2 = {}, ...}；imgfile1 = {offset= 0, size =0}
@@ -89,6 +136,10 @@ function npk.getNpkAbstractFromFile(npkPath)
 
   --读取npk
   local file = io.open(npkPath, "r")
+  if (nil == file) then
+    print(npkPath.."open failed!")
+    return
+  end
   local dateStr = file:read("*a") -- 读取的数据字符
   file:close()
 
@@ -148,17 +199,16 @@ function npk.getNpkAbstractFromDateStr(npkPath, dateStr, npkHeader)
   return npkAbstract
 end
 
-function npk.outputImg(imgdir, imgName, imgDateStr)
+---@param imgInfo ImgInfo @not null
+function npk.outputImg(imgdir, imgName, imgInfo)
   local outputDir = "output/img/"..imgdir
   local outputFilePath = outputDir.."/"..imgName..".png"
-  local outputFile = io.open(outputFilePath, "w+")
-  if nil == outputFile then
-    os.execute("mkdir -p "..outputDir)
-    outputFile = io.open(outputFilePath, "w+")
-  end
+  os.execute("mkdir -p "..outputDir)
 
-  outputFile:write(imgDateStr)
-  outputFile:close()
+  local succeed = savePNG(outputFilePath, imgInfo.width, imgInfo.height, imgInfo.imgDataTable)
+  if (false == succeed)  then
+    print("npk.outputImg() failed!")
+  end
 end
 
 function npk.outputImgOffsetInfo(imgdir, fileName, ox, oy)
@@ -169,25 +219,16 @@ function npk.outputImgOffsetInfo(imgdir, fileName, ox, oy)
     os.execute("mkdir -p "..outputDir)
     outputFile = io.open(outputFilePath, "w+")
   end
+  -- 判断是否打开成功
+  if (nil == outputFile) then
+    print(outputFilePath.."open failed!")
+    return
+  end
 
   local content = string.format("return {\n    ox = %d,\n    oy = %d\n}", ox, oy)
   outputFile:write(content)
   outputFile:close()
 end
-
-local ImgInfo = {
-  dwType=0,
-  dwCompress=0,
-  width=0,
-  height=0,
-  size=0,
-  key_x=0,
-  key_y=0,
-  max_width=0,
-  max_height=0,
-  linksn=0,
-  imgDataStr = ""
-}
 
 function npk.extractImgFromAbstract(imgName, imgAbstract)
   local succeed = false
@@ -204,6 +245,11 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
   
   --读取npk
   local file = io.open(npkPath, "r")
+  -- 判断是否打开成功
+  if (nil == file) then
+    print(file.."open failed!")
+    return
+  end
   local dateStr = file:read("*a") -- 读取的数据字符
   file:close()
   
@@ -299,14 +345,17 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
         if imgInfoList[i].dwType == 16 then --采用（ARGB8888）颜色系统
           --是否使用了zlib压缩
           if 6 == imgInfoList[i].dwCompress then  --使用zlib压缩
-            imgInfoList[i].imgDateStr = img_data_string
+            imgInfoList[i].imgDateStr = zUncompress(img_data_string)
+            imgInfoList[i].imgDataTable = createImgDataTableFromStr(imgInfoList[i].imgDateStr)
           elseif 5 == imgInfoList[i].dwCompress then  --未压缩
             imgInfoList[i].imgDateStr = img_data_string
+            imgInfoList[i].imgDataTable = createImgDataTableFromStr(imgInfoList[i].imgDateStr)
           end
           --下一数据地址
           start_adr = start_adr + imgInfoList[i].size
         elseif imgInfoList[i].dwType == 15 or imgInfoList[i].dwType == 14 then  --颜色系统为ARGB4444或ARGB1555的贴图不提取，取默认
           imgInfoList[i].imgDateStr = img_data_string
+          imgInfoList[i].imgDataTable = createImgDataTableFromStr(imgInfoList[i].imgDateStr)
           --下一数据地址
           start_adr = start_adr + imgInfoList[i].size
         elseif imgInfoList[i].dwType == 17 then --0x11(指向型)
@@ -344,7 +393,7 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
 
   -- 提取图片文件及文件偏移信息
   for i = 1,#imgInfoList do
-    npk.outputImg(imgName, i - 1, imgInfoList[i].imgDateStr)
+    npk.outputImg(imgName, i - 1, imgInfoList[i])
     local ox = 232 - imgInfoList[i].key_x
     local oy = 333 - imgInfoList[i].key_y
     npk.outputImgOffsetInfo(imgName, i - 1, ox, oy)

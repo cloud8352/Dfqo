@@ -3,5 +3,11 @@
     "Lua.workspace.library": [
         "${3rd}/love2d/library"
     ],
-    "Lua.workspace.checkThirdParty": false
+    "Lua.workspace.checkThirdParty": false,
+    "files.associations": {
+        "*.inc": "c",
+        "stdio.h": "c",
+        "stdarg.h": "c",
+        "random": "c"
+    }
 }
