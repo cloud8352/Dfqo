@@ -28,6 +28,9 @@ function _HopSmash:Ctor(data, ...)
     self._ticks = data.ticks
     self._easemoveParam = data.easemove
     self._jumpParam = data.jump
+
+    -- 攻击子弹实例
+    self.bulletEntity = nil
 end
 
 function _HopSmash:Init(entity, ...)
@@ -51,10 +54,19 @@ function _HopSmash:Init(entity, ...)
                 entity = self._entity
             }
             
+            local effect1 = _FACTORY.New(self._actorDataSet[1], param)
+            local effect2 = _FACTORY.New(self._actorDataSet[2], param)
             local effect3 = _FACTORY.New(self._actorDataSet[3], param)
+            local effect4 = _FACTORY.New(self._actorDataSet[4], param)
+
+            -- 先销毁原来的攻击子弹实例
+            if (self.bulletEntity) then
+                self.bulletEntity.identity.destroyProcess = 1
+            end
+            self.bulletEntity = _FACTORY.New(self._actorDataSet[5], param)
 
             self._attack:Enter(self._attackDataSet[2], self._skill.attackValues[2], _, _, true)
-            self._attack.collision[_ASPECT.GetPart(effect3.aspect)] = "attack"
+            self._attack.collision[_ASPECT.GetPart(self.bulletEntity.aspect)] = "attack"
 
             _SOUND.Play(self._soundDataSet.swing)
         end
@@ -90,6 +102,16 @@ function _HopSmash:NormalUpdate(dt, rate)
         self._buff = _BUFF.AddBuff(self._entity, self._buffDatas)
     elseif (tick == self._ticks[2]) then
     elseif (tick == self._ticks[3]) then
+    end
+
+    -- 多段攻击
+    if (self.bulletEntity) then
+        local bulletFrameani = _ASPECT.GetPart(self.bulletEntity.aspect) ---@type Graphics.Drawable.Frameani
+        local bulletTick = bulletFrameani:GetTick()
+        if (3 == bulletTick) then
+            self._attack:Enter(self._attackDataSet[2], self._skill.attackValues[1], _, _, true)
+            self._attack.collision[bulletFrameani] = "attack"
+        end
     end
 
     _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
