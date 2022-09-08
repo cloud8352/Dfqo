@@ -103,6 +103,8 @@ end
 ---@return table<integer>
 local function createImgDataTableFromStr(dataStr)
   local imgDataTable = {}
+  local r, g, b, a
+  local colorUnitIdx = 1 -- 颜色单元像素索引
 
   if 4 > string.len(dataStr) then
     -- print("createImgDataTableFromStr() input dataStr error!")
@@ -110,7 +112,20 @@ local function createImgDataTableFromStr(dataStr)
   end
 
   for i = 1, string.len(dataStr) do
-    imgDataTable[i] = string.byte(dataStr, i)
+    if (4 == colorUnitIdx) then
+      colorUnitIdx = 0
+      b = string.byte(dataStr, i - 3)
+      g = string.byte(dataStr, i - 2)
+      r = string.byte(dataStr, i - 1)
+      a = string.byte(dataStr, i - 0)
+
+      -- 将颜色值按照rgba的顺序整理到数组
+      imgDataTable[i - 3] = r
+      imgDataTable[i - 2] = g
+      imgDataTable[i - 1] = b
+      imgDataTable[i] = a
+    end
+    colorUnitIdx = colorUnitIdx + 1
   end
 
   return imgDataTable
