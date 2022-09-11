@@ -30,7 +30,7 @@ local _Timer = require("util.gear.timer")
 ---@field public isUltimate boolean
 local _CanPrepareSkill = require("core.class")()
 
-local MaxPrepareTime = 500 -- 最大准备时间，500相当于实际1ms
+local MaxPrepareTime = 150 -- 最大准备时间，500相当于实际1ms
 
 ---@param self Actor.Skill
 local function _OnBeaten(self)

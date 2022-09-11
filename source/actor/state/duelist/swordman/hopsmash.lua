@@ -156,7 +156,12 @@ function _HopSmash:Enter(laterState, skill)
 
     -- 获取技能准备的时间（注意：单位不是ms）
     local skillPrepareTime = self._skill:GetPrepareTime()
-    self.enhanceRate = skillPrepareTime / 500
+    if (60 > skillPrepareTime) then
+        self.enhanceRate = 0
+    else
+        self.enhanceRate = skillPrepareTime / 150
+    end
+    
     if 1 < self.enhanceRate then
         self.enhanceRate = 1 -- 跳跃和移动最大增幅
     end
