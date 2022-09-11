@@ -4,6 +4,7 @@
 	since: 2018-5-22
 	alter: 2019-8-14
 ]]--
+local _FILE = require("lib.file")
 
 ---@class CONFIG
 ---@field user User
@@ -60,6 +61,13 @@ _CONFIG.code = {
 }
 
 _CONFIG.anticode = {}
+
+
+-- 加载全局配置    
+if (_FILE.Exists("config/global_config.cfg")) then
+    local content = _FILE.ReadFile("config/global_config.cfg")
+    _CONFIG = loadstring(content)()
+end
 
 do
     for k, v in pairs(_CONFIG.code) do
