@@ -1,0 +1,70 @@
+--[[
+	desc: CONFIG, a data set.
+	author: Musoucrow
+	since: 2018-5-22
+	alter: 2019-8-14
+]]--
+
+---@class CONFIG
+---@field user User
+local _CONFIG = {
+    setting = {
+        version = 1,
+        hasModify = false,
+        language = "cn",
+        music = 0.7,
+        sound = 1,
+        digit = true,
+        shadow = true
+    },
+    debug = {
+        point = false,
+        collider = false, -- 碰撞盒调试开关
+        ai = false,
+        fps = false,
+        bgm = true,
+        transparency = false,
+        transport = false,
+        ui = true,
+        map = {
+            object = false,
+            up = false,
+            down = false,
+            obstacle = false
+        }
+    }
+}
+
+_CONFIG.arrow = {"up", "down", "left", "right"}
+
+_CONFIG.code = {
+    up = "w",
+    down = "s",
+    left = "a",
+    right = "d",
+    getItem = "lctrl",
+    goNext = "lshift",
+    talk = "space",
+    normalAttack = "j",
+    skill1 = "u",
+    skill2 = "i",
+    skill3 = "o",
+    skill4 = "8",
+    skill5 = "9",
+    skill6 = "0",
+    step = "k",
+    counterAttack = "l",
+    suptool1 = "q",
+    suptool2 = "e",
+    dash = "v"
+}
+
+_CONFIG.anticode = {}
+
+do
+    for k, v in pairs(_CONFIG.code) do
+        _CONFIG.anticode[v] = k
+    end
+end
+
+return _CONFIG
