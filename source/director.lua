@@ -74,7 +74,7 @@ function _DIRECTOR.StartGame()
     _CONFIG.user:SetPlayer(player)
     _DIRECTOR.Update(0) -- Flush player.
 
-    _MAP.Load(_MAP.Make("lorien"))
+    _MAP.Load(_MAP.Make("whitenight"))
 end
 
 return _DIRECTOR

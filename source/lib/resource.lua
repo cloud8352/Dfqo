@@ -87,7 +87,12 @@ function _RESOURCE.NewMusic(path)
     ---@field name string
     ---@field author string
     local data, path = _RESOURCE.ReadConfig(path, "config/asset/music/%s.cfg")
-    data.source = _RESOURCE.NewSource("asset/music/" .. path .. ".mp3")
+
+    local sourceFullPath = "asset/music/" .. path .. ".mp3"
+    if false == _FILE.Exists(sourceFullPath) then
+        sourceFullPath = "asset/music/" .. path .. ".ogg"
+    end
+    data.source = _RESOURCE.NewSource(sourceFullPath)
     data.path = path
 
     return data
