@@ -13,6 +13,7 @@ local _SYSTEM = require("lib.system")
 local _STRING = require("lib.string")
 local _GRAPHICS = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
+local _FILE = require("lib.file")
 local _ACTOR_FACTORY = require("actor.factory")
 local _ACTOR_RESMGR = require("actor.resmgr")
 
@@ -193,7 +194,11 @@ local function _Load(path)
             values.bgs.path = data.info.bgs
 
             if (values.bgs.path) then
-                values.bgs.source = _RESOURCE.NewSource("asset/sound/map/" .. values.bgs.path .. ".ogg")
+                local fullBgsPath = "asset/sound/map/" .. values.bgs.path .. ".ogg"
+                if false == _FILE.Exists(fullBgsPath) then
+                    fullBgsPath = "asset/sound/map/" .. values.bgs.path .. ".mp3"
+                end
+                values.bgs.source = _RESOURCE.NewSource(fullBgsPath)
                 values.bgs.source:play()
                 values.bgs.source:setVolume(_CONFIG.setting.music)
                 values.bgs.source:setLooping(true)
