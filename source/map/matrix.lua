@@ -1,5 +1,6 @@
 --[[
 	desc: Matrix has functions of pathfinding and obstacle.
+	栅格地图
 	author: Musoucrow
 	since: 2018-11-22
 	alter: 2019-6-1

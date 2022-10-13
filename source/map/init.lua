@@ -290,7 +290,7 @@ local function _Load(path)
     _load.process = 1
 
     for n=1, #data.actor do
-        _ACTOR_FACTORY.New(data.actor[n].path, data.actor[n])
+        _ACTOR_FACTORY.New(data.actor[n].path, data.actor[n]) -- 地图中的角色由_ACTOR_FACTORY统一管理
     end
 
     if (data.movie) then
@@ -359,7 +359,7 @@ function _MAP.Make(path, entry)
             height = config.info.height[math.random(1, #config.info.height)],
             isBoss = pathGate.isBoss,
             isTown = config.info.isTown or false,
-            horizon = config.floor.horizon,
+            horizon = config.floor.horizon, -- 背景与地图的分界y坐标
             bgm = pathGate.isBoss and config.info.bossBgm or config.info.bgm,
             bgs = config.info.bgs
         },
@@ -397,21 +397,22 @@ function _MAP.Make(path, entry)
     require("map.assigner." .. data.info.theme)(config, data, _MAP.matrixGroup, entry, 0)
     
     table.insert(data.actor, {
-        path = _const.wall.left,
+        path = _const.wall.left, -- 左侧障碍墙
         x = 0,
         y = data.info.height
     })
 
     table.insert(data.actor, {
-        path = _const.wall.right,
+        path = _const.wall.right, -- 右侧障碍墙
         x = data.info.width,
         y = config.floor.horizon
     })
 
+    -- 创建背景
     _MakeBackground(data.layer.far, config.far, data.info.width)
     _MakeBackground(data.layer.near, config.near, data.info.width)
 
-    if (config.floor) then
+    if (config.floor) then -- 地面，包括：上（首部）、中（中部）、下（尾部）
         local x = 0
 
         while (x < data.info.width) do
@@ -438,7 +439,7 @@ function _MAP.Make(path, entry)
         end
     end
 
-    if (config.object) then
+    if (config.object) then -- 地面上物体，包括：普通地面物体（object.floor）、背景与地图的分界线以上的物体（object.up）
         if (config.object.floor) then
             local a = config.object.floorRange and config.object.floorRange[1] or _const.floorRange[1]
             local b = config.object.floorRange and config.object.floorRange[2] or _const.floorRange[2]
@@ -461,7 +462,7 @@ function _MAP.Make(path, entry)
         end
     end
 
-    if (config.actor) then
+    if (config.actor) then -- 角色，包括：敌人（actor.enemy）、物品（actor.article）、地图靠下方的物品（actor.down）
         local isBoss = data.info.isBoss
 
         if (config.actor.enemy) then
@@ -490,7 +491,7 @@ function _MAP.Make(path, entry)
     end
 
     if (_CONFIG.debug.map.up) then
-        upMatrix:MakeSprite()
+        upMatrix:MakeSprite() -- 创建调试所需要显示的图像
     end
 
     if (_CONFIG.debug.map.down) then
