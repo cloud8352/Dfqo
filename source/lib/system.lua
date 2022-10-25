@@ -10,8 +10,8 @@ local _FILE = require("lib.file")
 local _TABLE = require("lib.table")
 
 local _os = love.system.getOS()
-local _stdWidth = 960
-local _stdHeight = 540
+local _stdWidth = 1280
+local _stdHeight = 720
 local _width, _height = love.graphics.getDimensions()
 
 local _realWidth, _realHeight = _width, _height
