@@ -41,6 +41,9 @@ function PushButton:Ctor()
     self.lastDisplayState = DisplayState.Unkonwn
     self.displayState = DisplayState.Normal
     self.enable = true
+
+    -- 请求移动窗口位置信号的接收者
+    self.receiverOfBtnClicked = nil
 end
 
 function PushButton:Update(dt)
@@ -91,6 +94,14 @@ function PushButton:Update(dt)
         self.sprite:SetAttri("scale", spriteXScale, spriteYScale)
     end
 
+    -- 释放点击后
+    if self.lastDisplayState == DisplayState.Pressing 
+        and self.displayState ~= DisplayState.Pressing 
+        then
+        -- 判断和执行点击触发事件
+        self:judgeAndExecClicked()
+    end
+
     self.lastDisplayState = self.displayState
 end
 
@@ -115,10 +126,26 @@ function PushButton:SetPressingSpriteDataPath(path)
     self.pressingImgData = _RESOURCE.GetSpriteData(path)
 end
 
+function PushButton:SetDisableSpriteDataPath(path)
+    self.disableImgData = _RESOURCE.GetSpriteData(path)
+end
+
 function PushButton:SetPosition(x, y)
     self.sprite:SetAttri("position", x, y)
     self.posX = x
     self.posY = y
+end
+
+function PushButton:GetSize()
+    return self.width, self.heigh
+end
+
+function PushButton:GetWidth()
+    return self.width
+end
+
+function PushButton:GetHeight()
+    return self.heigh
 end
 
 function PushButton:SetSize(width, height)
@@ -137,6 +164,27 @@ end
 function PushButton:SetScale(xScale, yScale)
     self.spriteXScale = xScale
     self.spriteYScale = yScale
+end
+
+function PushButton:SetReceiverOfBtnClicked(receiver)
+    self.receiverOfBtnClicked = receiver
+end
+
+function PushButton:judgeAndExecClicked()
+    if nil == self.receiverOfBtnClicked then
+        return
+    end
+
+    if nil == self.receiverOfBtnClicked.OnBtnsClicked then
+        return
+    end
+
+    -- 向接收者请求点击触发事件
+    self.receiverOfBtnClicked:OnBtnsClicked(self)
+end
+
+function PushButton:CheckPoint(x, y)
+    return self.sprite:CheckPoint(x, y)
 end
 
 return PushButton

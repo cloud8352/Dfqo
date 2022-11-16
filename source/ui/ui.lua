@@ -12,6 +12,7 @@ local _Mouse= require("lib.mouse")
 local _Input = require("actor.service.input")
 
 local PushButton = require("ui/pushbutton")
+local Window = require("ui/window")
 
 local CharactorTopWindowPosX = 10
 local CharactorTopWindowPosY = 10
@@ -53,6 +54,15 @@ function UI.Init()
     UI.pushBtn:SetText("切换qqqq地图")
     UI.pushBtn:SetSize(100, 30)
     UI.pushBtn:SetScale(2, 2)
+
+    -- window test
+    UI.window = Window.New()
+    UI.window:SetSize(600, 1050)
+    UI.window:SetPosition(300, 150)
+
+    -- connect
+    UI.window:SetReceiverOfRequestMoveWindow(UI)
+    UI.window:SetReceiverOfRequestCloseWindow(UI)
 end
 
 function UI.Update(dt)
@@ -72,6 +82,11 @@ function UI.Update(dt)
 
     -- button test
     UI.pushBtn:Update(dt)
+
+    -- window test
+    if UI.window then
+        UI.window:Update(dt)
+    end
 end
 
 function UI.Draw()
@@ -81,6 +96,23 @@ function UI.Draw()
 
     -- button test
     UI.pushBtn:Draw()
+
+    -- window test
+    if UI.window then
+        UI.window:Draw()
+    end
+end
+
+function UI.OnRequestMoveWindow(sender, x, y)
+    if UI.window == sender then
+        UI.window:SetPosition(x, y)
+    end
+end
+
+function UI.OnRequestCloseWindow(sender)
+    if UI.window == sender then
+        UI.window = nil
+    end
 end
 
 return UI
