@@ -38,6 +38,10 @@ _GRAPHICS.Clear = love.graphics.clear
 
 function _GRAPHICS.Init()
 	love.graphics.setBackgroundColor(0, 0, 0, 255)
+
+	-- 设置字体
+	local font = love.graphics.newFont("asset/font/SourceHanSerifSC-Medium.otf",12)--字体文件,支持中文
+	_GRAPHICS.SetFont(font)
 end
 
 ---@param shader Shader
@@ -84,6 +88,17 @@ end
 
 function _GRAPHICS.GetColor()
     return unpack(_nowColor)
+end
+
+---@return height number
+function _GRAPHICS.GetFontHeight()
+	return _nowFont:getHeight()
+end
+
+---@param text string
+---@return Width number
+function _GRAPHICS.GetFontWidth(text)
+	return _nowFont:getWidth(text)
 end
 
 ---@param font Font

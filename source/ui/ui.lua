@@ -11,6 +11,8 @@ local _RESOURCE = require("lib.resource")
 local _Mouse= require("lib.mouse")
 local _Input = require("actor.service.input")
 
+local PushButton = require("ui/pushbutton")
+
 local CharactorTopWindowPosX = 10
 local CharactorTopWindowPosY = 10
 
@@ -45,6 +47,12 @@ function UI.Init()
     portraitYScale = (windowHeight / portraitHeight) * portraitYScale
     UI.charactorTopPortrait:SetAttri("scale", portraitXScale, portraitYScale)
 
+    -- button test
+    UI.pushBtn = PushButton.New()
+    UI.pushBtn:SetPosition(200, 50)
+    UI.pushBtn:SetText("切换qqqq地图")
+    UI.pushBtn:SetSize(100, 30)
+    UI.pushBtn:SetScale(2, 2)
 end
 
 function UI.Update(dt)
@@ -61,12 +69,18 @@ function UI.Update(dt)
     else
         UI.charactorTopPortrait:SetAttri("position", CharactorTopWindowPosX, CharactorTopWindowPosY)
     end
+
+    -- button test
+    UI.pushBtn:Update(dt)
 end
 
 function UI.Draw()
     UI.charactorTopPortrait:Draw()
     UI.charactorTopWindow:Draw()
     UI.toolBar:Draw()
+
+    -- button test
+    UI.pushBtn:Draw()
 end
 
 return UI
