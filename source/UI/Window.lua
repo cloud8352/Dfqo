@@ -3,37 +3,32 @@
 	author: keke <243768648@qq.com>
 	since: 2022-11-15
 	alter: 2022-11-15
-]]--
+]] --
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
-local _Mouse= require("lib.mouse")
+local _Mouse = require("lib.mouse")
 
-local TitleBar = require("ui/titlebar")
+local TitleBar = require("UI.TitleBar")
+local WindowManager = require("UI.WindowManager")
 
+---@class Window
 local Window = require("core.class")()
 
-local DisplayState = {
-    Unkonwn = 0,
-    Normal = 1,
-    Hovering = 2,
-    Pressing = 3,
-    Disable = 4,
-}
-
 function Window:Ctor()
+    -- WindowLayerIndex
+    self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
+    WindowManager.AppendToWindowList(self)
 
     self.bgSprite = _Sprite.New()
-    -- self.sprite:SwitchRect(true) -- 使用矩形
+    self.bgSprite:SwitchRect(true) -- 使用矩形
     self.spriteXScale, self.spriteYScale = self.bgSprite:GetAttri("scale")
     self.width = 30
     self.height = 10
     self.posX = 0
     self.posY = 0
-    self.lastDisplayState = DisplayState.Unkonwn
-    self.displayState = DisplayState.Normal
     self.enable = true
 
     -- 背景图片数据
@@ -48,7 +43,7 @@ function Window:Ctor()
     self.rightBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightBottomBg")
 
     -- title bar
-    self.titleBar = TitleBar.New()
+    self.titleBar = TitleBar.New(self)
 
     self.receiverOfRequestMoveWindow = nil
     self.receiverOfRequestCloseWindow = nil
@@ -135,6 +130,7 @@ function Window:SetSize(width, height)
 
     _Graphics.SetCanvas()
     self.bgSprite:SetImage(canvas)
+    self.bgSprite:AdjustDimensions()
 
     -- 设置标题栏尺寸
     self.titleBar:SetSize(self.width, 50)
@@ -185,6 +181,22 @@ function Window:judgeAndExecRequestCloseWindow(x, y)
     end
 
     self.receiverOfRequestCloseWindow.OnRequestCloseWindow(self)
+end
+
+-- 获取窗口所处层数
+-- ##【必须实现】
+---@return layerIndex int
+function Window:GetWindowLayerIndex()
+    return self.windowLayerIndex
+end
+
+-- 检查是否包含坐标
+-- ##【必须实现】
+---@param x int
+---@param y int
+---@return boolean
+function Window:CheckPoint(x, y)
+    return self.bgSprite:CheckPoint(x, y)
 end
 
 return Window

@@ -3,53 +3,52 @@
 	author: keke <243768648@qq.com>
 	since: 2022-10-25
 	alter: 2022-10-25
-]]--
+]] --
 
 local _Sprite = require("graphics.drawable.sprite")
 local _GRAPHICS = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
-local _Mouse= require("lib.mouse")
+local _Mouse = require("lib.mouse")
 local _Input = require("actor.service.input")
 
-local PushButton = require("ui/pushbutton")
-local Window = require("ui/window")
+local PushButton = require("UI/PushButton")
+local Window = require("UI/Window")
 
-local CharactorTopWindowPosX = 10
-local CharactorTopWindowPosY = 10
+local CharacterTopWindowPosX = 10
+local CharacterTopWindowPosY = 10
 
 local UI = {}
 
-UI.charactorTopPortrait = _Sprite.New() -- 角色概况画像
--- UI.charactorTopPortraitPressed = _Sprite.New() -- 角色概况画像(点击中)
-UI.charactorTopWindow = _Sprite.New() -- 角色概况窗口
+UI.characterTopPortrait = _Sprite.New() -- 角色概况画像
+UI.characterTopWindow = _Sprite.New() -- 角色概况窗口
 UI.toolBar = _Sprite.New() -- 工具栏，包括...
 
 function UI.Init()
     -- 角色概况画像
-    local spriteData = _RESOURCE.GetSpriteData("ui/CharacterPortraits/swordman")
-    UI.charactorTopPortrait:SetData(spriteData)
-    UI.charactorTopPortrait:SetAttri("position", CharactorTopWindowPosX, CharactorTopWindowPosY)
+    local spriteData = _RESOURCE.GetSpriteData("ui/CharacterPortraits/swordsman")
+    UI.characterTopPortrait:SetData(spriteData)
+    UI.characterTopPortrait:SetAttri("position", CharacterTopWindowPosX, CharacterTopWindowPosY)
 
     -- 角色概况
-    UI.charactorTopWindow:SwitchRect(true) -- 使用矩形
+    UI.characterTopWindow:SwitchRect(true) -- 使用矩形
     spriteData = _RESOURCE.GetSpriteData("ui/WindowFrame/charactor_top_window")
-    UI.charactorTopWindow:SetData(spriteData)
-    UI.charactorTopWindow:SetAttri("position", CharactorTopWindowPosX, CharactorTopWindowPosY)
-    local sx, sy = UI.charactorTopWindow:GetAttri("scale")
-    UI.charactorTopWindow:SetAttri("scale", sx, sy)
-    -- UI.charactorTopWindow:Draw()
+    UI.characterTopWindow:SetData(spriteData)
+    UI.characterTopWindow:SetAttri("position", CharacterTopWindowPosX, CharacterTopWindowPosY)
+    local sx, sy = UI.characterTopWindow:GetAttri("scale")
+    UI.characterTopWindow:SetAttri("scale", sx, sy)
 
     -- post init
-    local windowWidth, windowHeight = UI.charactorTopWindow:GetImageDimensions()
-    local portraitWidth, portraitHeight = UI.charactorTopPortrait:GetImageDimensions()
+    local windowWidth, windowHeight = UI.characterTopWindow:GetImageDimensions()
+    local portraitWidth, portraitHeight = UI.characterTopPortrait:GetImageDimensions()
     -- 画像自适应与角色概况窗口
-    local portraitXScale, portraitYScale = UI.charactorTopPortrait:GetAttri("scale")
+    local portraitXScale, portraitYScale = UI.characterTopPortrait:GetAttri("scale")
     portraitXScale = (windowWidth / portraitWidth) * portraitXScale
     portraitYScale = (windowHeight / portraitHeight) * portraitYScale
-    UI.charactorTopPortrait:SetAttri("scale", portraitXScale, portraitYScale)
+    UI.characterTopPortrait:SetAttri("scale", portraitXScale, portraitYScale)
 
     -- button test
-    UI.pushBtn = PushButton.New()
+    local pushBtnWindow = Window.New()
+    UI.pushBtn = PushButton.New(pushBtnWindow)
     UI.pushBtn:SetPosition(200, 50)
     UI.pushBtn:SetText("切换qqqq地图")
     UI.pushBtn:SetSize(100, 30)
@@ -66,18 +65,18 @@ function UI.Init()
 end
 
 function UI.Update(dt)
-    local isCharactorTopPortraitHold = false
+    local isCharacterTopPortraitHold = false
     if _Mouse.IsHold(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
-        if UI.charactorTopWindow:CheckPoint(mousePosX, mousePosY) then
-            isCharactorTopPortraitHold = true
+        if UI.characterTopWindow:CheckPoint(mousePosX, mousePosY) then
+            isCharacterTopPortraitHold = true
         end
     end
 
-    if isCharactorTopPortraitHold then
-        UI.charactorTopPortrait:SetAttri("position", CharactorTopWindowPosX + 1, CharactorTopWindowPosY + 1)
+    if isCharacterTopPortraitHold then
+        UI.characterTopPortrait:SetAttri("position", CharacterTopWindowPosX + 1, CharacterTopWindowPosY + 1)
     else
-        UI.charactorTopPortrait:SetAttri("position", CharactorTopWindowPosX, CharactorTopWindowPosY)
+        UI.characterTopPortrait:SetAttri("position", CharacterTopWindowPosX, CharacterTopWindowPosY)
     end
 
     -- button test
@@ -90,8 +89,8 @@ function UI.Update(dt)
 end
 
 function UI.Draw()
-    UI.charactorTopPortrait:Draw()
-    UI.charactorTopWindow:Draw()
+    UI.characterTopPortrait:Draw()
+    UI.characterTopWindow:Draw()
     UI.toolBar:Draw()
 
     -- button test

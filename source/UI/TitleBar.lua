@@ -3,7 +3,7 @@
 	author: keke <243768648@qq.com>
 	since: 2022-11-15
 	alter: 2022-11-15
-]]--
+]] --
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
@@ -11,11 +11,18 @@ local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
 
-local PushButton = require("ui/pushbutton")
+local WindowManager = require("UI.WindowManager")
+local PushButton = require("UI.PushButton")
 
+---@class TitleBar
 local TitleBar = require("core.class")()
 
-function TitleBar:Ctor()
+---@param parentWindow Window
+function TitleBar:Ctor(parentWindow)
+    assert(parentWindow, "must assign parent window")
+    ---@type Window
+    self.parentWindow = parentWindow
+
     self.width = 30
     self.height = 10
     self.posX = 0
@@ -52,13 +59,14 @@ function TitleBar:Ctor()
     self.iconBottomMargin = 2
 
     -- 关闭按钮
-    self.closeBtn = PushButton.New()
+    self.closeBtn = PushButton.New(self.parentWindow)
     self.closeBtn:SetNormalSpriteDataPath("ui/CloseButton/normal")
     self.closeBtn:SetHoveringSpriteDataPath("ui/CloseButton/hovering")
     self.closeBtn:SetPressingSpriteDataPath("ui/CloseButton/pressing")
     self.closeBtn:SetDisableSpriteDataPath("ui/CloseButton/disable")
 
     -- 请求关闭窗口的接收者
+    ---@type Window
     self.receiverOfRequestCloseWindow = nil
 
     -- connect
@@ -69,7 +77,7 @@ function TitleBar:Ctor()
 end
 
 function TitleBar:Update(dt)
-    self:judgeAndExecRequestMoveWindow()
+    self:MouseEvent()
 
     self.closeBtn:Update(dt)
 end
@@ -80,7 +88,18 @@ function TitleBar:Draw()
     self.closeBtn:Draw()
 end
 
+function TitleBar:MouseEvent()
+    -- 检查是否有上层窗口遮挡
+    local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
+    if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex) then
+        return
+    end
+
+    self:judgeAndExecRequestMoveWindow()
+end
+
 -- 设置请求移动窗口位置时执行的函数
+---@param receiver Window
 function TitleBar:SetReceiverOfRequestMoveWindow(receiver)
     self.receiverOfRequestMoveWindow = receiver
 end
@@ -191,7 +210,7 @@ function TitleBar:judgeAndExecRequestMoveWindow()
 
         -- 确保鼠标在按钮上
         if false == self.frameSprite:CheckPoint(currentMouseXPos, currentMouseYPos)
-            or self.closeBtn:CheckPoint(currentMouseXPos, currentMouseYPos)  then
+            or self.closeBtn:CheckPoint(currentMouseXPos, currentMouseYPos) then
             break
         end
 

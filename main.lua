@@ -11,7 +11,7 @@ local _MUSIC = require("lib.music")
 local _RESOURCE = require("lib.resource")
 local _DIRECTOR = require("director")
 local _CONFIG = require("config")
-local UI = require("ui/ui")
+local UI = require("UI/UI")
 
 local _User = require("user")
 

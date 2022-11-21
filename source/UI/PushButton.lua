@@ -3,25 +3,33 @@
 	author: keke <243768648@qq.com>
 	since: 2022-11-15
 	alter: 2022-11-15
-]]--
+]] --
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
-local _Mouse= require("lib.mouse")
+local _Mouse = require("lib.mouse")
 
+local WindowManager = require("UI.WindowManager")
+
+---@class PushButton
 local PushButton = require("core.class")()
 
 local DisplayState = {
-    Unkonwn = 0,
+    Unknown = 0,
     Normal = 1,
     Hovering = 2,
     Pressing = 3,
     Disable = 4,
 }
 
-function PushButton:Ctor()
+---@param parentWindow Window
+function PushButton:Ctor(parentWindow)
+    assert(parentWindow, "must assign parent window")
+    ---@type Window
+    self.parentWindow = parentWindow
+
     self.normalSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/normal")
     self.hoveringImgData = _RESOURCE.GetSpriteData("ui/PushButton/hovering")
     self.pressingImgData = _RESOURCE.GetSpriteData("ui/PushButton/pressing")
@@ -38,7 +46,7 @@ function PushButton:Ctor()
     self.height = 10
     self.posX = 0
     self.posY = 0
-    self.lastDisplayState = DisplayState.Unkonwn
+    self.lastDisplayState = DisplayState.Unknown
     self.displayState = DisplayState.Normal
     self.enable = true
 
@@ -47,11 +55,31 @@ function PushButton:Ctor()
 end
 
 function PushButton:Update(dt)
+    self:MouseEvent()
+end
+
+function PushButton:Draw()
+    self.sprite:Draw()
+    
+    -- 计算文字居中显示时所处坐标
+    local textPosX = self.posX + self.width * self.spriteXScale / 2 - _Graphics.GetFontWidth(self.text)* self.spriteXScale / 2
+    local textPosY = self.posY + self.height * self.spriteYScale / 2 - _Graphics.GetFontHeight() * self.spriteYScale / 2
+    _Graphics.Print(self.text, textPosX, textPosY, 0, self.spriteXScale, self.spriteYScale, 0, 0)
+end
+
+function PushButton:MouseEvent()
     -- 判断鼠标
     while true do
         -- 是否处于禁用状态
         if false == self.enable then
             self.displayState = DisplayState.Disable
+            break
+        end
+
+        -- 检查是否有上层窗口遮挡
+        local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
+        if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex) then
+            self.displayState = DisplayState.Normal
             break
         end
 
@@ -105,15 +133,6 @@ function PushButton:Update(dt)
     self.lastDisplayState = self.displayState
 end
 
-function PushButton:Draw()
-    self.sprite:Draw()
-    
-    -- 计算文字居中显示时所处坐标
-    local textPosX = self.posX + self.width * self.spriteXScale / 2 - _Graphics.GetFontWidth(self.text)* self.spriteXScale / 2
-    local textPosY = self.posY + self.height * self.spriteYScale / 2 - _Graphics.GetFontHeight() * self.spriteYScale / 2
-    _Graphics.Print(self.text, textPosX, textPosY, 0, self.spriteXScale, self.spriteYScale, 0, 0)
-end
-
 function PushButton:SetNormalSpriteDataPath(path)
     self.normalSpriteData = _RESOURCE.GetSpriteData(path)
 end
@@ -137,7 +156,7 @@ function PushButton:SetPosition(x, y)
 end
 
 function PushButton:GetSize()
-    return self.width, self.heigh
+    return self.width, self.height
 end
 
 function PushButton:GetWidth()
@@ -145,7 +164,7 @@ function PushButton:GetWidth()
 end
 
 function PushButton:GetHeight()
-    return self.heigh
+    return self.height
 end
 
 function PushButton:SetSize(width, height)

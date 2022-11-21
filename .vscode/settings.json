@@ -9,5 +9,11 @@
         "stdio.h": "c",
         "stdarg.h": "c",
         "random": "c"
-    }
+    },
+    "emmylua.spell.dict": [
+        "Attri",
+        "Btns",
+        "dest",
+        "filesystem"
+    ]
 }

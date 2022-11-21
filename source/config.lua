@@ -3,7 +3,7 @@
 	author: Musoucrow
 	since: 2018-5-22
 	alter: 2019-8-14
-]]--
+]] --
 local _FILE = require("lib.file")
 
 ---@class CONFIG
@@ -36,7 +36,7 @@ local _CONFIG = {
     }
 }
 
-_CONFIG.arrow = {"up", "down", "left", "right"}
+_CONFIG.arrow = { "up", "down", "left", "right" }
 
 _CONFIG.code = {
     up = "up",
