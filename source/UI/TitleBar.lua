@@ -28,6 +28,7 @@ function TitleBar:Ctor(parentWindow)
     self.posX = 0
     self.posY = 0
     self.enable = true
+    self.isVisible = true
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
     self.requestMoveWindow = false -- 是否请求移动窗口
@@ -63,7 +64,7 @@ function TitleBar:Ctor(parentWindow)
     self.closeBtn:SetNormalSpriteDataPath("ui/CloseButton/normal")
     self.closeBtn:SetHoveringSpriteDataPath("ui/CloseButton/hovering")
     self.closeBtn:SetPressingSpriteDataPath("ui/CloseButton/pressing")
-    self.closeBtn:SetDisableSpriteDataPath("ui/CloseButton/disable")
+    self.closeBtn:SetDisabledSpriteDataPath("ui/CloseButton/disable")
 
     -- 请求关闭窗口的接收者
     ---@type Window
@@ -77,12 +78,20 @@ function TitleBar:Ctor(parentWindow)
 end
 
 function TitleBar:Update(dt)
+    if false == self.isVisible then
+        return
+    end
+
     self:MouseEvent()
 
     self.closeBtn:Update(dt)
 end
 
 function TitleBar:Draw()
+    if false == self.isVisible then
+        return
+    end
+    
     self.frameSprite:Draw()
     self.iconSprite:Draw()
     self.closeBtn:Draw()
@@ -129,6 +138,16 @@ end
 
 function TitleBar:SetEnable(enable)
     self.enable = enable
+end
+
+function TitleBar:IsVisible()
+    return self.isVisible
+end
+
+--- 设置是否可见
+---@param visible boolean
+function TitleBar:SetVisible(visible)
+    self.isVisible = visible
 end
 
 function TitleBar:SetScale(xScale, yScale)

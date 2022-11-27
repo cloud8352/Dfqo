@@ -31,12 +31,6 @@ function Label:Ctor(parentWindow)
 
     self.text = ""
     self.lastText = ""
-
-    -- content margins
-    self.leftMargin = 5
-    self.topMargin = 5
-    self.rightMargin = 5
-    self.bottomMargin = 5
 end
 
 function Label:Update(dt)
@@ -59,7 +53,7 @@ function Label:Draw()
 end
 
 function Label:SetPosition(x, y)
-    self.sprite:SetAttri("position", x + self.leftMargin, y + self.topMargin)
+    self.sprite:SetAttri("position", x, y)
     self.xPos = x
     self.yPos = y
 end
@@ -87,9 +81,8 @@ function Label:updateSprite()
     txtR = 255; txtG = 255; txtB = 255; txtA = 255
     _Graphics.SetColor(txtR, txtG, txtB, txtA)
     -- 计算文字垂直居中显示时所处坐标
-    local textXPos = self.leftMargin
-    local textYPos = self.topMargin + (self.height - self.topMargin - self.bottomMargin) / 2 
-                    - _Graphics.GetFontHeight() / 2
+    local textXPos = 0
+    local textYPos = self.height / 2 - _Graphics.GetFontHeight() / 2
     local textObj = _Graphics.NewNormalText(self.text)
     _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
 

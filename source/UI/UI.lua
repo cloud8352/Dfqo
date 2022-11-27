@@ -17,6 +17,7 @@ local ScrollBar = require("UI.ScrollBar")
 local ScrollArea = require("UI.ScrollArea")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
+local ComboBox = require("UI.ComboBox")
 
 local CharacterTopWindowPosX = 10
 local CharacterTopWindowPosY = 10
@@ -77,8 +78,13 @@ function UI.Init()
     -- Label test
     UI.label = Label.New(pushBtnWindow)
     UI.label:SetSize(100, 30)
-    UI.label:SetPosition(1100, 500)
+    UI.label:SetPosition(1100, 370)
     UI.label:SetText("dfasas")
+
+    -- comboBox test
+    UI.comboBox = ComboBox.New(pushBtnWindow)
+    UI.comboBox:SetSize(300, 45)
+    UI.comboBox:SetPosition(1100, 400)
 
     -- connect
     UI.window:SetReceiverOfRequestMoveWindow(UI)
@@ -112,9 +118,12 @@ function UI.Update(dt)
 
     -- ListView test
     UI.listView:Update(dt)
-    
+
     -- Label test
     UI.label:Update(dt)
+
+    -- comboBox test
+    UI.comboBox:Update(dt)
 end
 
 function UI.Draw()
@@ -137,6 +146,9 @@ function UI.Draw()
 
     -- Label test
     UI.label:Draw()
+
+    -- comboBox test
+    UI.comboBox:Draw()
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)

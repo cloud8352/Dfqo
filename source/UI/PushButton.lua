@@ -49,16 +49,23 @@ function PushButton:Ctor(parentWindow)
     self.lastDisplayState = DisplayState.Unknown
     self.displayState = DisplayState.Normal
     self.enable = true
+    self.isVisible = true
 
-    -- 请求移动窗口位置信号的接收者
+    -- 按钮点击信号的接收者
     self.receiverOfBtnClicked = nil
 end
 
 function PushButton:Update(dt)
+    if false == self.isVisible then
+        return
+    end
     self:MouseEvent()
 end
 
 function PushButton:Draw()
+    if false == self.isVisible then
+        return
+    end
     self.sprite:Draw()
     
     -- 计算文字居中显示时所处坐标
@@ -133,28 +140,35 @@ function PushButton:MouseEvent()
     self.lastDisplayState = self.displayState
 end
 
+---@param path string
 function PushButton:SetNormalSpriteDataPath(path)
     self.normalSpriteData = _RESOURCE.GetSpriteData(path)
 end
 
+---@param path string
 function PushButton:SetHoveringSpriteDataPath(path)
     self.hoveringImgData = _RESOURCE.GetSpriteData(path)
 end
 
+---@param path string
 function PushButton:SetPressingSpriteDataPath(path)
     self.pressingImgData = _RESOURCE.GetSpriteData(path)
 end
 
-function PushButton:SetDisableSpriteDataPath(path)
+---@param path string
+function PushButton:SetDisabledSpriteDataPath(path)
     self.disableImgData = _RESOURCE.GetSpriteData(path)
 end
 
+---@param x int
+---@param y int
 function PushButton:SetPosition(x, y)
     self.sprite:SetAttri("position", x, y)
     self.posX = x
     self.posY = y
 end
 
+---@return int, int @宽，高
 function PushButton:GetSize()
     return self.width, self.height
 end
@@ -178,6 +192,15 @@ end
 
 function PushButton:SetEnable(enable)
     self.enable = enable
+end
+
+function PushButton:IsVisible()
+    return self.isVisible
+end
+
+---@param isVisible bool
+function PushButton:SetVisible(isVisible)
+    self.isVisible = isVisible
 end
 
 function PushButton:SetScale(xScale, yScale)

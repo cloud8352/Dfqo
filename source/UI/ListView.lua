@@ -35,6 +35,7 @@ function ListView:Ctor(parentWindow)
     self.posX = 0
     self.posY = 0
     self.enable = true
+    self.isVisible = true
 
     -- 背景图片数据
     self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
@@ -111,9 +112,16 @@ function ListView:Ctor(parentWindow)
     self.topMargin = 5
     self.rightMargin = 5
     self.bottomMargin = 5
+
+    -- signals
+    -- 选中项信号的接收者
+    self.receiverOfSelectedItemChanged = nil
 end
 
 function ListView:Update(dt)
+    if false == self.isVisible then
+        return
+    end
     self:MouseEvent()
 
     -- item
@@ -150,6 +158,9 @@ function ListView:Update(dt)
 end
 
 function ListView:Draw()
+    if false == self.isVisible then
+        return
+    end
     self.bgSprite:Draw()
 
     -- item list content sprite
@@ -213,8 +224,8 @@ function ListView:MouseEvent()
                 item:SetDisplayState(StandardItem.DisplayState.Normal)
             end
             hoveringItem:SetDisplayState(StandardItem.DisplayState.Selected)
-            -- -- 判断和执行点击触发事件
-            -- self:judgeAndExecClicked()
+            -- -- 判断和执行选中项改变事件
+            self:judgeAndExecSelectedItemChanged(hoveringItem)
             break
         end
 
@@ -323,6 +334,15 @@ function ListView:SetEnable(enable)
     self.enable = enable
 end
 
+function ListView:IsVisible()
+    return self.isVisible
+end
+
+---@param isVisible bool
+function ListView:SetVisible(isVisible)
+    self.isVisible = isVisible
+end
+
 function ListView:OnRequestMoveContent(xOffset, yOffset)
     print("ListView:OnRequestMoveContent()", xOffset, yOffset)
     self.itemListContentYOffset = yOffset
@@ -332,6 +352,23 @@ function ListView:OnRequestMoveContent(xOffset, yOffset)
     for i, item in pairs(self.itemList) do
         item:SetPosition(self.posX + self.leftMargin, self.posY + yOffset + self.topMargin + self.itemHeight * (i - 1))
     end
+end
+
+function ListView:SetReceiverOfSelectedItemChanged(obj)
+    self.receiverOfSelectedItemChanged = obj
+end
+
+---@param selectedItem StandardItem
+function ListView:judgeAndExecSelectedItemChanged(selectedItem)
+    if nil == self.receiverOfSelectedItemChanged then
+        return
+    end
+
+    if nil == self.receiverOfSelectedItemChanged.OnSelectedItemChanged then
+        return
+    end
+
+    self.receiverOfSelectedItemChanged:OnSelectedItemChanged(selectedItem)
 end
 
 return ListView

@@ -30,6 +30,7 @@ function Window:Ctor()
     self.posX = 0
     self.posY = 0
     self.enable = true
+    self.isVisible = true
 
     -- 背景图片数据
     self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
@@ -54,10 +55,18 @@ function Window:Ctor()
 end
 
 function Window:Update(dt)
+    if false == self.isVisible then
+        return
+    end
+
     self.titleBar:Update(dt)
 end
 
 function Window:Draw()
+    if false == self.isVisible then
+        return
+    end
+
     self.bgSprite:Draw()
 
     self.titleBar:Draw()
@@ -138,6 +147,18 @@ end
 
 function Window:SetEnable(enable)
     self.enable = enable
+end
+
+--- 设置是否可见
+---@param visible boolean
+function Window:SetVisible(visible)
+    self.isVisible = visible
+end
+
+--- 设置标题栏是否可见
+---@param visible boolean
+function Window:SetTitleBarVisible(visible)
+    self.titleBar:SetVisible(visible)
 end
 
 function Window:SetScale(xScale, yScale)
