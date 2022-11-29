@@ -1,25 +1,26 @@
 --[[
-	desc: GRAPHICS, a lib that encapsulate love.graphics.
-	author: Musoucrow
-	since: 2018-3-13
-	alter: 2018-8-8
-]]--
+    desc: GRAPHICS, a lib that encapsulate love.graphics.
+    author: Musoucrow
+    since: 2018-3-13
+    alter: 2018-8-8
+]] --
 
 local _TABLE = require("lib.table")
 local _MATH = require("lib.math")
+
+local Util = require("source.util.Util")
 
 local _Tweener = require("util.gear.tweener")
 
 local _nowShader
 local _nowBlendmode = "alpha"
 local _laterBlendmode
-local _nowColor = {255, 255, 255, 255}
-local _lateColor = {255, 255, 255, 255}
+local _nowColor = { 255, 255, 255, 255 }
+local _lateColor = { 255, 255, 255, 255 }
 local _nowFont = love.graphics.getFont()
 local _laterFont
 
 local _GRAPHICS = {} ---@class Lib.GRAPHICS
-_GRAPHICS.DrawObj = love.graphics.draw
 _GRAPHICS.Print = love.graphics.print
 _GRAPHICS.SetScissor = love.graphics.setScissor
 _GRAPHICS.DrawLine = love.graphics.line
@@ -37,28 +38,29 @@ _GRAPHICS.SetCanvas = love.graphics.setCanvas
 _GRAPHICS.Clear = love.graphics.clear
 
 function _GRAPHICS.Init()
-	love.graphics.setBackgroundColor(0, 0, 0, 255)
+    love.graphics.setBackgroundColor(0, 0, 0, 255)
 
-	-- 设置字体
-	local font = love.graphics.newFont("asset/font/SourceHanSerifSC-Medium.otf",12)--字体文件,支持中文
-	_GRAPHICS.SetFont(font)
+    -- 设置字体
+    local windowSizeScale = Util.GetWindowSizeScale()
+    local font = love.graphics.newFont("asset/font/SourceHanSerifSC-Medium.otf", 12 * windowSizeScale) --字体文件,支持中文
+    _GRAPHICS.SetFont(font)
 end
 
 ---@param shader Shader
 function _GRAPHICS.SetShader(shader)
-	if (_nowShader ~= shader) then
-		love.graphics.setShader(shader)
-		_nowShader = shader
-	end
+    if (_nowShader ~= shader) then
+        love.graphics.setShader(shader)
+        _nowShader = shader
+    end
 end
 
 ---@param blendmode Blendmode @alpha, add, subtract, multiply, replace, screen
 function _GRAPHICS.SetBlendmode(blendmode)
-	if (_nowBlendmode ~= blendmode) then
-		love.graphics.setBlendMode(blendmode)
+    if (_nowBlendmode ~= blendmode) then
+        love.graphics.setBlendMode(blendmode)
         _laterBlendmode = _nowBlendmode
-		_nowBlendmode = blendmode
-	end
+        _nowBlendmode = blendmode
+    end
 end
 
 function _GRAPHICS.ResetBlendmode()
@@ -70,20 +72,20 @@ end
 ---@param blue int
 ---@param alpha int
 function _GRAPHICS.SetColor(red, green, blue, alpha)
-	if (_nowColor[1] ~= red or _nowColor[2] ~= green or _nowColor[3] ~= blue or _nowColor[4] ~= alpha) then
-		love.graphics.setColor(red, green, blue, alpha)
-		
-		_TABLE.Paste(_nowColor, _lateColor)
-		
-		_nowColor[1] = red
-		_nowColor[2] = green
-		_nowColor[3] = blue
-		_nowColor[4] = alpha
-	end
+    if (_nowColor[1] ~= red or _nowColor[2] ~= green or _nowColor[3] ~= blue or _nowColor[4] ~= alpha) then
+        love.graphics.setColor(red, green, blue, alpha)
+
+        _TABLE.Paste(_nowColor, _lateColor)
+
+        _nowColor[1] = red
+        _nowColor[2] = green
+        _nowColor[3] = blue
+        _nowColor[4] = alpha
+    end
 end
 
 function _GRAPHICS.ResetColor()
-	_GRAPHICS.SetColor(unpack(_lateColor))
+    _GRAPHICS.SetColor(unpack(_lateColor))
 end
 
 function _GRAPHICS.GetColor()
@@ -92,13 +94,13 @@ end
 
 ---@return height number
 function _GRAPHICS.GetFontHeight()
-	return _nowFont:getHeight()
+    return _nowFont:getHeight()
 end
 
 ---@param text string
 ---@return Width number
 function _GRAPHICS.GetFontWidth(text)
-	return _nowFont:getWidth(text)
+    return _nowFont:getWidth(text)
 end
 
 ---@param font Font
@@ -119,14 +121,14 @@ end
 ---@param size number
 ---@param mode DrawMode @fill, line
 function _GRAPHICS.DrawCircle(x, y, size, mode)
-	mode = mode or "line"
-	
-	love.graphics.circle (mode, x, y, size)
+    mode = mode or "line"
+
+    love.graphics.circle(mode, x, y, size)
 end
 
 ---@param mode DrawMode @fill, line
 function _GRAPHICS.DrawPolygon(mode, ...)
-	love.graphics.polygon (mode, ...)
+    love.graphics.polygon(mode, ...)
 end
 
 ---@param x int
@@ -135,9 +137,9 @@ end
 ---@param h int
 ---@param mode DrawMode @"fill" or "line"
 function _GRAPHICS.DrawRect(x, y, w, h, mode)
-	mode = mode or "line"
-	
-	love.graphics.rectangle(mode, x, y, w, h)
+    mode = mode or "line"
+
+    love.graphics.rectangle(mode, x, y, w, h)
 end
 
 ---@param drawable Graphics.Drawable
@@ -145,6 +147,29 @@ function _GRAPHICS.NewDrawableAttriTweener(drawable, subject, type)
     return _Tweener.New(subject, _, _, function()
         drawable:SetAttri(type, subject:Get())
     end)
+end
+
+---@param text string
+---@return love.Text
+function _GRAPHICS.NewNormalText(text)
+    local font = love.graphics.getFont()
+    local drawableTextObj = love.graphics.newText(font, text)
+    return drawableTextObj
+end
+
+--- 画物体
+---@param drawable love.Drawable A drawable object.
+---@param x number The position to draw the object (x-axis).
+---@param y number The position to draw the object (y-axis).
+---@param r number Orientation (radians).
+---@param sx number Scale factor (x-axis).
+---@param sy number Scale factor (y-axis).
+---@param ox number Origin offset (x-axis).
+---@param oy number Origin offset (y-axis).
+---@param kx number Shearing factor (x-axis). can nil
+---@param ky number Shearing factor (x-axis). can nil
+function _GRAPHICS.DrawObj(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
+    love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
 end
 
 return _GRAPHICS

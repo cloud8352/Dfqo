@@ -37,7 +37,7 @@ function ScrollBar:Ctor(parentWindow)
     -- 滑动条长度
     self.sliderLength = 20
     -- 滑动条移动的距离
-    self.sliderMovedDistance = 50
+    self.sliderMovedDistance = 0
     -- 被控制显示内容的长度
     self.ctrlledContentLength = 0
 
@@ -107,8 +107,6 @@ function ScrollBar:SetSlideLength(length)
     _Graphics.SetCanvas(canvas)
 
     local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
-    _Graphics.SetColor(200, 200, 200, 180)
-    _Graphics.DrawRect(0, 0, self.width, self.slideLength, "line")
 
     -- 还原绘图数据
     _Graphics.SetCanvas()
@@ -128,6 +126,8 @@ function ScrollBar:SetCtrlledContentLength(length)
     -- 当被控制类内容长度小于滑道长度
     if self.ctrlledContentLength <= self.slideLength then
         self.sliderLength = self.slideLength
+        self:SetSlideLength(self.slideLength)
+        return
     end
 
     self.sliderLength = self.slideLength * (self.slideLength / self.ctrlledContentLength)
@@ -146,6 +146,11 @@ end
 ---@param visible boolean
 function ScrollBar:SetVisible(visible)
     self.isVisible = visible
+end
+
+---@return int
+function ScrollBar:GetWidth()
+    return self.width
 end
 
 function ScrollBar:createSliderCanvasBySize(width, height)
@@ -215,9 +220,14 @@ function ScrollBar:judgeAndExecRequestMoveContent()
         self.sliderMovedDistance = destYPos - self.posY
 
         -- 滑动条移动距离 换算成 显示内容移动距离 比率
-        local sliderMoveDistanceToContentMoveDistanceRate = (self.ctrlledContentLength - self.slideLength) /
-                                                            (self.slideLength - self.sliderLength)
-        local yDistanceContentNeedMove = sliderMoveDistanceToContentMoveDistanceRate * self.sliderMovedDistance
+        ---@type int
+        local sliderMoveDistanceToContentMoveDistanceRate = 1
+        if 0 ~= (self.slideLength - self.sliderLength) then
+            sliderMoveDistanceToContentMoveDistanceRate = (self.ctrlledContentLength - self.slideLength) /
+            (self.slideLength - self.sliderLength)
+        end
+        ---@type int
+        local yDistanceContentNeedMove = -sliderMoveDistanceToContentMoveDistanceRate * self.sliderMovedDistance
         self.receiverOfRequestMoveContent:OnRequestMoveContent(0, yDistanceContentNeedMove)
     end
 end

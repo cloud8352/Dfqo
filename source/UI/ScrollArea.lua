@@ -9,14 +9,13 @@
 ---@class ScrollArea
 local ScrollArea = require("core.class")()
 
----@param parentWindow Window
 function ScrollArea:Ctor()
 end
 
 ---@param xOffset int
 ---@param yOffset int
 function ScrollArea:OnRequestMoveContent(xOffset, yOffset)
-    print("OnRequestMoveContent", xOffset, yOffset)
+    print("ScrollArea:OnRequestMoveContent()", xOffset, yOffset)
 end
 
 return ScrollArea

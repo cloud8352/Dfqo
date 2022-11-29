@@ -15,6 +15,7 @@ local PushButton = require("UI/PushButton")
 local Window = require("UI/Window")
 local ScrollBar = require("UI.ScrollBar")
 local ScrollArea = require("UI/ScrollArea")
+local ListView = require("UI/ListView")
 
 local CharacterTopWindowPosX = 10
 local CharacterTopWindowPosY = 10
@@ -53,8 +54,7 @@ function UI.Init()
     UI.pushBtn = PushButton.New(pushBtnWindow)
     UI.pushBtn:SetPosition(200, 50)
     UI.pushBtn:SetText("切换qqqq地图")
-    UI.pushBtn:SetSize(100, 30)
-    UI.pushBtn:SetScale(2, 2)
+    UI.pushBtn:SetSize(200, 60)
 
     -- window test
     UI.window = Window.New()
@@ -67,6 +67,11 @@ function UI.Init()
     UI.scrollBar:SetPosition(1000, 50)
     UI.scrollBar:SetCtrlledContentLength(700)
     UI.scrollBar:SetReceiverOfRequestMoveContent(ScrollArea.New())
+
+    -- ListView test
+    UI.listView = ListView.New(pushBtnWindow)
+    UI.listView:SetSize(300, 200)
+    UI.listView:SetPosition(1100, 150)
 
     -- connect
     UI.window:SetReceiverOfRequestMoveWindow(UI)
@@ -97,6 +102,9 @@ function UI.Update(dt)
     end
 
     UI.scrollBar:Update(dt)
+
+    -- ListView test
+    UI.listView:Update(dt)
 end
 
 function UI.Draw()
@@ -113,6 +121,9 @@ function UI.Draw()
     end
 
     UI.scrollBar:Draw()
+
+    -- ListView test
+    UI.listView:Draw()
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)
