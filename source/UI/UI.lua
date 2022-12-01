@@ -13,6 +13,8 @@ local _Input = require("actor.service.input")
 
 local PushButton = require("UI/PushButton")
 local Window = require("UI/Window")
+local ScrollBar = require("UI.ScrollBar")
+local ScrollArea = require("UI/ScrollArea")
 
 local CharacterTopWindowPosX = 10
 local CharacterTopWindowPosY = 10
@@ -59,6 +61,13 @@ function UI.Init()
     UI.window:SetSize(600, 1050)
     UI.window:SetPosition(300, 150)
 
+    -- scroll bar test
+    UI.scrollBar = ScrollBar.New(pushBtnWindow)
+    UI.scrollBar:SetSlideLength(200)
+    UI.scrollBar:SetPosition(1000, 50)
+    UI.scrollBar:SetCtrlledContentLength(700)
+    UI.scrollBar:SetReceiverOfRequestMoveContent(ScrollArea.New())
+
     -- connect
     UI.window:SetReceiverOfRequestMoveWindow(UI)
     UI.window:SetReceiverOfRequestCloseWindow(UI)
@@ -86,6 +95,8 @@ function UI.Update(dt)
     if UI.window then
         UI.window:Update(dt)
     end
+
+    UI.scrollBar:Update(dt)
 end
 
 function UI.Draw()
@@ -100,6 +111,8 @@ function UI.Draw()
     if UI.window then
         UI.window:Draw()
     end
+
+    UI.scrollBar:Draw()
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)

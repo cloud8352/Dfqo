@@ -133,7 +133,7 @@ end
 ---@param y int
 ---@param w int
 ---@param h int
----@param mode DrawMode @fill, line
+---@param mode DrawMode @"fill" or "line"
 function _GRAPHICS.DrawRect(x, y, w, h, mode)
 	mode = mode or "line"
 	
