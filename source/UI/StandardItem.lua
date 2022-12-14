@@ -154,9 +154,8 @@ function StandardItem:createDisplayStateCanvas(state)
     _Graphics.DrawRect(0, 0, self.width, self.height, "fill")
 
     -- 计算文字垂直居中显示时所处坐标
-    local textYScale = (self.height - 2) / _Graphics.GetFontHeight()
-    local textXPos = self.xPos + 10
-    local textYPos = self.yPos + self.height / 2 - _Graphics.GetFontHeight() * textYScale / 2
+    local textXPos = 10
+    local textYPos = self.height / 2 - _Graphics.GetFontHeight() / 2
     _Graphics.SetColor(txtR, txtG, txtB, txtA)
     local textObj = _Graphics.NewNormalText(self.text)
     _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)

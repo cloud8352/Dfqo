@@ -11,11 +11,12 @@ local _RESOURCE = require("lib.resource")
 local _Mouse = require("lib.mouse")
 local _Input = require("actor.service.input")
 
-local PushButton = require("UI/PushButton")
-local Window = require("UI/Window")
+local PushButton = require("UI.PushButton")
+local Window = require("UI.Window")
 local ScrollBar = require("UI.ScrollBar")
-local ScrollArea = require("UI/ScrollArea")
-local ListView = require("UI/ListView")
+local ScrollArea = require("UI.ScrollArea")
+local ListView = require("UI.ListView")
+local Label = require("UI.Label")
 
 local CharacterTopWindowPosX = 10
 local CharacterTopWindowPosY = 10
@@ -73,6 +74,12 @@ function UI.Init()
     UI.listView:SetSize(300, 200)
     UI.listView:SetPosition(1100, 150)
 
+    -- Label test
+    UI.label = Label.New(pushBtnWindow)
+    UI.label:SetSize(100, 30)
+    UI.label:SetPosition(1100, 500)
+    UI.label:SetText("dfasas")
+
     -- connect
     UI.window:SetReceiverOfRequestMoveWindow(UI)
     UI.window:SetReceiverOfRequestCloseWindow(UI)
@@ -105,6 +112,9 @@ function UI.Update(dt)
 
     -- ListView test
     UI.listView:Update(dt)
+    
+    -- Label test
+    UI.label:Update(dt)
 end
 
 function UI.Draw()
@@ -124,6 +134,9 @@ function UI.Draw()
 
     -- ListView test
     UI.listView:Draw()
+
+    -- Label test
+    UI.label:Draw()
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)
