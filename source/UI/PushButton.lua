@@ -12,6 +12,7 @@ local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
 
 local WindowManager = require("UI.WindowManager")
+local Label = require("UI.Label")
 
 ---@class PushButton
 local PushButton = require("core.class")()
@@ -38,18 +39,34 @@ function PushButton:Ctor(parentWindow)
     -- clicked sound
     self.clickedSoundSource = _RESOURCE.NewSource("asset/sound/ui/btn_clicked.wav")
 
+    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
+    self.bgSprite = nil -- 背景，默认无背景
+    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
     self.sprite = _Sprite.New()
     self.sprite:SwitchRect(true) -- 使用矩形
-    self.spriteXScale, self.spriteYScale = self.sprite:GetAttri("scale")
-    self.text = ""
+
+    -- content margins
+    self.leftMargin = 0
+    self.topMargin = 0
+    self.rightMargin = 0
+    self.bottomMargin = 0
+    self.isContentsMarginsUpdated = true
+
     self.width = 30
     self.height = 10
-    self.posX = 0
-    self.posY = 0
-    self.lastDisplayState = DisplayState.Unknown
-    self.displayState = DisplayState.Normal
+    self.isSizeUpdated = true
+    self.xPos = 0
+    self.yPos = 0
+    self.isPosUpdated = true
     self.enable = true
     self.isVisible = true
+    self.isDisplayStateUpdated = true
+    self.lastDisplayState = DisplayState.Unknown
+    self.displayState = DisplayState.Normal
+    self.isbgSpriteUpdated = true
+
+    self.textLabel = Label.New(self.parentWindow)
+    self.isTextUpdated = true
 
     -- 按钮点击信号的接收者
     self.receiverOfBtnClicked = nil
@@ -60,18 +77,38 @@ function PushButton:Update(dt)
         return
     end
     self:MouseEvent()
+
+    if (self.isContentsMarginsUpdated
+        or self.isSizeUpdated
+        or self.isPosUpdated
+        or self.isDisplayStateUpdated
+        or self.isbgSpriteUpdated
+        or self.isTextUpdated)
+        then
+        self:updateSprites()
+    end
+
+    self.textLabel:Update(dt)
+
+    self.isContentsMarginsUpdated = false
+    self.isSizeUpdated = false
+    self.isPosUpdated = false
+    self.isDisplayStateUpdated = false
+    self.isbgSpriteUpdated = false
+    self.isTextUpdated = false
 end
 
 function PushButton:Draw()
     if false == self.isVisible then
         return
     end
+
+    if nil ~= self.bgSprite then
+        self.bgSprite:Draw()
+    end
+
     self.sprite:Draw()
-    
-    -- 计算文字居中显示时所处坐标
-    local textPosX = self.posX + self.width * self.spriteXScale / 2 - _Graphics.GetFontWidth(self.text)* self.spriteXScale / 2
-    local textPosY = self.posY + self.height * self.spriteYScale / 2 - _Graphics.GetFontHeight() * self.spriteYScale / 2
-    _Graphics.Print(self.text, textPosX, textPosY, 0, self.spriteXScale, self.spriteYScale, 0, 0)
+    self.textLabel:Draw()
 end
 
 function PushButton:MouseEvent()
@@ -123,10 +160,7 @@ function PushButton:MouseEvent()
         elseif DisplayState.Disable == self.displayState then
             self.sprite:SetData(self.disableImgData)
         end
-        local spriteWidth, spriteHeight = self.sprite:GetImageDimensions()
-        local spriteXScale = (self.width / spriteWidth) * self.spriteXScale
-        local spriteYScale = (self.height / spriteHeight) * self.spriteYScale
-        self.sprite:SetAttri("scale", spriteXScale, spriteYScale)
+        self.isDisplayStateUpdated = true
     end
 
     -- 释放点击后
@@ -138,6 +172,16 @@ function PushButton:MouseEvent()
     end
 
     self.lastDisplayState = self.displayState
+end
+
+---@param path string
+function PushButton:SetBgSpriteDataPath(path)
+    local spriteData = _RESOURCE.GetSpriteData(path)
+
+    if nil == self.bgSprite then
+        self.bgSprite = _Sprite.New()
+    end
+    self.bgSprite:SetData(spriteData)
 end
 
 ---@param path string
@@ -160,12 +204,26 @@ function PushButton:SetDisabledSpriteDataPath(path)
     self.disableImgData = _RESOURCE.GetSpriteData(path)
 end
 
+---@param left int
+---@param top int
+---@param right int
+---@param bottom int
+function PushButton:SetContentsMargins(left, top, right, bottom)
+    self.leftMargin = left
+    self.topMargin = top
+    self.rightMargin = right
+    self.bottomMargin = bottom
+
+    self.isContentsMarginsUpdated = true
+end
+
 ---@param x int
 ---@param y int
 function PushButton:SetPosition(x, y)
-    self.sprite:SetAttri("position", x, y)
-    self.posX = x
-    self.posY = y
+    self.xPos = x
+    self.yPos = y
+
+    self.isPosUpdated = true
 end
 
 ---@return int, int @宽，高
@@ -184,10 +242,14 @@ end
 function PushButton:SetSize(width, height)
     self.width = width
     self.height = height
+
+    self.isSizeUpdated = true
 end
 
 function PushButton:SetText(text)
-    self.text = text
+    self.textLabel:SetText(text)
+
+    self.isTextUpdated = true
 end
 
 function PushButton:SetEnable(enable)
@@ -201,11 +263,6 @@ end
 ---@param isVisible bool
 function PushButton:SetVisible(isVisible)
     self.isVisible = isVisible
-end
-
-function PushButton:SetScale(xScale, yScale)
-    self.spriteXScale = xScale
-    self.spriteYScale = yScale
 end
 
 function PushButton:SetReceiverOfBtnClicked(receiver)
@@ -227,6 +284,27 @@ end
 
 function PushButton:CheckPoint(x, y)
     return self.sprite:CheckPoint(x, y)
+end
+
+function PushButton:updateSprites()
+    if nil ~= self.bgSprite then
+        -- 更新 bgSprite
+        local bgSpriteWidth, bgSpriteHeight = self.bgSprite:GetImageDimensions()
+        local bgSpriteXScale = (self.width / bgSpriteWidth)
+        local bgSpriteYScale = (self.height / bgSpriteHeight)
+        self.bgSprite:SetAttri("scale", bgSpriteXScale, bgSpriteYScale)
+        self.bgSprite:SetAttri("position", self.xPos, self.yPos)
+    end
+
+    -- 更新 sprite
+    local spriteWidth, spriteHeight = self.sprite:GetImageDimensions()
+    local spriteXScale = (self.width - self.leftMargin - self.rightMargin) / spriteWidth
+    local spriteYScale = (self.height - self.topMargin - self.bottomMargin) / spriteHeight
+    self.sprite:SetAttri("scale", spriteXScale, spriteYScale)
+    self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
+
+    self.textLabel:SetSize(self.width - self.leftMargin - self.rightMargin, self.height - self.topMargin - self.bottomMargin)
+    self.textLabel:SetPosition(self.xPos + self.leftMargin, self.yPos + self.topMargin)
 end
 
 return PushButton
