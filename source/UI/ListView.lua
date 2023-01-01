@@ -56,48 +56,6 @@ function ListView:Ctor(parentWindow)
     self.itemHeight = 40
     ---@type table<int, StandardItem>
     self.itemList = {}
-    local item = StandardItem.New()
-    item:SetText("AAAAAA")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("中中中中中中")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
-    local item = StandardItem.New()
-    item:SetText("CCCCCCC")
-    table.insert(self.itemList, item)
 
     -- 滑动条
     self.scrollBar = ScrollBar.New(self.parentWindow)
@@ -369,6 +327,27 @@ function ListView:judgeAndExecSelectedItemChanged(selectedItem)
     end
 
     self.receiverOfSelectedItemChanged:OnSelectedItemChanged(selectedItem)
+end
+
+function ListView:InsertItem(i, text)
+    local item = StandardItem.New()
+    item:SetText(text)
+    table.insert(self.itemList, i, item)
+
+    -- item
+    for i, item in pairs(self.itemList) do
+        item:SetSize(self.width - self.scrollBar:GetWidth() - self.leftMargin - self.rightMargin, self.itemHeight)
+    end
+
+    -- scroll bar
+    self.scrollBar:SetSlideLength(self.height - self.topMargin - self.bottomMargin)
+    self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList - self.topMargin - self.bottomMargin)
+
+    self.needUpdateItemListContentSprite = true
+end
+
+function ListView:AppendItem(text)
+    self:InsertItem(#self.itemList + 1, text)
 end
 
 return ListView
