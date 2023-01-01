@@ -279,7 +279,7 @@ function PushButton:judgeAndExecClicked()
     end
 
     -- 向接收者请求点击触发事件
-    self.receiverOfBtnClicked:OnBtnsClicked(self)
+    self.receiverOfBtnClicked.OnBtnsClicked(self.receiverOfBtnClicked, self)
 end
 
 function PushButton:CheckPoint(x, y)

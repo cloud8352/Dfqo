@@ -23,105 +23,68 @@ function UI.Init()
     UI.characterTopBtn:SetSize(80, 80)
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
-    UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/swordsman")
-    UI.characterTopBtn:SetHoveringSpriteDataPath("ui/CharacterPortraits/swordsman")
-    UI.characterTopBtn:SetPressingSpriteDataPath("ui/CharacterPortraits/swordsman")
-    UI.characterTopBtn:SetDisabledSpriteDataPath("ui/CharacterPortraits/swordsman")
+    UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.characterTopBtn:SetHoveringSpriteDataPath("ui/CharacterPortraits/Swordsman/Hovering")
+    UI.characterTopBtn:SetPressingSpriteDataPath("ui/CharacterPortraits/Swordsman/Pressing")
+    UI.characterTopBtn:SetDisabledSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
 
-    -- button test
-    UI.pushBtn = PushButton.New(pushBtnWindow)
-    UI.pushBtn:SetPosition(200, 50)
-    UI.pushBtn:SetText("切换qqqq地图")
-    UI.pushBtn:SetSize(200, 60)
-
-    -- window test
-    UI.window = Window.New()
-    UI.window:SetSize(600, 1050)
-    UI.window:SetPosition(300, 150)
-
-    -- scroll bar test
-    UI.scrollBar = ScrollBar.New(pushBtnWindow)
-    UI.scrollBar:SetSlideLength(200)
-    UI.scrollBar:SetPosition(1000, 50)
-    UI.scrollBar:SetCtrlledContentLength(700)
-    UI.scrollBar:SetReceiverOfRequestMoveContent(ScrollArea.New())
-
-    -- ListView test
-    UI.listView = ListView.New(pushBtnWindow)
-    UI.listView:SetSize(300, 200)
-    UI.listView:SetPosition(1100, 150)
-
-    -- Label test
-    UI.label = Label.New(pushBtnWindow)
-    UI.label:SetSize(100, 30)
-    UI.label:SetPosition(1100, 370)
-    UI.label:SetText("dfasas")
+    -- characterInfoWindow
+    UI.characterInfoWindow = Window.New()
+    UI.characterInfoWindow:SetSize(450, 700)
+    UI.characterInfoWindow:SetPosition(520, 70)
+    UI.characterInfoWindow:SetVisible(false)
 
     -- comboBox test
-    UI.comboBox = ComboBox.New(pushBtnWindow)
-    UI.comboBox:SetSize(300, 45)
-    UI.comboBox:SetPosition(1100, 400)
+    UI.mapSelectComboBox = ComboBox.New(pushBtnWindow)
+    UI.mapSelectComboBox:SetSize(300, 45)
+    UI.mapSelectComboBox:SetPosition(1100, 70)
 
-    -- connect
-    UI.window:SetReceiverOfRequestMoveWindow(UI)
-    UI.window:SetReceiverOfRequestCloseWindow(UI)
+    ---- connect
+    -- characterTopBtn
+    UI.characterTopBtn:SetReceiverOfBtnClicked(UI)
+    -- characterInfoWindow
+    UI.characterInfoWindow:SetReceiverOfRequestMoveWindow(UI)
+    UI.characterInfoWindow:SetReceiverOfRequestCloseWindow(UI)
 end
 
 function UI.Update(dt)
     UI.characterTopBtn:Update(dt)
 
-    -- button test
-    UI.pushBtn:Update(dt)
+    -- characterInfoWindow
+    UI.characterInfoWindow:Update(dt)
 
-    -- window test
-    if UI.window then
-        UI.window:Update(dt)
-    end
-
-    UI.scrollBar:Update(dt)
-
-    -- ListView test
-    UI.listView:Update(dt)
-
-    -- Label test
-    UI.label:Update(dt)
-
-    -- comboBox test
-    UI.comboBox:Update(dt)
+    -- mapSelectComboBox
+    UI.mapSelectComboBox:Update(dt)
 end
 
 function UI.Draw()
     UI.characterTopBtn:Draw()
 
-    -- button test
-    UI.pushBtn:Draw()
+    -- characterInfoWindow
+    UI.characterInfoWindow:Draw()
 
-    -- window test
-    if UI.window then
-        UI.window:Draw()
+    -- mapSelectComboBox
+    UI.mapSelectComboBox:Draw()
+end
+
+---@param my Obj 对象自身，这里指UI自身
+---@param sender Obj 调用者
+function UI.OnBtnsClicked(my, sender)
+    if UI.characterTopBtn == sender then
+        local isVisible = UI.characterInfoWindow:IsVisible()
+        UI.characterInfoWindow:SetVisible(not isVisible)
     end
-
-    UI.scrollBar:Draw()
-
-    -- ListView test
-    UI.listView:Draw()
-
-    -- Label test
-    UI.label:Draw()
-
-    -- comboBox test
-    UI.comboBox:Draw()
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)
-    if UI.window == sender then
-        UI.window:SetPosition(x, y)
+    if UI.characterInfoWindow == sender then
+        UI.characterInfoWindow:SetPosition(x, y)
     end
 end
 
 function UI.OnRequestCloseWindow(sender)
-    if UI.window == sender then
-        UI.window = nil
+    if UI.characterInfoWindow == sender then
+        UI.characterInfoWindow:SetVisible(false)
     end
 end
 

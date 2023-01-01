@@ -149,6 +149,12 @@ function Window:SetEnable(enable)
     self.enable = enable
 end
 
+--- 是否可见
+---@return visible boolean
+function Window:IsVisible()
+    return self.isVisible
+end
+
 --- 设置是否可见
 ---@param visible boolean
 function Window:SetVisible(visible)
