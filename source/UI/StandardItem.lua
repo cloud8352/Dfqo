@@ -42,6 +42,8 @@ function StandardItem:Ctor()
     self.selectedImgCanvas = nil
     self.disableImgCanvas = nil
     self.currentImgCanvas = nil
+
+    self.index = 1 -- 显示项检索值
 end
 
 function StandardItem:Update(dt)
@@ -170,6 +172,15 @@ end
 ---@param y int
 function StandardItem:CheckPoint(x, y)
     return self.sprite:CheckPoint(x, y)
+end
+
+---@return index int
+function StandardItem:GetIndex()
+    return self.index
+end
+---@param index int
+function StandardItem:SetIndex(index)
+    self.index = index
 end
 
 return StandardItem

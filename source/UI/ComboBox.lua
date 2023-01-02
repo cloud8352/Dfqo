@@ -76,6 +76,10 @@ function ComboBox:Ctor(parentWindow)
     self.currentItem = nil
     self.iscurrentItemUpdated = true
 
+    -- signals
+    -- 选中项信号的接收者
+    self.receiverOfSelectedItemChanged = nil
+
     -- connect
     self.dropDownListView:SetReceiverOfSelectedItemChanged(self)
 end
@@ -214,12 +218,31 @@ function ComboBox:createFrameCanvasBySize(width, height)
     return canvas
 end
 
+function ComboBox:SetReceiverOfSelectedItemChanged(obj)
+    self.receiverOfSelectedItemChanged = obj
+end
+
+---@param selectedItem StandardItem
+function ComboBox:judgeAndExecSelectedItemChanged(selectedItem)
+    if nil == self.receiverOfSelectedItemChanged then
+        return
+    end
+
+    if nil == self.receiverOfSelectedItemChanged.OnSelectedItemChanged then
+        return
+    end
+
+    self.receiverOfSelectedItemChanged.OnSelectedItemChanged(self.receiverOfSelectedItemChanged, self, selectedItem)
+end
+
 ---@param selectedItem StandardItem
 function ComboBox:OnSelectedItemChanged(selectedItem)
-    print("ComboBox:OnSelectedItemChanged", selectedItem:GetText())
     self.dropDownListView:SetVisible(false)
     self.currentItem = selectedItem
     self.iscurrentItemUpdated = true
+
+    -- 执行选择项改变回调函数
+    self:judgeAndExecSelectedItemChanged(selectedItem)
 end
 
 function ComboBox:InsertItem(i, text)

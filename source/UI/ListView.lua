@@ -334,12 +334,12 @@ function ListView:InsertItem(i, text)
     item:SetText(text)
     table.insert(self.itemList, i, item)
 
-    -- item size
     for i, item in pairs(self.itemList) do
+        -- 更新尺寸
         item:SetSize(self.width - self.scrollBar:GetWidth() - self.leftMargin - self.rightMargin, self.itemHeight)
-    end
-    -- item position
-    for i, item in pairs(self.itemList) do
+        -- 更新index
+        item:SetIndex(i)
+        -- 更新坐标
         item:SetPosition(self.posX + self.leftMargin, self.posY + self.topMargin + self.itemHeight * (i - 1))
     end
 

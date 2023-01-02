@@ -39,12 +39,17 @@ function UI.Init()
     UI.mapSelectComboBox:SetSize(300, 45)
     UI.mapSelectComboBox:SetPosition(1100, 70)
 
+    UI.mapSelectComboBox:AppendItem("格兰")
+    UI.mapSelectComboBox:AppendItem("极昼")
+
     ---- connect
     -- characterTopBtn
     UI.characterTopBtn:SetReceiverOfBtnClicked(UI)
     -- characterInfoWindow
     UI.characterInfoWindow:SetReceiverOfRequestMoveWindow(UI)
     UI.characterInfoWindow:SetReceiverOfRequestCloseWindow(UI)
+    -- mapSelectComboBox
+    UI.mapSelectComboBox:SetReceiverOfSelectedItemChanged(UI)
 end
 
 function UI.Update(dt)
@@ -85,6 +90,15 @@ end
 function UI.OnRequestCloseWindow(sender)
     if UI.characterInfoWindow == sender then
         UI.characterInfoWindow:SetVisible(false)
+    end
+end
+
+---@param my Obj 对象自身，这里指UI自身
+---@param sender Obj 调用者
+---@param item StandardItem
+function UI.OnSelectedItemChanged(my, sender, item)
+    if UI.mapSelectComboBox == sender then
+        print("OnSelectedItemChanged", item:GetIndex(), item:GetText())
     end
 end
 
