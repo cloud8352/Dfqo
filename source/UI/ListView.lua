@@ -334,20 +334,32 @@ function ListView:InsertItem(i, text)
     item:SetText(text)
     table.insert(self.itemList, i, item)
 
-    -- item
+    -- item size
     for i, item in pairs(self.itemList) do
         item:SetSize(self.width - self.scrollBar:GetWidth() - self.leftMargin - self.rightMargin, self.itemHeight)
+    end
+    -- item position
+    for i, item in pairs(self.itemList) do
+        item:SetPosition(self.posX + self.leftMargin, self.posY + self.topMargin + self.itemHeight * (i - 1))
     end
 
     -- scroll bar
     self.scrollBar:SetSlideLength(self.height - self.topMargin - self.bottomMargin)
     self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList - self.topMargin - self.bottomMargin)
+    -- scroll bar position
+    self.scrollBar:SetPosition(self.posX + self.width - self.scrollBar:GetWidth() - self.rightMargin,
+    self.posY + self.topMargin)
 
     self.needUpdateItemListContentSprite = true
 end
 
 function ListView:AppendItem(text)
     self:InsertItem(#self.itemList + 1, text)
+end
+
+---@return itemList table<int, StandardItem>
+function ListView:GetItemList()
+    return self.itemList
 end
 
 return ListView
