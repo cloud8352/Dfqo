@@ -55,7 +55,6 @@ function ComboBox:Ctor(parentWindow)
     self.rightFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/RightFrame")
 
     self.textLabel = Label.New(self.parentWindow)
-    self.textLabel:SetText("test")
 
     -- 下拉按钮
     self.dropDownBtn = PushButton.New(parentWindow)
@@ -73,6 +72,10 @@ function ComboBox:Ctor(parentWindow)
     self.dropDownListView = ListView.New(self.parentWindow)
     self.dropDownListView:SetVisible(false)
 
+    ---@type StandardItem
+    self.currentItem = nil
+    self.iscurrentItemUpdated = true
+
     -- connect
     self.dropDownListView:SetReceiverOfSelectedItemChanged(self)
 end
@@ -88,6 +91,23 @@ function ComboBox:Update(dt)
     self.dropDownBtn:Update(dt)
 
     self.dropDownListView:Update(dt)
+
+    -- 检查是否需要更新当前显示项
+    if self.iscurrentItemUpdated then
+        local currentText = ""
+        if nil == self.currentItem then
+            local itemList = self.dropDownListView:GetItemList()
+            if 0 < #itemList then
+                self.currentItem = itemList[1]
+                currentText = self.currentItem:GetText()
+            end
+        else
+            currentText = self.currentItem:GetText()
+        end
+        self.textLabel:SetText(currentText)
+    end
+
+    self.iscurrentItemUpdated = false
 end
 
 function ComboBox:Draw()
@@ -198,7 +218,16 @@ end
 function ComboBox:OnSelectedItemChanged(selectedItem)
     print("ComboBox:OnSelectedItemChanged", selectedItem:GetText())
     self.dropDownListView:SetVisible(false)
-    self.textLabel:SetText(selectedItem:GetText())
+    self.currentItem = selectedItem
+    self.iscurrentItemUpdated = true
+end
+
+function ComboBox:InsertItem(i, text)
+    self.dropDownListView:InsertItem(i, text)
+end
+
+function ComboBox:AppendItem(text)
+    self.dropDownListView:AppendItem(text)
 end
 
 return ComboBox
