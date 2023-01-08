@@ -12,6 +12,7 @@ local ScrollArea = require("UI.ScrollArea")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
 local ComboBox = require("UI.ComboBox")
+local _MAP = require("map.init")
 
 local UI = {}
 
@@ -99,6 +100,11 @@ end
 function UI.OnSelectedItemChanged(my, sender, item)
     if UI.mapSelectComboBox == sender then
         print("OnSelectedItemChanged", item:GetIndex(), item:GetText())
+        if 1 == item:GetIndex() then 
+            _MAP.Load(_MAP.Make("lorien"))
+        elseif 2 == item:GetIndex() then
+            _MAP.Load(_MAP.Make("whitenight"))
+        end
     end
 end
 
