@@ -42,7 +42,8 @@ function _GRAPHICS.Init()
 
     -- 设置字体
     local windowSizeScale = Util.GetWindowSizeScale()
-    local font = love.graphics.newFont("asset/font/SourceHanSerifSC-Medium.otf", 12 * windowSizeScale) --字体文件,支持中文
+     --字体文件,支持中文 SourceHanSerifSC-Medium.otf yan_zhen_qing_kai_shu_font.TTF
+     local font = love.graphics.newFont("asset/font/yan_zhen_qing_kai_shu_font.TTF", 16 * windowSizeScale)
     _GRAPHICS.SetFont(font)
 end
 
