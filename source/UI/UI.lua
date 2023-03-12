@@ -14,6 +14,8 @@ local Label = require("UI.Label")
 local ComboBox = require("UI.ComboBox")
 local _MAP = require("map.init")
 
+local Util = require("source.util.Util")
+
 local UI = {}
 
 function UI.Init()
@@ -43,6 +45,12 @@ function UI.Init()
     UI.mapSelectComboBox:AppendItem("格兰")
     UI.mapSelectComboBox:AppendItem("极昼")
 
+    -- skill icon
+    UI.skill1IconLabel = Label:New(pushBtnWindow)
+    UI.skill1IconLabel:SetSize(50, 50)
+    UI.skill1IconLabel:SetPosition(100, Util.GetWindowHeight() - 70)
+    UI.skill1IconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+
     ---- connect
     -- characterTopBtn
     UI.characterTopBtn:SetReceiverOfBtnClicked(UI)
@@ -61,6 +69,9 @@ function UI.Update(dt)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
+
+    -- skill icon
+    UI.skill1IconLabel:Update(dt)
 end
 
 function UI.Draw()
@@ -71,6 +82,9 @@ function UI.Draw()
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Draw()
+
+    -- skill icon
+    UI.skill1IconLabel:Draw()
 end
 
 ---@param my Obj 对象自身，这里指UI自身

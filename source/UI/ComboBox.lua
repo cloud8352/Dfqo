@@ -55,7 +55,7 @@ function ComboBox:Ctor(parentWindow)
     self.rightFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/RightFrame")
 
     self.textLabel = Label.New(self.parentWindow)
-    self.textLabel:SetAligments({Label.AligmentFlag.AlignVCenter, Label.AligmentFlag.AlignLeft})
+    self.textLabel:SetAlignments({ Label.AlignmentFlag.AlignVCenter, Label.AlignmentFlag.AlignLeft })
 
     -- 下拉按钮
     self.dropDownBtn = PushButton.New(parentWindow)

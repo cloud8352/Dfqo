@@ -27,4 +27,16 @@ function Util.GetWindowSizeScale()
     return sizeScale
 end
 
+---@return number
+function Util.GetWindowHeight()
+    local width, height, flags = love.window.getMode()
+    return height
+end
+
+---@return number
+function Util.GetWindowWidth()
+    local width, height, flags = love.window.getMode()
+    return width
+end
+
 return Util
