@@ -12,6 +12,7 @@ local _FACTORY = require("actor.factory")
 
 local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
+local UI = require("UI.UI")
 
 local _DIRECTOR = {rate = 1} ---@class DIRECTOR
 local _curtain = _Curtain.New()
@@ -20,6 +21,9 @@ local _speedTweener = _Tweener.New(_DIRECTOR, {rate = 1})
 function _DIRECTOR.Init()
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
+
+    -- ui
+    UI.Init()
 
     _DIRECTOR.StartGame()
 end
@@ -34,10 +38,18 @@ function _DIRECTOR.Update(dt)
     dt = dt * _DIRECTOR.rate
     _WORLD.Update(dt, _DIRECTOR.rate)
     _MAP.Update(dt)
+
+    -- ui
+    UI.Update(dt)
 end
 
 function _DIRECTOR.Draw()
     _MAP.Draw()
+
+    -- ui
+    UI.Draw()
+
+    -- 幕布
     _curtain:Draw()
 end
 

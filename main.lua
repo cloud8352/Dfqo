@@ -11,7 +11,6 @@ local _MUSIC = require("lib.music")
 local _RESOURCE = require("lib.resource")
 local _DIRECTOR = require("director")
 local _CONFIG = require("config")
-local UI = require("UI/UI")
 
 local _User = require("user")
 
@@ -26,8 +25,6 @@ local function _Update()
 
     _TIME.FrameUpdate()
     _DIRECTOR.Update(dt)
-    -- ui
-    UI.Update(dt)
     _SOUND.LateUpdate()
     _MUSIC.LateUpdate(dt)
     _MOUSE.LateUpdate()
@@ -42,8 +39,6 @@ function love.load()
 
     _GRAPHICS.Init()
     _DIRECTOR.Init()
-    -- ui
-    UI.Init()
 end
 
 function love.update(dt)
@@ -57,8 +52,6 @@ end
 
 function love.draw()
     _DIRECTOR.Draw()
-    -- ui
-    UI.Draw()
 end
 
 function love.keypressed(key, scancode, isrepeat)
