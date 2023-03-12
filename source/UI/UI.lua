@@ -46,10 +46,43 @@ function UI.Init()
     UI.mapSelectComboBox:AppendItem("极昼")
 
     -- skill icon
-    UI.skill1IconLabel = Label:New(pushBtnWindow)
-    UI.skill1IconLabel:SetSize(50, 50)
-    UI.skill1IconLabel:SetPosition(100, Util.GetWindowHeight() - 70)
-    UI.skill1IconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    ---@type table<string, Label>
+    UI.mapOfTagToSkillIconLabel = {}
+    local skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill1"] = skillIconLabel
+
+    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100 + 60, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill2"] = skillIconLabel
+
+    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100 + 120, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill3"] = skillIconLabel
+
+    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100 + 180, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill4"] = skillIconLabel
+
+    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100 + 240, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill5"] = skillIconLabel
+
+    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel:SetSize(50, 50)
+    skillIconLabel:SetPosition(100 + 300, Util.GetWindowHeight() - 70)
+    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
+    UI.mapOfTagToSkillIconLabel["skill6"] = skillIconLabel
 
     ---- connect
     -- characterTopBtn
@@ -71,7 +104,9 @@ function UI.Update(dt)
     UI.mapSelectComboBox:Update(dt)
 
     -- skill icon
-    UI.skill1IconLabel:Update(dt)
+    for k, v in pairs(UI.mapOfTagToSkillIconLabel) do
+        v:Update(dt)
+    end
 end
 
 function UI.Draw()
@@ -84,7 +119,9 @@ function UI.Draw()
     UI.mapSelectComboBox:Draw()
 
     -- skill icon
-    UI.skill1IconLabel:Draw()
+    for k, v in pairs(UI.mapOfTagToSkillIconLabel) do
+        v:Draw()
+    end
 end
 
 ---@param my Obj 对象自身，这里指UI自身
@@ -120,6 +157,19 @@ function UI.OnSelectedItemChanged(my, sender, item)
             _MAP.Load(_MAP.Make("whitenight"))
         end
     end
+end
+
+---@param skillTag string
+---@param iconName string
+function UI.SetSkillIconName(skillTag, iconName)
+    -- print("UI.SetSkillIconName", skillTag, iconName)
+    local label = UI.mapOfTagToSkillIconLabel[skillTag]
+    if nil == label then
+        print("UI has not label of tag: ", skillTag)
+        return
+    end
+
+    label:SetIconSpriteDataPath("icon/skill/" .. iconName)
 end
 
 return UI

@@ -62,6 +62,12 @@ function _SKILL.Add(entity, data)
 end
 
 ---@param skills Actor.Component.Skills
+---@return table<string, Actor.Skill>
+function _SKILL.GetMap(skills)
+    return skills.container:GetMap()
+end
+
+---@param skills Actor.Component.Skills
 ---@param path string
 ---@return Actor.Skill
 function _SKILL.GetSkillWithPath(skills, path)

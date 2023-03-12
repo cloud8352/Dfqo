@@ -9,6 +9,8 @@ local _CONFIG = require("config")
 local _MAP = require("map.init")
 local _WORLD = require("actor.world")
 local _FACTORY = require("actor.factory")
+-- service
+local SkillSrv = require("actor.service.skill")
 
 local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
@@ -16,7 +18,7 @@ local UI = require("UI.UI")
 
 local _DIRECTOR = { rate = 1 } ---@class DIRECTOR
 local _curtain = _Curtain.New()
-local _speedTweener = _Tweener.New(_DIRECTOR, {rate = 1})
+local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 ---@type Actor.Entity
 local player = nil
 
@@ -28,6 +30,14 @@ function _DIRECTOR.Init()
     UI.Init()
 
     _DIRECTOR.StartGame()
+
+    local skillList = SkillSrv.GetMap(player.skills)
+    for k, v in pairs(skillList) do
+        -- k 为 tag，即配置中的键
+        UI.SetSkillIconName(k, v:GetData().icon)
+    end
+
+    -- local skill = SkillSrv.GetSkillWithPath(player.skills, "swordman/onigiri")
 end
 
 function _DIRECTOR.Update(dt)
@@ -43,6 +53,9 @@ function _DIRECTOR.Update(dt)
 
     -- ui
     UI.Update(dt)
+
+    local skill = SkillSrv.GetSkillWithPath(player.skills, "swordman/onigiri")
+    -- print(skill:GetProcess(), skill:GetData().icon)
 end
 
 function _DIRECTOR.Draw()

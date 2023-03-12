@@ -129,6 +129,10 @@ function _Container:Iter()
 	end
 end
 
+function _Container:GetMap()
+    return self._map
+end
+
 function _Container:Pairs()
 	return pairs(self._map)
 end

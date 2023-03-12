@@ -56,6 +56,7 @@ function _Skill:Ctor(entity, key, data)
     self.isCombo = false
     self.hpRate = data.hpRate or 1
     self.isUltimate = data.isUltimate
+    self.icon = data.icon
     
     if (data.nowTime) then
         self._timer:Enter(data.nowTime)
