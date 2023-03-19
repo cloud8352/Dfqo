@@ -12,6 +12,8 @@ local ScrollArea = require("UI.ScrollArea")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
 local ComboBox = require("UI.ComboBox")
+local DockSkillViewItem = require("UI.DockSkillViewItem")
+
 local _MAP = require("map.init")
 
 local Util = require("source.util.Util")
@@ -46,39 +48,39 @@ function UI.Init()
     UI.mapSelectComboBox:AppendItem("极昼")
 
     -- skill icon
-    ---@type table<string, Label>
+    ---@type table<string, DockSkillViewItem>
     UI.mapOfTagToSkillIconLabel = {}
-    local skillIconLabel = Label:New(pushBtnWindow)
+    local skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.mapOfTagToSkillIconLabel["skill1"] = skillIconLabel
 
-    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100 + 60, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.mapOfTagToSkillIconLabel["skill2"] = skillIconLabel
 
-    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100 + 120, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.mapOfTagToSkillIconLabel["skill3"] = skillIconLabel
 
-    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100 + 180, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.mapOfTagToSkillIconLabel["skill4"] = skillIconLabel
 
-    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100 + 240, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.mapOfTagToSkillIconLabel["skill5"] = skillIconLabel
 
-    skillIconLabel = Label:New(pushBtnWindow)
+    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
     skillIconLabel:SetSize(50, 50)
     skillIconLabel:SetPosition(100 + 300, Util.GetWindowHeight() - 70)
     -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
@@ -165,11 +167,23 @@ function UI.SetSkillIconName(skillTag, iconName)
     -- print("UI.SetSkillIconName", skillTag, iconName)
     local label = UI.mapOfTagToSkillIconLabel[skillTag]
     if nil == label then
-        print("UI has not label of tag: ", skillTag)
+        -- print("UI has not label of tag: ", skillTag)
         return
     end
 
     label:SetIconSpriteDataPath("icon/skill/" .. iconName)
+end
+
+---@param skillTag string
+---@param progress number
+function UI.SetSkillCoolDownProgress(skillTag, progress)
+    local label = UI.mapOfTagToSkillIconLabel[skillTag]
+    if nil == label then
+        -- print("UI has not label of tag: ", skillTag)
+        return
+    end
+
+    label:SetCoolDownProgress(progress)
 end
 
 return UI

@@ -51,11 +51,21 @@ function _DIRECTOR.Update(dt)
     _WORLD.Update(dt, _DIRECTOR.rate)
     _MAP.Update(dt)
 
+    
+    local skillList = SkillSrv.GetMap(player.skills)
+    for k, v in pairs(skillList) do
+        -- k 为 tag，即配置中的键
+        local progress = v:GetProcess();
+        if 1.0 <= progress then
+            goto continue
+        end
+        UI.SetSkillCoolDownProgress(k, progress)
+
+        ::continue::
+    end
+
     -- ui
     UI.Update(dt)
-
-    local skill = SkillSrv.GetSkillWithPath(player.skills, "swordman/onigiri")
-    -- print(skill:GetProcess(), skill:GetData().icon)
 end
 
 function _DIRECTOR.Draw()

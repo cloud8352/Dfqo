@@ -52,7 +52,11 @@ function _Timer:Enter(time)
 end
 
 function _Timer:GetProcess()
-	return _MATH.GetFixedDecimal(self.from / self.to)
+	local progress = 1.0
+	if 0 ~= self.to then
+		progress = _MATH.GetFixedDecimal(self.from / self.to)
+	end
+	return progress
 end
 
 return _Timer
