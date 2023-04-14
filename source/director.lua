@@ -9,8 +9,6 @@ local _CONFIG = require("config")
 local _MAP = require("map.init")
 local _WORLD = require("actor.world")
 local _FACTORY = require("actor.factory")
--- service
-local SkillSrv = require("actor.service.skill")
 
 local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
@@ -31,13 +29,9 @@ function _DIRECTOR.Init()
 
     _DIRECTOR.StartGame()
 
-    local skillList = SkillSrv.GetMap(player.skills)
-    for k, v in pairs(skillList) do
-        -- k 为 tag，即配置中的键
-        UI.SetSkillIconName(k, v:GetData().icon)
-    end
-
     -- local skill = SkillSrv.GetSkillWithPath(player.skills, "swordman/onigiri")
+
+    UI.SetPlayer(player)
 end
 
 function _DIRECTOR.Update(dt)
@@ -50,19 +44,6 @@ function _DIRECTOR.Update(dt)
     dt = dt * _DIRECTOR.rate
     _WORLD.Update(dt, _DIRECTOR.rate)
     _MAP.Update(dt)
-
-    
-    local skillList = SkillSrv.GetMap(player.skills)
-    for k, v in pairs(skillList) do
-        -- k 为 tag，即配置中的键
-        local progress = v:GetProcess();
-        if 1.0 <= progress then
-            goto continue
-        end
-        UI.SetSkillCoolDownProgress(k, progress)
-
-        ::continue::
-    end
 
     -- ui
     UI.Update(dt)

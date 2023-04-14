@@ -12,7 +12,7 @@ local ScrollArea = require("UI.ScrollArea")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
 local ComboBox = require("UI.ComboBox")
-local DockSkillViewItem = require("UI.DockSkillViewItem")
+local SkillDockViewFrame = require("UI.SkillDockViewFrame")
 
 local _MAP = require("map.init")
 
@@ -47,44 +47,9 @@ function UI.Init()
     UI.mapSelectComboBox:AppendItem("格兰")
     UI.mapSelectComboBox:AppendItem("极昼")
 
-    -- skill icon
-    ---@type table<string, DockSkillViewItem>
-    UI.mapOfTagToSkillIconLabel = {}
-    local skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill1"] = skillIconLabel
-
-    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100 + 60, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill2"] = skillIconLabel
-
-    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100 + 120, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill3"] = skillIconLabel
-
-    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100 + 180, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill4"] = skillIconLabel
-
-    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100 + 240, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill5"] = skillIconLabel
-
-    skillIconLabel = DockSkillViewItem:New(pushBtnWindow)
-    skillIconLabel:SetSize(50, 50)
-    skillIconLabel:SetPosition(100 + 300, Util.GetWindowHeight() - 70)
-    -- skillIconLabel:SetIconSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
-    UI.mapOfTagToSkillIconLabel["skill6"] = skillIconLabel
+    -- skill dock
+    UI.skillDockViewFrame = SkillDockViewFrame.New(pushBtnWindow)
+    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100, Util.GetWindowHeight() - 180)
 
     ---- connect
     -- characterTopBtn
@@ -105,10 +70,7 @@ function UI.Update(dt)
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
 
-    -- skill icon
-    for k, v in pairs(UI.mapOfTagToSkillIconLabel) do
-        v:Update(dt)
-    end
+    UI.skillDockViewFrame:Update(dt)
 end
 
 function UI.Draw()
@@ -120,10 +82,7 @@ function UI.Draw()
     -- mapSelectComboBox
     UI.mapSelectComboBox:Draw()
 
-    -- skill icon
-    for k, v in pairs(UI.mapOfTagToSkillIconLabel) do
-        v:Draw()
-    end
+    UI.skillDockViewFrame:Draw()
 end
 
 ---@param my Obj 对象自身，这里指UI自身
@@ -161,29 +120,9 @@ function UI.OnSelectedItemChanged(my, sender, item)
     end
 end
 
----@param skillTag string
----@param iconName string
-function UI.SetSkillIconName(skillTag, iconName)
-    -- print("UI.SetSkillIconName", skillTag, iconName)
-    local label = UI.mapOfTagToSkillIconLabel[skillTag]
-    if nil == label then
-        -- print("UI has not label of tag: ", skillTag)
-        return
-    end
-
-    label:SetIconSpriteDataPath("icon/skill/" .. iconName)
-end
-
----@param skillTag string
----@param progress number
-function UI.SetSkillCoolDownProgress(skillTag, progress)
-    local label = UI.mapOfTagToSkillIconLabel[skillTag]
-    if nil == label then
-        -- print("UI has not label of tag: ", skillTag)
-        return
-    end
-
-    label:SetCoolDownProgress(progress)
+---@param player Actor.Entity
+function UI.SetPlayer(player)
+    UI.skillDockViewFrame:SetPlayer(player)
 end
 
 return UI

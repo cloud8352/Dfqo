@@ -76,11 +76,17 @@ function Label:Ctor(parentWindow)
     self.text = ""
     self.lastText = ""
 
+    self.isVisible = true
+
     self.alignment = Label.AlignmentFlag.AlignCenter
     self.lastAlignment = self.alignment
 end
 
 function Label:Update(dt)
+    if not self.isVisible then
+        return
+    end
+
     if (self.lastXPos ~= self.xPos
         or self.lastYPos ~= self.yPos
         or self.lastWidth ~= self.width
@@ -103,6 +109,10 @@ function Label:Update(dt)
 end
 
 function Label:Draw()
+    if not self.isVisible then
+        return
+    end
+
     self.sprite:Draw()
     self.iconSprite:Draw()
 end
@@ -112,13 +122,33 @@ function Label:SetPosition(x, y)
     self.yPos = y
 end
 
+---@return int, int
+function Label:GetPosition()
+    return self.xPos, self.yPos
+end
+
 function Label:SetSize(width, height)
     self.width = width
     self.height = height
 end
 
+---@return int, int
+function Label:GetSize()
+    return self.width, self.height
+end
+
 function Label:SetEnable(enable)
     self.enable = enable
+end
+
+---@param isVisible boolean
+function Label:SetVisible(isVisible)
+    self.isVisible = isVisible
+end
+
+---@return isVisible boolean
+function Label:IsVisible()
+    return self.isVisible
 end
 
 function Label:SetText(text)
@@ -139,6 +169,12 @@ function Label:SetIconSpriteDataPath(path)
     ---@type Lib.RESOURCE.SpriteData
     local spriteData = _RESOURCE.GetSpriteData(path)
     self.iconSprite:SetData(spriteData)
+end
+
+---@param x int
+---@param y int
+function Label:CheckPoint(x, y)
+    return self.iconSprite:CheckPoint(x, y)
 end
 
 function Label:updateSprite()

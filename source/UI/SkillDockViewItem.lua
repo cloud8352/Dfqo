@@ -1,5 +1,5 @@
 --[[
-	desc: DockSkillViewItem class.
+	desc: SkillDockViewItem class.
 	author: keke <243768648@qq.com>
 	since: 2023-3-19
 	alter: 2023-3-19
@@ -9,17 +9,19 @@ local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local Label = require("UI.Label")
 
----@class DockSkillViewItem
-local DockSkillViewItem = require("core.class")()
+---@class SkillDockViewItem
+local SkillDockViewItem = require("core.class")()
 
 ---@param parentWindow Window
-function DockSkillViewItem:Ctor(parentWindow)
+function SkillDockViewItem:Ctor(parentWindow)
     assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
 
     self.iconLabel = Label.New(parentWindow)
     self.coolDownShadowSprite = _Sprite.New()
+    self.leftBottomKeyLabel = Label.New(parentWindow)
+    self.leftBottomKeyLabel:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignBottom})
 
     self.width = 30
     self.lastWidth = 0
@@ -34,7 +36,7 @@ function DockSkillViewItem:Ctor(parentWindow)
     self.lastCoolDownProgress = 1
 end
 
-function DockSkillViewItem:Update(dt)
+function SkillDockViewItem:Update(dt)
     if (self.lastXPos ~= self.xPos
         or self.lastYPos ~= self.yPos
         or self.lastWidth ~= self.width
@@ -44,10 +46,19 @@ function DockSkillViewItem:Update(dt)
         )
         then
         self:updateSprite()
+
+
+        self.iconLabel:SetPosition(self.xPos, self.yPos)
+        self.iconLabel:SetSize(self.width, self.height)
+
+        self.leftBottomKeyLabel:SetPosition(self.xPos + 2, self.yPos + self.height - 30)
+        self.leftBottomKeyLabel:SetSize(self.width - 2, 30)
     end
 
 
     self.iconLabel:Update(dt)
+
+    self.leftBottomKeyLabel:Update(dt)
 
     self.lastXPos = self.xPos
     self.lastYPos = self.yPos
@@ -57,43 +68,50 @@ function DockSkillViewItem:Update(dt)
     self.lastCoolDownProgress = self.coolDownProgress
 end
 
-function DockSkillViewItem:Draw()
+function SkillDockViewItem:Draw()
     self.iconLabel:Draw()
 
     self.coolDownShadowSprite:Draw()
+
+    self.leftBottomKeyLabel:Draw()
 end
 
-function DockSkillViewItem:SetPosition(x, y)
+function SkillDockViewItem:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
-
-    self.iconLabel:SetPosition(x, y)
 end
 
-function DockSkillViewItem:SetSize(width, height)
+function SkillDockViewItem:SetSize(width, height)
     self.width = width
     self.height = height
 
-    self.iconLabel:SetSize(width, height)
 end
 
-function DockSkillViewItem:SetEnable(enable)
+function SkillDockViewItem:SetEnable(enable)
     self.enable = enable
     self.iconLabel:SetEnable(enable)
+    self.leftBottomKeyLabel:SetEnable(enable)
 end
 
 ---@param path string
-function DockSkillViewItem:SetIconSpriteDataPath(path)
+function SkillDockViewItem:SetIconSpriteDataPath(path)
     self.iconSpriteDataPath = path
     
-    self.iconLabel:SetIconSpriteDataPath(path)
+    if "" ~= path then
+        self.iconLabel:SetIconSpriteDataPath(path)
+    end
 end
 
-function DockSkillViewItem:SetCoolDownProgress(progress)
+function SkillDockViewItem:SetCoolDownProgress(progress)
     self.coolDownProgress = progress
 end
 
-function DockSkillViewItem:updateSprite()
+---@param key string
+function SkillDockViewItem:SetKey(key)
+    self.leftBottomKeyLabel:SetText(key)
+end
+
+function SkillDockViewItem:updateSprite()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
@@ -114,4 +132,4 @@ function DockSkillViewItem:updateSprite()
     self.coolDownShadowSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
-return DockSkillViewItem
+return SkillDockViewItem
