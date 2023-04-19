@@ -16,5 +16,8 @@
         "dest",
         "filesystem",
         "ctrlled"
-    ]
+    ],
+    "files.exclude": {
+        "**/love2d": true
+    }
 }

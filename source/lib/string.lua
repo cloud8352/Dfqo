@@ -64,7 +64,7 @@ end
 
 ---@param str string
 ---@param key string
----@return list
+---@return list<string>
 function _STRING.Split(str, key)
 	local list = {}
 	local keyLen = #key
@@ -206,6 +206,52 @@ function _STRING.SplitLine(text, count, offset)
         pos = pos or latePos
         return text, _UTF8.len(text, pos)
     end
+end
+
+-- 获取按字体和宽度换行的字符串列表
+---@param text string
+---@param font Font
+---@param width int
+---@return list<string> strList
+function _STRING.WarpStr(text, font, width)
+    local currentLineWidth = 0
+    local lineStr = ""
+    local retStrList = {}
+    local lineCount = 0
+
+    for pos, code in _UTF8.codes(text) do
+        local unitStr = _UTF8.char(code)
+        local unitStrWidth = font:getWidth(unitStr)
+        if currentLineWidth + unitStrWidth > width then
+            lineCount = lineCount + 1
+            retStrList[lineCount] = lineStr
+            lineStr = unitStr
+            currentLineWidth = unitStrWidth
+
+            goto continue
+        end
+
+        if "\n" == unitStr
+            or currentLineWidth + unitStrWidth == width then
+            lineCount = lineCount + 1
+            retStrList[lineCount] = lineStr
+            lineStr = ""
+            currentLineWidth = 0
+
+            goto continue
+        end
+
+        lineStr = lineStr .. unitStr
+        currentLineWidth = currentLineWidth + unitStrWidth
+        ::continue::
+    end
+
+    if "" ~= lineStr then
+        lineCount = lineCount + 1
+        retStrList[lineCount] = lineStr
+    end
+
+    return retStrList
 end
 
 ---@param text string

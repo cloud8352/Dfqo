@@ -50,6 +50,7 @@ function SkillDockViewItem:Update(dt)
 
         self.iconLabel:SetPosition(self.xPos, self.yPos)
         self.iconLabel:SetSize(self.width, self.height)
+        self.iconLabel:SetIconSize(self.width, self.height)
 
         self.leftBottomKeyLabel:SetPosition(self.xPos + 2, self.yPos + self.height - 30)
         self.leftBottomKeyLabel:SetSize(self.width - 2, 30)

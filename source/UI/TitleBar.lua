@@ -150,6 +150,12 @@ function TitleBar:SetVisible(visible)
     self.isVisible = visible
 end
 
+--- 是否可见
+---@return visible boolean
+function TitleBar:IsVisible()
+    return self.isVisible
+end
+
 function TitleBar:SetScale(xScale, yScale)
     self.spriteXScale = xScale
     self.spriteYScale = yScale

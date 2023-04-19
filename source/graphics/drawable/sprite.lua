@@ -95,7 +95,7 @@ function _Sprite:AdjustDimensions(notAdjustRect)
 	end
 end
 
----@return int @w & h
+---@return int, int @w & h
 function _Sprite:GetImageDimensions()
 	if (self._drawableObj) then
 		return self._drawableObj:getDimensions()

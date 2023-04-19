@@ -13,9 +13,13 @@ local _Mouse = require("lib.mouse")
 
 local TitleBar = require("UI.TitleBar")
 local WindowManager = require("UI.WindowManager")
+local Widget = require("UI.Widget")
 
 ---@class Window
 local Window = require("core.class")()
+
+local MarginSpace = 15
+local TitleBarHeight = 50
 
 function Window:Ctor()
     -- WindowLayerIndex
@@ -31,6 +35,7 @@ function Window:Ctor()
     self.posY = 0
     self.enable = true
     self.isVisible = true
+    self.isTipToolWindow = false
 
     -- 背景图片数据
     self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
@@ -42,6 +47,8 @@ function Window:Ctor()
     self.leftBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftBottomBg")
     self.bottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/BottomBg")
     self.rightBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightBottomBg")
+
+    self.contentWidget = Widget.New(self)
 
     -- title bar
     self.titleBar = TitleBar.New(self)
@@ -59,6 +66,8 @@ function Window:Update(dt)
         return
     end
 
+    self.contentWidget:Update(dt)
+
     self.titleBar:Update(dt)
 end
 
@@ -69,6 +78,8 @@ function Window:Draw()
 
     self.bgSprite:Draw()
 
+    self.contentWidget:Draw()
+
     self.titleBar:Draw()
 end
 
@@ -76,6 +87,12 @@ function Window:SetPosition(x, y)
     self.bgSprite:SetAttri("position", x, y)
     self.posX = x
     self.posY = y
+
+    local realTitleBarHeight = 0
+    if self.titleBar:IsVisible() then
+        realTitleBarHeight = TitleBarHeight
+    end
+    self.contentWidget:SetPosition(x + MarginSpace, y + MarginSpace + realTitleBarHeight)
 
     self.titleBar:SetPosition(x, y)
 end
@@ -141,8 +158,21 @@ function Window:SetSize(width, height)
     self.bgSprite:SetImage(canvas)
     self.bgSprite:AdjustDimensions()
 
+    -- content
+    local realTitleBarHeight = 0
+    if self.titleBar:IsVisible() then
+        realTitleBarHeight = TitleBarHeight
+    end
+    self.contentWidget:SetSize(self.width - MarginSpace * 2,
+                        self.height - MarginSpace * 2 - realTitleBarHeight)
+
     -- 设置标题栏尺寸
-    self.titleBar:SetSize(self.width, 50)
+    self.titleBar:SetSize(self.width, TitleBarHeight)
+end
+
+---@return int, int
+function Window:GetSize()
+    return self.width, self.height
 end
 
 function Window:SetEnable(enable)
@@ -218,12 +248,44 @@ function Window:GetWindowLayerIndex()
 end
 
 -- 检查是否包含坐标
--- ##【必须实现】
+-- ##【必须实现】itleBarHeight
 ---@param x int
 ---@param y int
 ---@return boolean
 function Window:CheckPoint(x, y)
+    if self.isTipToolWindow then
+        return false
+    end
+
+    if not self.isVisible then
+        return false
+    end
+
     return self.bgSprite:CheckPoint(x, y)
+end
+
+function Window:SetIsTipToolWindow(is)
+    self.isTipToolWindow = is
+end
+
+---@return isTipToolWindow boolean
+function Window:IsTipToolWindow()
+    return self.isTipToolWindow
+end
+
+---@param widget Widget
+function Window:SetContentWidget(widget)
+    self.contentWidget = widget
+
+    local realTitleBarHeight = 0
+    if self.titleBar:IsVisible() then
+        realTitleBarHeight = TitleBarHeight
+    end
+    self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
+    self.contentWidget:SetSize(self.width - MarginSpace * 2,
+                        self.height - MarginSpace * 2 - realTitleBarHeight)
+    self.contentWidget:SetEnable(self.enable)
+    self.contentWidget:SetVisible(self.isVisible)
 end
 
 return Window

@@ -8,6 +8,8 @@
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
+local _String = require("lib.string")
+local _Rect = require("graphics.drawunit.rect")
 
 local bit = require("bit")
 
@@ -56,13 +58,20 @@ function Label:Ctor(parentWindow)
     ---@type Window
     self.parentWindow = parentWindow
 
+    -- 鼠标判断矩形区域
+    self.checkRect = _Rect.New()
+
+    -- 文字显示对象
     self.sprite = _Sprite.New()
-    -- self.sprite:SwitchRect(true) -- 使用矩形
+    -- 图标显示对象
     self.iconSpriteDataPath = ""
     self.lastIconSpriteDataPath = ""
+    self.iconSizeW = 0
+    self.lastIconSizeW = 0
+    self.iconSizeH = 0
+    self.lastIconSizeH = 0
     ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
     self.iconSprite = _Sprite.New()
-    self.iconSprite:SwitchRect(true) -- 使用矩形
     self.width = 30
     self.lastWidth = 0
     self.height = 10
@@ -80,6 +89,11 @@ function Label:Ctor(parentWindow)
 
     self.alignment = Label.AlignmentFlag.AlignCenter
     self.lastAlignment = self.alignment
+
+    -- 显示内容尺寸 - 宽
+    self.viewContentSizeW = 0
+    -- 显示内容尺寸 - 高
+    self.viewContentSizeH = 0
 end
 
 function Label:Update(dt)
@@ -94,6 +108,8 @@ function Label:Update(dt)
         or self.lastText ~= self.text
         or self.lastAlignment ~= self.alignment
         or self.lastIconSpriteDataPath ~= self.iconSpriteDataPath
+        or self.lastIconSizeW ~= self.iconSizeW
+        or self.lastIconSizeH ~= self.iconSizeH
         )
         then
         self:updateSprite()
@@ -106,6 +122,8 @@ function Label:Update(dt)
     self.lastText = self.text
     self.lastAlignment = self.alignment
     self.lastIconSpriteDataPath = self.iconSpriteDataPath
+    self.lastIconSizeW = self.iconSizeW
+    self.lastIconSizeH = self.iconSizeH
 end
 
 function Label:Draw()
@@ -171,10 +189,20 @@ function Label:SetIconSpriteDataPath(path)
     self.iconSprite:SetData(spriteData)
 end
 
+function Label:SetIconSize(w, h)
+    self.iconSizeW = w
+    self.iconSizeH = h
+end
+
 ---@param x int
 ---@param y int
 function Label:CheckPoint(x, y)
-    return self.iconSprite:CheckPoint(x, y)
+    return self.checkRect:CheckPoint(x, y)
+end
+
+---@return int, int w, h
+function Label:GetViewContentSize()
+    return self.viewContentSizeW, self.viewContentSizeH
 end
 
 function Label:updateSprite()
@@ -187,41 +215,69 @@ function Label:updateSprite()
     txtR = 255; txtG = 255; txtB = 255; txtA = 255
     _Graphics.SetColor(txtR, txtG, txtB, txtA)
 
-    -- 根据对齐方式计算文字x坐标
-    local textXPos = 0
-    if 0 ~= bit.band(Label.AlignmentFlag.AlignHCenter, self.alignment) then
-        textXPos = self.width / 2 - _Graphics.GetFontWidth(self.text) / 2
-    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignLeft, self.alignment) then
-        textXPos = 0
-    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignRight, self.alignment) then
-        textXPos = self.width - _Graphics.GetFontWidth(self.text)
-    end
-    -- 根据对齐方式计算文字y坐标
-    local textYPos = 0
-    if 0 ~= bit.band(Label.AlignmentFlag.AlignVCenter, self.alignment) then
-        textYPos = self.height / 2 - _Graphics.GetFontHeight() / 2
-    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignTop, self.alignment) then
-        textYPos = 0
-    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignBottom, self.alignment) then
-        textYPos = self.height - _Graphics.GetFontHeight()
-    end
+    -- 文本对象实际显示宽高
+    local textSpriteViewWidth = self.width
+    local textSpriteViewHeight = 0
+    -- 获取按字体和宽度换行的字符串列表
+    local lineStrList = _String.WarpStr(self.text, _Graphics.GetFont(), self.width)
+    local lineCount = #lineStrList
+    local fontHeight = _Graphics.GetFontHeight()
+    for i, str in pairs(lineStrList) do
+        -- 根据对齐方式计算文字x坐标
+        local textXPos = 0
+        if 0 ~= bit.band(Label.AlignmentFlag.AlignHCenter, self.alignment) then
+            textXPos = self.width / 2 - _Graphics.GetFontWidth(str) / 2
+        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignLeft, self.alignment) then
+            textXPos = 0
+        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignRight, self.alignment) then
+            textXPos = self.width - _Graphics.GetFontWidth(str)
+        end
+        -- 根据对齐方式计算文字y坐标
+        local textYPos = (i - 1) * fontHeight
+        if 0 ~= bit.band(Label.AlignmentFlag.AlignVCenter, self.alignment) then
+            textYPos = textYPos + self.height / 2 - _Graphics.GetFontHeight() * lineCount / 2
+        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignTop, self.alignment) then
+            -- do nothing
+        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignBottom, self.alignment) then
+            textYPos = textYPos + self.height - _Graphics.GetFontHeight() * lineCount
+        end
 
-    local textObj = _Graphics.NewNormalText(self.text)
-    _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
+        local textObj = _Graphics.NewNormalText(str)
+        _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
+        
+        textSpriteViewHeight = textSpriteViewHeight + fontHeight
+    end
 
     -- 还原绘图数据
     _Graphics.SetCanvas()
     _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+
+    -- 设置鼠标判断矩形数据
+    self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0)
+
+    -- 设置文字对象数据
     self.sprite:SetImage(canvas)
     self.sprite:AdjustDimensions()
     self.sprite:SetAttri("position", self.xPos, self.yPos)
 
     -- 更新图标数据
     local spriteWidth, spriteHeight = self.iconSprite:GetImageDimensions()
-    local spriteXScale = self.width / spriteWidth
-    local spriteYScale = self.height / spriteHeight
+    local spriteXScale = self.iconSizeW / spriteWidth
+    local spriteYScale = self.iconSizeH / spriteHeight
     self.iconSprite:SetAttri("scale", spriteXScale, spriteYScale)
     self.iconSprite:SetAttri("position", self.xPos, self.yPos)
+
+    -- 更新显示内容尺寸
+    if textSpriteViewWidth > self.iconSizeW then
+        self.viewContentSizeW = textSpriteViewWidth
+    else
+        self.viewContentSizeW = self.iconSizeW 
+    end
+    if textSpriteViewHeight > self.iconSizeH then
+        self.viewContentSizeH = textSpriteViewHeight
+    else
+        self.viewContentSizeH = self.iconSizeH
+    end
 end
 
 return Label

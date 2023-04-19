@@ -93,6 +93,11 @@ function _GRAPHICS.GetColor()
     return unpack(_nowColor)
 end
 
+---@return font Font
+function _GRAPHICS.GetFont()
+    return _nowFont
+end
+
 ---@return height number
 function _GRAPHICS.GetFontHeight()
     return _nowFont:getHeight()
