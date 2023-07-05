@@ -35,7 +35,7 @@ function _Curtain:Ctor()
     self._tweener = _Tweener.New(self._color, self._targetColor)
     self._timer = _Timer.New()
     self._isUp = false
-    self.width, self.height = _SYSTEM.GetScreenDimensions()
+    self.width, self.height = _SYSTEM.GetWindowDimensions()
 end
 
 function _Curtain:Update(dt)

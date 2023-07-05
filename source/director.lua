@@ -15,12 +15,15 @@ local _Curtain = require("graphics.curtain")
 local UI = require("UI.UI")
 
 local _DIRECTOR = { rate = 1 } ---@class DIRECTOR
-local _curtain = _Curtain.New()
+---@type Graphics.Curtain
+local _curtain = nil
 local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 ---@type Actor.Entity
 local player = nil
 
 function _DIRECTOR.Init()
+    _curtain = _Curtain.New()
+
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
 

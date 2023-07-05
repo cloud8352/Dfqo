@@ -3,17 +3,15 @@ local Util = require("source.util.Util")
 function love.conf(t)
     io.stdout:setvbuf("no")
     t.window.title = "Dungeon Fighter Quest"
-    t.window.width = 1280
-    t.window.height = 720
+    t.window.width = 960
+    t.window.height = 540
     t.window.highdpi = true
 
     t.window.borderless = false -- 移除所有程序边框的视觉效果 (boolean)
     t.window.resizable = false -- 允许鼠标拖动调整窗口的宽度和高度 (boolean)
 
-    -- 获取窗口缩放比例
-    local sizeScale = Util.GetWindowSizeScale()
-    t.window.minwidth = 1280 * sizeScale -- 程序窗口的最小宽度，仅当t.window.resizable = true 时生效 (number)
-    t.window.minheight = 720 * sizeScale -- 程序窗口的最小高度，仅当t.window.resizable = true 时生效 (number)
+    t.window.minwidth = 960  -- 程序窗口的最小宽度，仅当t.window.resizable = true 时生效 (number)
+    t.window.minheight = 540  -- 程序窗口的最小高度，仅当t.window.resizable = true 时生效 (number)
     t.window.fullscreen = false -- 打开程序后全屏运行游戏 (boolean)
     t.window.fullscreentype = "desktop" -- Choose between "desktop" fullscreen or "exclusive" fullscreen mode (string)
     -- 标准全屏或者桌面全屏 (string)

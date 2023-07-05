@@ -14,7 +14,7 @@ local _stdWidth = 1280
 local _stdHeight = 720
 local _width, _height = love.graphics.getDimensions()
 
-local _realWidth, _realHeight = _width, _height
+-- local _realWidth, _realHeight = _width, _height
 local _screenDiv = {x = 0, y = 0}
 
 do
@@ -45,11 +45,11 @@ end
 
 ---@param isReal boolean
 ---@return int @w & h
-function _SYSTEM.GetScreenDimensions(notReal)
+function _SYSTEM.GetWindowDimensions(notReal)
 	if (notReal) then
 		return _width, _height
 	else
-		return _realWidth, _realHeight
+		return _width, _height
 	end
 end
 

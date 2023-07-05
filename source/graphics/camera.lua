@@ -51,7 +51,7 @@ end
 local _Camera = require("core.class")()
 
 function _Camera:Ctor()
-	local sw, sh = _SYSTEM.GetScreenDimensions()
+	local sw, sh = _SYSTEM.GetWindowDimensions()
 	
 	self._position = _Point.New(true)
 	self._translation = _Point.New(true)
