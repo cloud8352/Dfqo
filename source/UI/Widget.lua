@@ -37,6 +37,9 @@ end
 function Widget:Draw()
 end
 
+function Widget:PaintEvent()
+end
+
 function Widget:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
@@ -69,6 +72,14 @@ end
 ---@return isVisible boolean
 function Widget:IsVisible()
     return self.isVisible
+end
+
+---@return changed boolean
+function Widget:IsBaseDataChanged()
+    return (self.lastXPos ~= self.xPos
+            or self.lastYPos ~= self.yPos
+            or self.lastWidth ~= self.width
+            or self.lastHeight ~= self.height)
 end
 
 return Widget

@@ -8,14 +8,13 @@
 local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
--- service
-local SkillSrv = require("actor.service.skill")
 
 local WindowManager = require("UI.WindowManager")
 local Label = require("UI.Label")
 local SkillDockViewItem = require("UI.SkillDockViewItem")
 local Window = require("UI.Window")
-local HoveringItemTipWidget = require("UI.HoveringItemTipWidget")
+local Common = require("UI.ui_common")
+local UiModel = require("UI.ui_model")
 
 local Util = require("source.util.Util")
 
@@ -26,10 +25,13 @@ local ItemSpace = 1
 local TimeOfWaiteToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
 ---@param parentWindow Window
-function SkillDockViewFrame:Ctor(parentWindow)
+---@param model UiModel
+function SkillDockViewFrame:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
+
+    self.model = model
 
     local defaultItemWidth = 80
     self.width = defaultItemWidth * 6 + ItemSpace * 5
@@ -41,10 +43,6 @@ function SkillDockViewFrame:Ctor(parentWindow)
     self.yPos = 0
     self.lastYPos = 0
     self.enable = true
-
-    ---@type Actor.Entity
-    self.player = nil
-    self.lastPlayer = nil
 
     ---- skill item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
@@ -165,15 +163,8 @@ function SkillDockViewFrame:Ctor(parentWindow)
     self.isShowHoveringItemTip = false -- 是否显示悬浮技能项的提示信息
     self.lastIsShowHoveringItemTip = false
 
-    self.hoveringItemTipWidget = HoveringItemTipWidget.New(parentWindow)
-
-    self.hoveringItemTipWindow = Window.New()
-    self.hoveringItemTipWindow:SetSize(350, 500)
-    self.hoveringItemTipWindow:SetIsTipToolWindow(true)
-    self.hoveringItemTipWindow:SetTitleBarVisible(false)
-    self.hoveringItemTipWindow:SetContentWidget(self.hoveringItemTipWidget)
-
     --- post init
+    -- self:ReloadSkillsViewData()
     self:updateData()
 end
 
@@ -185,7 +176,6 @@ function SkillDockViewFrame:Update(dt)
         or self.lastWidth ~= self.width
         or self.lastHeight ~= self.height
         or self.lastHeight ~= self.height
-        or self.lastPlayer ~= self.player
         )
         then
         self:updateData()
@@ -208,7 +198,6 @@ function SkillDockViewFrame:Update(dt)
     if self.lastIsShowHoveringItemTip ~= self.isShowHoveringItemTip then
         self:updateHoveringItemTipWindowData()
     end
-    self.hoveringItemTipWindow:Update(dt)
 
     -- skill item bg
     for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
@@ -217,28 +206,26 @@ function SkillDockViewFrame:Update(dt)
 
     ---- skill item
     -- 更新技能显示项冷却时间
-    if self.player then
-        local skillList = SkillSrv.GetMap(self.player.skills)
-        for k, v in pairs(skillList) do
-            -- k 为 tag，即配置中的键
-            local item = self.mapOfTagToSkillViewItem[k]
-            if nil == item then
-                goto continue
-            end
-
-            local progress = v:GetProcess();
-            if 1.0 <= progress then
-                goto continue
-            end
-            item:SetCoolDownProgress(progress)
-
-            ::continue::
+    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
+    for k, v in pairs(mapOfTagToSkillObj) do
+        -- k 为 tag，即配置中的键
+        local item = self.mapOfTagToSkillViewItem[k]
+        if nil == item then
+            goto continue
         end
 
-        -- 更新技能显示项
-        for k, v in pairs(self.mapOfTagToSkillViewItem) do
-            v:Update(dt)
+        local progress = v:GetProcess();
+        if 1.0 <= progress then
+            goto continue
         end
+        item:SetCoolDownProgress(progress)
+
+        ::continue::
+    end
+
+    -- 更新技能显示项
+    for k, v in pairs(self.mapOfTagToSkillViewItem) do
+        v:Update(dt)
     end
 
     self.hoveringItemFrameLabel:Update(dt)
@@ -249,7 +236,6 @@ function SkillDockViewFrame:Update(dt)
     self.lastWidth = self.width
     self.lastHeight = self.height
 
-    self.lastPlayer = self.player
     self.lastHoveringItemTag = self.hoveringItemTag
     self.lastIsShowHoveringItemTip = self.isShowHoveringItemTip
 end
@@ -265,10 +251,6 @@ function SkillDockViewFrame:Draw()
     end
 
     self.hoveringItemFrameLabel:Draw()
-
-    if self.isShowHoveringItemTip then
-        self.hoveringItemTipWindow:Draw()
-    end
 end
 
 function SkillDockViewFrame:MouseEvent()
@@ -324,12 +306,9 @@ function SkillDockViewFrame:SetEnable(enable)
     self.enable = enable
 end
 
----@param player Actor.Entity
-function SkillDockViewFrame:SetPlayer(player)
-    self.player = player
-
-    local skillList = SkillSrv.GetMap(player.skills)
-    for k, v in pairs(skillList) do
+function SkillDockViewFrame:ReloadSkillsViewData()
+    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
+    for k, v in pairs(mapOfTagToSkillObj) do
         -- k 为 tag，即配置中的键
         local item = self.mapOfTagToSkillViewItem[k]
         if nil == item then
@@ -337,7 +316,7 @@ function SkillDockViewFrame:SetPlayer(player)
         end
         item:SetIconSpriteDataPath("icon/skill/" .. v:GetData().icon)
 
-        local key = _CONFIG.code[k]
+        local key = self.model:GetSkillKeyByTag(k)
         if nil == key then
             key = ""
         end
@@ -427,65 +406,54 @@ function SkillDockViewFrame:updateHoveringItemFrameData()
 end
 
 function SkillDockViewFrame:updateHoveringItemTipWindowData()
+    self.model:RequestSetHoveringSkillItemTipWindowVisibility(self.isShowHoveringItemTip)
+
     local skillItemBgLabel = self.mapOfTagToSkillViewItemBg[self.hoveringItemTag]
     if nil == skillItemBgLabel then
         return
     end
 
-    local gameWindowSizeW = Util.GetWindowWidth()
-    local gameWindowSizeH = Util.GetWindowHeight()
-    local hoveringItemTipWindowSizeW, hoveringItemTipWindowSizeH = self.hoveringItemTipWindow:GetSize()
-    local x, y = skillItemBgLabel:GetPosition()
-    if gameWindowSizeW < x + hoveringItemTipWindowSizeW then
-        x = gameWindowSizeW - hoveringItemTipWindowSizeW
-    end
-    if gameWindowSizeH < y + hoveringItemTipWindowSizeH then
-        y = gameWindowSizeH - hoveringItemTipWindowSizeH
-    end
-    self.hoveringItemTipWindow:SetPosition(x, y)
+    -- 设置悬浮框位置
+    local tipWindowXPos = 0
+    local tipWindowYPos = 0
+    local bgX, bgY = skillItemBgLabel:GetPosition()
+    local bgW, bgH = skillItemBgLabel:GetSize()
+    tipWindowXPos = bgX + bgW/2
+    tipWindowYPos = bgY + bgH/2
 
     -- info
-    local name = ""
-    local description = ""
-    ---@type int @单位：s
-    local cdTime = 0
-    ---@type int
-    local mp = 0
-    ---@type boolean
-    local isPhysical = true
-    ---@type number
-    local damageRate = 0.0
+    local skillInfo = Common.NewSkillInfo()
+    skillInfo.uuid = 1
 
-    local skillMap = SkillSrv.GetMap(self.player.skills)
+    -- 获取服务中正在运行的技能对象
+    local skillMap = self.model:GetMapOfTagToSkillObj()
     local skill = skillMap[self.hoveringItemTag]
+    -- 更新技能信息
     if nil ~= skill then
         local skillData = skill:GetData()
         if skillData.name then
-            name = skillData.name
+            skillInfo.name = skillData.name
         end
         if skillData.special then
-            description = skillData.special
+            skillInfo.desc = skillData.special
+        end
+        if skillData.icon then
+            skillInfo.iconPath = skillData.icon
         end
         if skillData.time then
-            cdTime = skillData.time / 1000
+            skillInfo.cdTime = skillData.time / 1000
         end
         if skillData.mp then
-            mp = skillData.mp
+            skillInfo.mp = skillData.mp
         end
         if skillData.attackValues.isPhysical then
-            isPhysical = true
-        end
-        if skillData.attackValues.damageRate then
-            damageRate = skillData.attackValues.damageRate
+            skillInfo.physicalDamageEnhanceRate = 0 or skillData.attackValues.damageRate
+        else
+            skillInfo.magicDamageEnhanceRate = 0 or skillData.attackValues.damageRate
         end
     end
-    
-    self.hoveringItemTipWidget:SetName(name)
-    self.hoveringItemTipWidget:SetDescription(description)
-    self.hoveringItemTipWidget:SetCdStr(cdTime)
-    self.hoveringItemTipWidget:SetMpStr(mp)
-    self.hoveringItemTipWidget:SetIsPhysicalDamageType(isPhysical)
-    self.hoveringItemTipWidget:SetDamageRateStr(damageRate)
+
+    self.model:RequestSetHoveringSkillItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, skillInfo)
 end
 
 return SkillDockViewFrame

@@ -26,6 +26,7 @@ function Window:Ctor()
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
     WindowManager.AppendToWindowList(self)
 
+    self.objName = ""
     self.bgSprite = _Sprite.New()
     self.bgSprite:SwitchRect(true) -- 使用矩形
     self.spriteXScale, self.spriteYScale = self.bgSprite:GetAttri("scale")
@@ -36,6 +37,7 @@ function Window:Ctor()
     self.enable = true
     self.isVisible = true
     self.isTipToolWindow = false
+    self.isInMoving = false
 
     -- 背景图片数据
     self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
@@ -65,13 +67,14 @@ function Window:Update(dt)
     if false == self.isVisible then
         return
     end
+    self.titleBar:Update(dt)
 
     self.contentWidget:Update(dt)
-
-    self.titleBar:Update(dt)
 end
 
 function Window:Draw()
+    self:MouseEvent()
+
     if false == self.isVisible then
         return
     end
@@ -81,6 +84,35 @@ function Window:Draw()
     self.contentWidget:Draw()
 
     self.titleBar:Draw()
+end
+
+function Window:MouseEvent()
+    -- 判断鼠标
+    while true do
+        -- 检查是否有上层窗口遮挡
+        if WindowManager.IsMouseCapturedAboveLayer(self.windowLayerIndex) then
+            break
+        end
+
+        -- 鼠标左键是否点击
+        if _Mouse.IsPressed(1)
+            or _Mouse.IsHold(1)
+            or _Mouse.IsReleased(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
+            WindowManager.SetWindowToTopLayer(self)
+            break
+        end
+
+        break
+    end
+end
+
+---@param name string
+function Window:SetObjName(name)
+    self.objName = name
+end
+
+function Window:GetObjName()
+    return self.objName
 end
 
 function Window:SetPosition(x, y)
@@ -202,6 +234,15 @@ function Window:SetScale(xScale, yScale)
     self.spriteYScale = yScale
 end
 
+---@return boolean
+function Window:IsInMoving()
+    return self.isInMoving
+end
+
+function Window:SetIsInMoving(moving)
+    self.isInMoving = moving
+end
+
 function Window:OnRequestMoveWindow(x, y)
     self:judgeAndExecRequestMoveWindow(x, y)
 end
@@ -240,17 +281,24 @@ function Window:judgeAndExecRequestCloseWindow(x, y)
     self.receiverOfRequestCloseWindow.OnRequestCloseWindow(self)
 end
 
--- 获取窗口所处层数
--- ##【必须实现】
----@return layerIndex int
+--- 获取窗口所处层数。
+--- 由窗管调用
+---@return layerIndex number
 function Window:GetWindowLayerIndex()
     return self.windowLayerIndex
 end
 
--- 检查是否包含坐标
--- ##【必须实现】itleBarHeight
----@param x int
----@param y int
+--- 设置窗口所处层数。
+--- 由窗管调用
+---@param layerIndex number
+function Window:SetWindowLayerIndex(layerIndex)
+    self.windowLayerIndex = layerIndex
+end
+
+--- 检查是否包含坐标。
+--- 由窗管调用
+---@param x number
+---@param y number
 ---@return boolean
 function Window:CheckPoint(x, y)
     if self.isTipToolWindow then
@@ -284,8 +332,6 @@ function Window:SetContentWidget(widget)
     self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
     self.contentWidget:SetSize(self.width - MarginSpace * 2,
                         self.height - MarginSpace * 2 - realTitleBarHeight)
-    self.contentWidget:SetEnable(self.enable)
-    self.contentWidget:SetVisible(self.isVisible)
 end
 
 return Window

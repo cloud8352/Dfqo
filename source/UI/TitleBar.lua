@@ -13,22 +13,15 @@ local _Mouse = require("lib.mouse")
 
 local WindowManager = require("UI.WindowManager")
 local PushButton = require("UI.PushButton")
+local Widget = require("UI.Widget")
 
 ---@class TitleBar
-local TitleBar = require("core.class")()
+local TitleBar = require("core.class")(Widget)
 
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
-    assert(parentWindow, "must assign parent window")
-    ---@type Window
-    self.parentWindow = parentWindow
+    Widget.Ctor(self, parentWindow)
 
-    self.width = 30
-    self.height = 10
-    self.posX = 0
-    self.posY = 0
-    self.enable = true
-    self.isVisible = true
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
     self.requestMoveWindow = false -- 是否请求移动窗口
@@ -44,6 +37,9 @@ function TitleBar:Ctor(parentWindow)
     self.leftFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/LeftFrame")
     self.centerFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/CenterFrame")
     self.rightFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/RightFrame")
+
+    -- 上一帧时是否被按压
+    self.lastIsPressed = false
 
     self.leftMargin = 2
     self.topMargin = 2
@@ -79,12 +75,25 @@ end
 
 function TitleBar:Update(dt)
     if false == self.isVisible then
+        Widget.Update(self, dt)
         return
     end
 
     self:MouseEvent()
+    
+    if (self.lastXPos ~= self.xPos
+        or self.lastYPos ~= self.yPos
+        or self.lastWidth ~= self.width
+        or self.lastHeight ~= self.height
+        or self.lastHeight ~= self.height
+        )
+        then
+        self:PaintEvent()
+    end
 
     self.closeBtn:Update(dt)
+
+    Widget.Update(self, dt)
 end
 
 function TitleBar:Draw()
@@ -95,6 +104,17 @@ function TitleBar:Draw()
     self.frameSprite:Draw()
     self.iconSprite:Draw()
     self.closeBtn:Draw()
+end
+
+function TitleBar:PaintEvent()
+    -- image
+    local frameCanvas = self:createFrameCanvasBySize(self.width, self.height)
+    self.frameSprite:SetImage(frameCanvas)
+    self.frameSprite:AdjustDimensions() -- 设置图片后调整精灵维度
+
+    self:adjustScaleByMargin()
+
+    Widget.PaintEvent(self)
 end
 
 function TitleBar:MouseEvent()
@@ -114,34 +134,26 @@ function TitleBar:SetReceiverOfRequestMoveWindow(receiver)
 end
 
 function TitleBar:SetPosition(x, y)
-    self.frameSprite:SetAttri("position", x + self.leftMargin, y + self.topMargin)
-    self.iconSprite:SetAttri("position", x + self.leftMargin + self.iconLeftMargin, y + self.topMargin + self.iconTopMargin)
+    Widget.SetPosition(self, x, y)
+
     local closeBtnWidth = self.closeBtn:GetWidth()
     self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - 10, y + self.topMargin + 15)
-    self.posX = x
-    self.posY = y
+
+    -- position
+    self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
+    self.iconSprite:SetAttri("position", self.xPos + self.leftMargin + self.iconLeftMargin,
+                        self.yPos + self.topMargin + self.iconTopMargin)
 end
 
 function TitleBar:SetSize(width, height)
-    self.width = width
-    self.height = height
-
-    local frameCanvas = self:createFrameCanvasBySize(self.width, self.height)
-    self.frameSprite:SetImage(frameCanvas)
-    self.frameSprite:AdjustDimensions() -- 设置图片后调整精灵维度
-
     -- 关闭按钮
     self.closeBtn:SetSize(height - 30, height - 30)
 
-    self:adjustScaleByMargin()
+    Widget.SetSize(self, width, height)
 end
 
 function TitleBar:SetEnable(enable)
     self.enable = enable
-end
-
-function TitleBar:IsVisible()
-    return self.isVisible
 end
 
 --- 设置是否可见
@@ -223,6 +235,7 @@ function TitleBar:judgeAndExecRequestMoveWindow()
         -- 是否处于按压中
         if false == _Mouse.IsHold(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
             self.requestMoveWindow = false
+            self.parentWindow:SetIsInMoving(false)
             break
         end
 
@@ -230,6 +243,10 @@ function TitleBar:judgeAndExecRequestMoveWindow()
         currentMouseXPos, currentMouseYPos = _Mouse.GetPosition(1, 1)
         -- 如果正处于请求移动窗口中，则直接退出循环执行移动窗口逻辑
         if self.requestMoveWindow then
+            break
+        end
+
+        if not self.lastIsPressed then
             break
         end
 
@@ -241,11 +258,19 @@ function TitleBar:judgeAndExecRequestMoveWindow()
 
         -- 请求移动窗口
         self.requestMoveWindow = true
+        self.parentWindow:SetIsInMoving(true)
         self.originMouseXPosWhenReqMvWindow = currentMouseXPos
         self.originMouseYPosWhenReqMvWindow = currentMouseYPos
-        self.originXPosWhenReqMvWindow = self.posX
-        self.originYPosWhenReqMvWindow = self.posY
+        self.originXPosWhenReqMvWindow = self.xPos
+        self.originYPosWhenReqMvWindow = self.yPos
         break
+    end
+
+
+    if _Mouse.IsPressed(1) then
+        self.lastIsPressed = true
+    else
+        self.lastIsPressed = false
     end
 
     if self.requestMoveWindow then

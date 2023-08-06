@@ -122,7 +122,8 @@ function PushButton:MouseEvent()
 
         -- 检查是否有上层窗口遮挡
         local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
-        if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex) then
+        if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
+            or self.parentWindow:IsInMoving() then
             self.displayState = DisplayState.Normal
             break
         end

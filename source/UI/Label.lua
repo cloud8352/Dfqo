@@ -138,6 +138,11 @@ end
 function Label:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
+
+    self.sprite:SetAttri("position", self.xPos, self.yPos)
+
+    -- 更新图标坐标
+    self.iconSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 ---@return int, int
@@ -183,10 +188,24 @@ end
 
 ---@param path string
 function Label:SetIconSpriteDataPath(path)
+    if self.iconSpriteDataPath == path then
+        return
+    end
+
     self.iconSpriteDataPath = path
-    ---@type Lib.RESOURCE.SpriteData
-    local spriteData = _RESOURCE.GetSpriteData(path)
-    self.iconSprite:SetData(spriteData)
+    if self.iconSpriteDataPath == "" then
+        local canvas = _Graphics.NewCanvas(self.width, self.height)
+        self.iconSprite:SetImage(canvas)
+    else
+        ---@type Lib.RESOURCE.SpriteData
+        local spriteData = _RESOURCE.GetSpriteData(path)
+        self.iconSprite:SetData(spriteData, true)
+    end
+
+    local spriteWidth, spriteHeight = self.iconSprite:GetImageDimensions()
+    local spriteXScale = self.iconSizeW / spriteWidth
+    local spriteYScale = self.iconSizeH / spriteHeight
+    self.iconSprite:SetAttri("scale", spriteXScale, spriteYScale)
 end
 
 function Label:SetIconSize(w, h)
@@ -202,7 +221,11 @@ end
 
 ---@return int, int w, h
 function Label:GetViewContentSize()
-    return self.viewContentSizeW, self.viewContentSizeH
+    if self.isVisible then
+        return self.viewContentSizeW, self.viewContentSizeH
+    else
+        return 0, 0
+    end
 end
 
 function Label:updateSprite()
@@ -241,7 +264,7 @@ function Label:updateSprite()
         elseif 0 ~= bit.band(Label.AlignmentFlag.AlignBottom, self.alignment) then
             textYPos = textYPos + self.height - _Graphics.GetFontHeight() * lineCount
         end
-
+        
         local textObj = _Graphics.NewNormalText(str)
         _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
         
