@@ -35,7 +35,7 @@ local WindowWidgetStruct = {
 
 ---
 ---@param windowWidgetA WindowWidgetStruct
----@param windowWidgetB WindowWidgettStruct
+---@param windowWidgetB WindowWidgetStruct
 ---@return boolean
 local function windowWidgetListSortFuc(windowWidgetA, windowWidgetB)
     return windowWidgetA.window:GetWindowLayerIndex() < windowWidgetB.window:GetWindowLayerIndex()
@@ -80,15 +80,15 @@ function UI.Init()
 
     --==== test
     -- skillManagerWindow
-    UI.skillManagerWindow = Window.New()
-    UI.skillManagerWindow:SetSize(1040, 670)
-    UI.skillManagerWindow:SetPosition(200, 60)
-    UI.skillManagerWindow:SetVisible(true)
+    -- UI.skillManagerWindow = Window.New()
+    -- UI.skillManagerWindow:SetSize(1040, 670)
+    -- UI.skillManagerWindow:SetPosition(200, 60)
+    -- UI.skillManagerWindow:SetVisible(true)
 
-    UI.skillManagerWidget = Widget.New(UI.skillManagerWindow, UI.model)
-    UI.skillManagerWindow:SetContentWidget(UI.skillManagerWidget)
+    -- UI.skillManagerWidget = Widget.New(UI.skillManagerWindow, UI.model)
+    -- UI.skillManagerWindow:SetContentWidget(UI.skillManagerWidget)
     -- 将组件添加到窗口组件列表
-    UI.appendWindowWidget(UI.skillManagerWindow, UI.skillManagerWindow)
+    -- UI.appendWindowWidget(UI.skillManagerWindow, UI.skillManagerWindow)
     --=== end - test
 
     -- 悬停处的物品栏提示窗口
@@ -165,7 +165,7 @@ function UI.Update(dt)
     -- characterInfoWindow
     UI.characterInfoWindow:Update(dt)
 
-    UI.skillManagerWindow:Update(dt)
+    -- UI.skillManagerWindow:Update(dt)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
@@ -194,6 +194,7 @@ function UI.OnBtnsClicked(my, sender)
     if UI.characterTopBtn == sender then
         local isVisible = UI.characterInfoWindow:IsVisible()
         UI.characterInfoWindow:SetVisible(not isVisible)
+        WindowManager.SetWindowToTopLayer(UI.characterInfoWindow)
     end
 end
 
