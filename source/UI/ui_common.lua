@@ -34,10 +34,11 @@ UiCommon.EquType = {
 	Face = 4,
 	Hair = 5,
 	Pants = 6,
-	Shoes = 7,
-	Skin = 8,
-	Weapeon = 9,
-	Title = 10,
+	Neck = 7,
+	Shoes = 8,
+	Skin = 9,
+	Weapeon = 10,
+	Title = 11,
 }
 
 --- 装备属性类型

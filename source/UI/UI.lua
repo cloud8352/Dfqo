@@ -145,17 +145,17 @@ function UI.Init()
     -- mapSelectComboBox
     UI.mapSelectComboBox:SetReceiverOfSelectedItemChanged(UI)
     -- model
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetAticleTableItemInfo, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetEquTableItemInfo, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetDraggingItemVisibility, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetDraggingItemInfo, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestMoveDraggingItem, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetAticleTableItemInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetEquTableItemInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemVisibility, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestMoveDraggingItem, UI)
     -- model - hoveringArticleItemTipWindow
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetHoveringArticleItemTipWindowVisibility, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetHoveringArticleItemTipWindowPosAndInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowVisibility, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowPosAndInfo, UI)
     -- model - hoveringSkillItemTipWindow
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetHoveringSkillItemTipWindowVisibility, UI)
-    UI.model:SetReceiverOfSignal(UI.model.RequestSetHoveringSkillItemTipWindowPosAndInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowVisibility, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowPosAndInfo, UI)
 
 end
 

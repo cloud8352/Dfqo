@@ -86,6 +86,9 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     self.originXPosWhenDragItem = 0
     self.originYPosWhenDragItem = 0
 
+    -- connect
+    self.model:MocConnectSignal(self.model.PlayerChanged, self)
+    
     --- post init
     self:initArticleData()
     self:updateData()
@@ -246,6 +249,13 @@ function ArticleTableWidget:SetIndexItemInfo(index, itemInfo)
     end
     item:SetIconSpriteDataPath(iconPath)
     item:SetCount(itemInfo.count)
+end
+
+--- 当玩家改变后
+---@type sender Object
+function ArticleTableWidget:OnPlayerChanged(sender)
+    -- print("ArticleTableWidget:OnPlayerChanged(sender)")
+    self:initArticleData()
 end
 
 function ArticleTableWidget:initArticleData()

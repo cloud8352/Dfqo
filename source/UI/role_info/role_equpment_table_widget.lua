@@ -75,6 +75,9 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
     ---@type ArticleInfo
     self.hoveringItemInfo = nil
 
+    -- connect
+    self.model:MocConnectSignal(self.model.PlayerChanged, self)
+
     --- post init
     self:initArticleData()
     self:updateData()
@@ -242,6 +245,13 @@ function RoleEquTableWidget:SetIndexItemInfo(index, itemInfo)
         iconPath = ""
     end
     item:SetIconSpriteDataPath(iconPath)
+end
+
+--- 当玩家改变后
+---@type sender Object
+function RoleEquTableWidget:OnPlayerChanged(sender)
+    -- print("RoleEquTableWidget:OnPlayerChanged(sender)")
+    self:initArticleData()
 end
 
 function RoleEquTableWidget:initArticleData()
