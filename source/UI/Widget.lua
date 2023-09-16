@@ -45,7 +45,7 @@ function Widget:SetPosition(x, y)
     self.yPos = y
 end
 
----@return int, int
+---@return number, number
 function Widget:GetPosition()
     return self.xPos, self.yPos
 end
@@ -55,7 +55,7 @@ function Widget:SetSize(width, height)
     self.height = height
 end
 
----@return int, int
+---@return number w, number h
 function Widget:GetSize()
     return self.width, self.height
 end
@@ -69,7 +69,7 @@ function Widget:SetVisible(isVisible)
     self.isVisible = isVisible
 end
 
----@return isVisible boolean
+---@return boolean isVisible
 function Widget:IsVisible()
     return self.isVisible
 end

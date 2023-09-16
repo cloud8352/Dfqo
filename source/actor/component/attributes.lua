@@ -16,15 +16,15 @@ local function _GetValue(v)
 end
 
 ---@class Actor.Component.Attributes
----@field hp int
----@field maxHp int
+---@field hp integer
+---@field maxHp integer
 ---@field hpRecovery number
----@field mp int
----@field maxMp int
----@field phyAtk int
----@field magAtk int
----@field phyDef int
----@field magDef int
+---@field mp integer
+---@field maxMp integer
+---@field phyAtk integer
+---@field magAtk integer
+---@field phyDef integer
+---@field magDef integer
 ---@field criticalRate number
 ---@field moveRate number
 ---@field attackRate number
@@ -32,7 +32,7 @@ end
 ---@field coolDownRate number
 ---@field phyAtkRate number
 ---@field magAtkRate number
----@field negativeHp int
+---@field negativeHp integer
 ---@field recoveryRate number
 ---@field origin table
 ---@field journal table<table, boolean>
@@ -56,7 +56,7 @@ function _Attributes:Ctor(data)
     self.phyAtkRate = _GetValue(data.phyAtkRate) or 1
     self.magAtkRate = _GetValue(data.magAtkRate) or 1
     self.negativeHp = data.negativeHp or 0
-    self.recoveryRate = 0.5
+    self.recoveryRate = 1 -- 当血量低于此比例开始以 hpRecovery 数值恢复hp
 
     self.origin = {
         maxHp = self.maxHp,

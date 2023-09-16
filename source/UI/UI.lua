@@ -21,6 +21,7 @@ local HoveringArticleItemTipWidget = require("UI.role_info.hovering_article_item
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 local WindowManager = require("UI.WindowManager")
+local HpRectBar = require("UI.hp_rect_bar")
 
 local _TABLE = require("lib.table")
 local Util = require("source.util.Util")
@@ -109,10 +110,16 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(toolTipWindow, UI.draggingArticleItem)
 
+    -- hp bar
+    UI.hpRectBar = HpRectBar.New(pushBtnWindow)
+    UI.hpRectBar:SetSize(500, 20)
+    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 150, 20)
+    UI.appendWindowWidget(pushBtnWindow, UI.hpRectBar)
+
     -- comboBox test
     UI.mapSelectComboBox = ComboBox.New(pushBtnWindow)
     UI.mapSelectComboBox:SetSize(300, 45)
-    UI.mapSelectComboBox:SetPosition(1100, 70)
+    UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 350, 150)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(pushBtnWindow, UI.mapSelectComboBox)
 
@@ -166,6 +173,9 @@ function UI.Update(dt)
     UI.characterInfoWindow:Update(dt)
 
     -- UI.skillManagerWindow:Update(dt)
+
+    UI.hpRectBar:SetHp(UI.model:GetHp())
+    UI.hpRectBar:Update(dt)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
@@ -224,6 +234,7 @@ end
 function UI.SetPlayer(player)
     UI.model:SetPlayer(player)
 
+    UI.hpRectBar:SetMaxHp(UI.model:GetMaxHp())
     UI.skillDockViewFrame:ReloadSkillsViewData()
 end
 

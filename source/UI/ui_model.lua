@@ -640,4 +640,24 @@ function UiModel:SelectGameMap(mapID)
     end
 end
 
+---@return integer maxHp
+function UiModel:GetMaxHp()
+    if self.player == nil then
+        print("UiModel:GetMaxHp()", "player is nil")
+        return -1
+    end
+
+    return self.player.attributes.maxHp
+end
+
+---@return integer hp
+function UiModel:GetHp()
+    if self.player == nil then
+        print("UiModel:GetHp()", "player is nil")
+        return -1
+    end
+
+    return self.player.attributes.hp
+end
+
 return UiModel

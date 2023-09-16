@@ -169,7 +169,7 @@ function Label:SetVisible(isVisible)
     self.isVisible = isVisible
 end
 
----@return isVisible boolean
+---@return boolean isVisible
 function Label:IsVisible()
     return self.isVisible
 end
@@ -213,13 +213,13 @@ function Label:SetIconSize(w, h)
     self.iconSizeH = h
 end
 
----@param x int
----@param y int
+---@param x integer
+---@param y integer
 function Label:CheckPoint(x, y)
     return self.checkRect:CheckPoint(x, y)
 end
 
----@return int, int w, h
+---@return integer w, integer h
 function Label:GetViewContentSize()
     if self.isVisible then
         return self.viewContentSizeW, self.viewContentSizeH

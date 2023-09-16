@@ -81,10 +81,10 @@ function _GRAPHICS.ResetBlendmode()
     _GRAPHICS.SetBlendmode(_laterBlendmode)
 end
 
----@param red int
----@param green int
----@param blue int
----@param alpha int
+---@param red integer
+---@param green integer
+---@param blue integer
+---@param alpha integer
 function _GRAPHICS.SetColor(red, green, blue, alpha)
     if (_nowColor[1] ~= red or _nowColor[2] ~= green or _nowColor[3] ~= blue or _nowColor[4] ~= alpha) then
         love.graphics.setColor(red, green, blue, alpha)
@@ -150,10 +150,10 @@ function _GRAPHICS.DrawPolygon(mode, ...)
     love.graphics.polygon(mode, ...)
 end
 
----@param x int
----@param y int
----@param w int
----@param h int
+---@param x integer
+---@param y integer
+---@param w integer
+---@param h integer
 ---@param mode DrawMode @"fill" or "line"
 function _GRAPHICS.DrawRect(x, y, w, h, mode)
     mode = mode or "line"

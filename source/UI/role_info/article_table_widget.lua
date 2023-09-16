@@ -46,11 +46,11 @@ function ArticleTableWidget:Ctor(parentWindow, model)
 
     --- item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
-    ---@type talble<number, Label>
+    ---@type table<number, Label>
     self.viewItemBgList = {}
     --- item
     local itemImgPath = ""
-    ---@type talble<number, ArticleViewItem>
+    ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
     for i = 1, ColCount*RowCount do
         local bgLabel = Label.New(parentWindow)
@@ -160,7 +160,7 @@ function ArticleTableWidget:MouseEvent()
     -- 判断鼠标
     while true do
         -- 检查是否有上层窗口遮挡
-        local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
+        local windowLayerIndex = self.baseWidget.parentWindow:GetWindowLayerIndex()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
             or self.baseWidget.parentWindow:IsInMoving() then
             self.hoveringItemIndex = -1
@@ -252,7 +252,7 @@ function ArticleTableWidget:SetIndexItemInfo(index, itemInfo)
 end
 
 --- 当玩家改变后
----@type sender Object
+---@param sender Object
 function ArticleTableWidget:OnPlayerChanged(sender)
     -- print("ArticleTableWidget:OnPlayerChanged(sender)")
     self:initArticleData()

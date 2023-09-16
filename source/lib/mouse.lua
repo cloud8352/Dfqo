@@ -26,20 +26,20 @@ local _MOUSE = {} ---@class Lib.MOUSE
 
 ---@param type string
 ---@param obj table
----@param Func func
+---@param Func function
 function _MOUSE.AddListener(type, obj, Func)
 	_callerMap[type]:AddListener(obj, Func)
 end
 
 ---@param type string
 ---@param obj table
----@param Func func
+---@param Func function
 function _MOUSE.DelListener(type, obj, Func)
 	_callerMap[type]:DelListener(obj, Func)
 end
 
----@param sx int
----@param sy int
+---@param sx integer
+---@param sy integer
 ---@return number
 function _MOUSE.GetPosition(sx, sy)
 	sx = sx or 1
@@ -48,8 +48,8 @@ function _MOUSE.GetPosition(sx, sy)
 	return _x / sx, _y / sy
 end
 
----@param sx int
----@param sy int
+---@param sx integer
+---@param sy integer
 ---@return number @mx & my
 function _MOUSE.GetMoving(sx, sy)
 	sx = sx or 1
@@ -58,28 +58,28 @@ function _MOUSE.GetMoving(sx, sy)
 	return _dx / sx, _dy / sy
 end
 
----@param key int @1:primary, 2:secondary, 3:middle.
----@return bool
+---@param key integer @1:primary, 2:secondary, 3:middle.
+---@return boolean
 function _MOUSE.IsPressed(key)
 	return _INPUT.IsPressed(_map, key)
 end
 
----@param key int @1:primary, 2:secondary, 3:middle.
----@return bool
+---@param key integer @1:primary, 2:secondary, 3:middle.
+---@return boolean
 function _MOUSE.IsHold(key)
 	return _INPUT.IsHold(_map, key)
 end
 
----@param key int @1:primary, 2:secondary, 3:middle.
----@return bool
+---@param key integer @1:primary, 2:secondary, 3:middle.
+---@return boolean
 function _MOUSE.IsReleased(key)
 	return _INPUT.IsReleased(_map, key)
 end
 
----@param x int
----@param y int
----@param dx int
----@param dy int
+---@param x integer
+---@param y integer
+---@param dx integer
+---@param dy integer
 function _MOUSE.Moved(x, y, dx, dy)
 	_x = x
 	_y = y
@@ -89,13 +89,13 @@ function _MOUSE.Moved(x, y, dx, dy)
 	_callerMap.onMoved:Call(x, y, dx, dy)
 end
 
----@param key int @1:primary, 2:secondary, 3:middle.
+---@param key integer @1:primary, 2:secondary, 3:middle.
 function _MOUSE.Pressed(key)
 	_INPUT.OnPressed(_map, key)
 	_callerMap.onPressed:Call(key)
 end
 
----@param key int @1:primary, 2:secondary, 3:middle.
+---@param key integer @1:primary, 2:secondary, 3:middle.
 function _MOUSE.Released(key)
 	_INPUT.OnReleased(_map, key)
 	_callerMap.onReleased:Call(key)
