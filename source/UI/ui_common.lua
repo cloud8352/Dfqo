@@ -41,6 +41,21 @@ UiCommon.EquType = {
 	Title = 11,
 }
 
+local mapOfEquTypeToTag = {}
+mapOfEquTypeToTag[UiCommon.EquType.Belt] = "belt"
+mapOfEquTypeToTag[UiCommon.EquType.Cap] = "cap"
+mapOfEquTypeToTag[UiCommon.EquType.Coat] = "coat"
+mapOfEquTypeToTag[UiCommon.EquType.Face] = "face"
+mapOfEquTypeToTag[UiCommon.EquType.Hair] = "hair"
+mapOfEquTypeToTag[UiCommon.EquType.Pants] = "pants"
+mapOfEquTypeToTag[UiCommon.EquType.Neck] = "neck"
+mapOfEquTypeToTag[UiCommon.EquType.Shoes] = "shoes"
+mapOfEquTypeToTag[UiCommon.EquType.Skin] = "skin"
+mapOfEquTypeToTag[UiCommon.EquType.Weapeon] = "weapeon"
+mapOfEquTypeToTag[UiCommon.EquType.Title] = "title"
+--- 装备类型到标签的映射表
+UiCommon.MapOfEquTypeToTag = mapOfEquTypeToTag
+
 --- 装备属性类型
 ---@enum EquPropType
 UiCommon.EquPropType = {
@@ -65,6 +80,8 @@ local ConsumableInfo = {
 ---@class EquInfo
 local EquInfo = {
 	type = UiCommon.EquType.Belt,
+	---@type Actor.RESMGR.EquipmentData
+	resMgrEquData = {},
 	hpExtent = 0,
 	hpExtentRate = 0.0,
 	mpExtent = 0,

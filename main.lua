@@ -1,3 +1,8 @@
+if arg[2] == "debug" then
+    print("debugger started!")
+    require("lldebugger").start()
+end
+
 love.filesystem.setRequirePath("source/?.lua;source/?/init.lua")
 
 local _TIME = require("lib.time")

@@ -5,13 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Lua Interpreter",
+            "name": "Love2d Lua linux Environment",
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "lua": "lua",
-                "file": "${file}"
-            }
+                "command": "${workspaceFolder}/debug.sh"
+            },
+            "args": [
+                "${workspaceFolder}"
+            ]
         },
         {
             "name": "Love2d Lua windows Environment",
@@ -20,7 +22,10 @@
             "program": {
                 "command": "${workspaceFolder}/love2d-win32/love.exe"
             },
-            "args": [ "${workspaceFolder}"]
+            "args": [
+                "${workspaceFolder}",
+                "debug"
+            ]
         }
     ]
 }

@@ -39,9 +39,9 @@ function PushButton:Ctor(parentWindow)
     -- clicked sound
     self.clickedSoundSource = _RESOURCE.NewSource("asset/sound/ui/btn_clicked.wav")
 
-    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
+    ---@type Graphics.Drawable.Sprite
     self.bgSprite = nil -- 背景，默认无背景
-    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
+    ---@type Graphics.Drawable.Sprite
     self.sprite = _Sprite.New()
     self.sprite:SwitchRect(true) -- 使用矩形
 
