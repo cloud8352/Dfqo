@@ -6,6 +6,6 @@ Maintainer: keke <243768648@qq.com>
 Architecture: amd64
 Version: 0.0.1
 Depends: lua5.1, liblua5.1-0, liblua5.1-bitop0, lua-zlib
-Build-Depends: liblua5.1-0-dev, liblua5.1-bitop-dev, lua-zlib-dev
+Build-Depends: lua5.1, liblua5.1-0-dev, liblua5.1-bitop-dev, lua-zlib-dev
 Description: extract npk files of DNF.
 Homepage: 

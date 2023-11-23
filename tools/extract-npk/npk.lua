@@ -305,7 +305,7 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
         local dwType = string.sub(dateStr, start_adr + j, start_adr + j)
         imgInfoList[i].dwType = imgInfoList[i].dwType + string.byte(dwType)*(2^8)^(j - 1)
       end
-      if imgInfoList[i].dwType ~= 17 then --非0x11(指向型)
+      if imgInfoList[i].dwType == 16 then --非0x11(指向型)
         for j = 1,4 do
           local dwCompress = string.sub(dateStr, start_adr + 4 + j,start_adr + 4 + j)
           imgInfoList[i].dwCompress = imgInfoList[i].dwCompress + string.byte(dwCompress)*(2^8)^(j - 1)
@@ -344,6 +344,13 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
         
         --根据当前贴图的类型，得出下一张贴图的地址
         start_adr = start_adr + 8
+      else
+        for j = 1,4 do
+          local size = string.sub(dateStr, start_adr + 16 + j, start_adr + 16 + j)
+          imgInfoList[i].size = imgInfoList[i].size + string.byte(size)*(2^8)^(j - 1)
+        end
+        --根据当前贴图的类型，得出下一张贴图的地址
+        start_adr = start_adr + 36
       end
       
     end
@@ -352,7 +359,8 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
     --======读取所有的贴图数据=====================
     --检查贴图数据首地址是否正确
     print("img_data start_adr",start_adr) ----------------------------------
-    if start_adr == img_start_adr + 32 + nImgFHeader.index_size then
+    -- 存在img头的实际数据大小 大于 img头中所说明的大小（index_size） 的情况
+    if start_adr >= img_start_adr + 32 + nImgFHeader.index_size then
       --先读取非指向型贴图数据
       for i = 1,#imgInfoList do
         --读取当前贴图
@@ -376,8 +384,10 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
         elseif imgInfoList[i].dwType == 17 then --0x11(指向型)
           --下一数据地址
           start_adr = start_adr + 0 --指向型，占用为0
+        else
+          --下一数据地址
+          start_adr = start_adr + imgInfoList[i].size
         end
-     
       end
       
       print("end address",start_adr)  ------------------------------------
@@ -391,7 +401,7 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
     end
 
       print("read img complete!")
-    elseif start_adr ~= img_start_adr + nImgFHeader.index_size then
+    elseif start_adr < img_start_adr + nImgFHeader.index_size then
       succeed = false
       errMsg = "img_data address is not correct"
       print(errMsg)
