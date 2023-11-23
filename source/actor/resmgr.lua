@@ -59,6 +59,7 @@ local function _HandleSpriteData(path, data)
     local header = table.concat(list, "/", 2, #list - 2)
     local colliderPath = _STRING.ToDirectory(path)
 
+    -- 查询config/actor/colliderMap.cfg中碰撞盒使能表，只针对开启的元素创建碰撞盒
     if (_colliderMap[header]) then
         if (type(_colliderMap[header]) == "string") then
             local start, endl = string.find(list[#list - 1], _colliderMap[header])
@@ -70,7 +71,6 @@ local function _HandleSpriteData(path, data)
             colliderPath = header
         end
     end
-
     if (colliderPath == header and not data.collider) then
         data.collider = colliderPath .. "/" .. list[#list]
     end
