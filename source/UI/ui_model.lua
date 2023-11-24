@@ -511,7 +511,7 @@ function UiModel:SetPlayer(player)
     articleInfo.count = 15
     articleInfo.consumableInfo.hpRecovery = 50
 
-    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd4900",
+    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
     nil, nil, nil)
     local articleInfo = self.articleInfoList[4]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
