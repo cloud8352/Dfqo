@@ -142,6 +142,18 @@ local function savePNG(filePath, w, h, imgData)
   return libsvpng.savePNG(filePath, w, h, imgData)
 end
 
+-- Unsigned Int To Signed Int
+---@param uint number
+---@return int integer
+local function UnsignedIntToSignedInt(uint)
+  -- 正数直接返回
+  if (uint < 0x80000000) then
+    return uint
+  end
+
+  return - (0xffffffff - uint + 1)
+end
+
 --提取npk，
 --入参：npk文件地址，string
 --返回：table型：npkAbstract = {imgfile1 = {}, imgfile2 = {}, ...}；imgfile1 = {offset= 0, size =0}
@@ -222,7 +234,7 @@ function npk.outputImg(imgdir, imgName, imgInfo)
 
   local succeed = savePNG(outputFilePath, imgInfo.width, imgInfo.height, imgInfo.imgDataTable)
   if (false == succeed)  then
-    print("npk.outputImg() failed!")
+    print(" npk.outputImg() failed!")
   end
 end
 
@@ -239,7 +251,6 @@ function npk.outputImgOffsetInfo(imgdir, fileName, ox, oy)
     print(outputFilePath.."open failed!")
     return
   end
-
   local content = string.format("return {\n    ox = %d,\n    oy = %d\n}", ox, oy)
   outputFile:write(content)
   outputFile:close()
@@ -331,6 +342,10 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
           local max_height = string.sub(dateStr, start_adr + 32 + j, start_adr + 32 + j)
           imgInfoList[i].max_height = imgInfoList[i].max_height + string.byte(max_height)*(2^8)^(j - 1)
         end
+
+        -- 无符号整型转成有符号整型数据
+        imgInfoList[i].key_x = UnsignedIntToSignedInt(imgInfoList[i].key_x)
+        imgInfoList[i].key_y = UnsignedIntToSignedInt(imgInfoList[i].key_y)
         
         --根据当前贴图的类型，得出下一张贴图的地址
         start_adr = start_adr + 36

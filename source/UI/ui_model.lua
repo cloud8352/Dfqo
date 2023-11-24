@@ -491,8 +491,8 @@ function UiModel:SetPlayer(player)
     local resMgrEquData = ResMgr.NewEquipmentData("clothes/swordman/pants/renewal",
                     nil, nil, nil)
 
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
     local articleInfo = self.articleInfoList[2]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
     articleInfo.uuid = 2
     articleInfo.type = Common.ArticleType.Equpment
     articleInfo.name = resMgrEquData.name
@@ -510,6 +510,54 @@ function UiModel:SetPlayer(player)
     articleInfo.iconPath = "ui/DropDownBtn/Disabled"
     articleInfo.count = 15
     articleInfo.consumableInfo.hpRecovery = 50
+
+    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd4900",
+    nil, nil, nil)
+    local articleInfo = self.articleInfoList[4]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    articleInfo.uuid = 4
+    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.name = resMgrEquData.name
+    articleInfo.desc = resMgrEquData.comment or ""
+    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+
+    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd5700",
+    nil, nil, nil)
+    local articleInfo = self.articleInfoList[5]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    articleInfo.uuid = 5
+    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.name = resMgrEquData.name
+    articleInfo.desc = resMgrEquData.comment or ""
+    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+
+    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
+    nil, nil, nil)
+    local articleInfo = self.articleInfoList[6]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    articleInfo.uuid = 6
+    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.name = resMgrEquData.name
+    articleInfo.desc = resMgrEquData.comment or ""
+    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd2800",
+    nil, nil, nil)
+    local articleInfo = self.articleInfoList[7]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    articleInfo.uuid = 7
+    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.name = resMgrEquData.name
+    articleInfo.desc = resMgrEquData.comment or ""
+    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
 
     -- equ
     local itemDataFromContainer = self.player.equipments.container:Get("belt")

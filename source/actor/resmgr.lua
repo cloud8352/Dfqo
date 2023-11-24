@@ -108,6 +108,16 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
         if (not passMap[k] and not avatar.passMap[k]) then
             local spritePath = avatar.data.path .. "/" .. v .. "/" .. path
             local spriteData = _RESMGR.GetSpriteData(spritePath)
+
+            -- 异常数据检查
+            if (spriteData.ox and spriteData.oy) then
+                if (spriteData.ox > 50000 or
+                    spriteData.ox < -50000 or
+                    spriteData.oy > 50000 or
+                    spriteData.oy < -50000) then
+                    print("_NewAvatarSpriteData", spritePath, "offset may be error!!")
+                end
+            end
     
             spriteDatas[#spriteDatas + 1] = spriteData
             sortingMap[spriteData] = avatar.data.layer[k]
