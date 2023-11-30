@@ -51,6 +51,9 @@ function Widget:GetPosition()
 end
 
 function Widget:SetSize(width, height)
+    if self.width == width and self.height == height then
+        return
+    end
     self.width = width
     self.height = height
 end
@@ -75,10 +78,8 @@ function Widget:IsVisible()
 end
 
 ---@return changed boolean
-function Widget:IsBaseDataChanged()
-    return (self.lastXPos ~= self.xPos
-            or self.lastYPos ~= self.yPos
-            or self.lastWidth ~= self.width
+function Widget:IsSizeChanged()
+    return (self.lastWidth ~= self.width
             or self.lastHeight ~= self.height)
 end
 

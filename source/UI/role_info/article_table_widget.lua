@@ -97,7 +97,7 @@ end
 function ArticleTableWidget:Update(dt)
     self:MouseEvent()
 
-    if (self.baseWidget:IsBaseDataChanged()
+    if (self.baseWidget:IsSizeChanged()
         ) then
         self:updateData()
     end

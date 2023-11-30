@@ -101,9 +101,7 @@ function Label:Update(dt)
         return
     end
 
-    if (self.lastXPos ~= self.xPos
-        or self.lastYPos ~= self.yPos
-        or self.lastWidth ~= self.width
+    if (self.lastWidth ~= self.width
         or self.lastHeight ~= self.height
         or self.lastText ~= self.text
         or self.lastAlignment ~= self.alignment
@@ -139,6 +137,10 @@ function Label:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
 
+
+    -- 设置鼠标判断矩形数据
+    self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0)
+
     self.sprite:SetAttri("position", self.xPos, self.yPos)
 
     -- 更新图标坐标
@@ -151,6 +153,10 @@ function Label:GetPosition()
 end
 
 function Label:SetSize(width, height)
+    if self.width == width and self.height == height then
+        return
+    end
+
     self.width = width
     self.height = height
 end
@@ -209,6 +215,10 @@ function Label:SetIconSpriteDataPath(path)
 end
 
 function Label:SetIconSize(w, h)
+    if self.iconSizeW == w and self.iconSizeH == h then
+        return
+    end
+    
     self.iconSizeW = w
     self.iconSizeH = h
 end

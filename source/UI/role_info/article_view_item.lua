@@ -30,7 +30,7 @@ function ArticleViewItem:Ctor(parentWindow)
 end
 
 function ArticleViewItem:Update(dt)
-    if (Widget.IsBaseDataChanged(self)
+    if (Widget.IsSizeChanged(self)
         or self.lastCoolDownProgress ~= self.coolDownProgress
         )
         then

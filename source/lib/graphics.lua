@@ -34,7 +34,6 @@ _GRAPHICS.Stencil = love.graphics.stencil
 _GRAPHICS.SetStencilTest = love.graphics.setStencilTest
 _GRAPHICS.SetLineWidth = love.graphics.setLineWidth
 _GRAPHICS.GetLineWidth = love.graphics.getLineWidth
-_GRAPHICS.NewCanvas = love.graphics.newCanvas
 _GRAPHICS.SetCanvas = love.graphics.setCanvas
 _GRAPHICS.Clear = love.graphics.clear
 
@@ -189,6 +188,13 @@ end
 ---@param ky number Shearing factor (x-axis). can nil
 function _GRAPHICS.DrawObj(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
     love.graphics.draw(drawable, x, y, r, sx, sy, ox, oy, kx, ky)
+end
+
+---@param width number
+---@param height number
+function _GRAPHICS.NewCanvas(width, height)
+    -- print("NewCanvas")
+    return love.graphics.newCanvas(width, height)
 end
 
 return _GRAPHICS

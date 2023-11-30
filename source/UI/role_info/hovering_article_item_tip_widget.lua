@@ -60,7 +60,7 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
 end
 
 function HoveringArticleItemTipWidget:Update(dt)
-    if (Widget.IsBaseDataChanged(self)
+    if (Widget.IsSizeChanged(self)
         or self.isArticleInfoChanged
         )
         then

@@ -20,10 +20,6 @@ local Timer = require("util.gear.timer")
 
 local _User = require("user")
 
--- 内存垃圾回收定时器
-local CollectGarbageInterval = 50 * 1
-local CollectGarbageTimer = Timer.New()
-
 function readconfig(path, pathFormat, keys)
     local config = _RESOURCE.ReadConfig(path, "config/" .. pathFormat .. "%s.cfg", keys)
 
@@ -40,13 +36,6 @@ local function _Update()
     _MOUSE.LateUpdate()
     _TOUCH.LateUpdate()
     _KEYBOARD.LateUpdate()
-
-    -- 判断内存垃圾回收定时器
-    CollectGarbageTimer:Update(dt)
-    if not CollectGarbageTimer.isRunning then
-        _SYSTEM.Collect()
-        CollectGarbageTimer:Enter(CollectGarbageInterval)
-    end
 end
 
 function love.load()

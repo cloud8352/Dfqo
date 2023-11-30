@@ -35,7 +35,7 @@ function HpRectBar:Ctor(parentWindow)
 end
 
 function HpRectBar:Update(dt)
-    if (self.baseWidget:IsBaseDataChanged()
+    if (self.baseWidget:IsSizeChanged()
         or self.lastHp ~= self.currentHp
         or self.lastMaxHp ~= self.maxHp
         )

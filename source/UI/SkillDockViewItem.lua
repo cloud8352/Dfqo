@@ -37,9 +37,7 @@ function SkillDockViewItem:Ctor(parentWindow)
 end
 
 function SkillDockViewItem:Update(dt)
-    if (self.lastXPos ~= self.xPos
-        or self.lastYPos ~= self.yPos
-        or self.lastWidth ~= self.width
+    if (self.lastWidth ~= self.width
         or self.lastHeight ~= self.height
         or self.lastHeight ~= self.height
         or self.lastCoolDownProgress ~= self.coolDownProgress

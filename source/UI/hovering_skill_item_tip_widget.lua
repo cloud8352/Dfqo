@@ -42,7 +42,7 @@ function HoveringSkillItemTipWidget:Ctor(parentWindow)
 end
 
 function HoveringSkillItemTipWidget:Update(dt)
-    if (Widget.IsBaseDataChanged(self)
+    if (Widget.IsSizeChanged(self)
         or self.isSkillInfoChanged
         )
         then

@@ -171,9 +171,7 @@ end
 function SkillDockViewFrame:Update(dt)
     self:MouseEvent()
 
-    if (self.lastXPos ~= self.xPos
-        or self.lastYPos ~= self.yPos
-        or self.lastWidth ~= self.width
+    if (self.lastWidth ~= self.width
         or self.lastHeight ~= self.height
         or self.lastHeight ~= self.height
         )
