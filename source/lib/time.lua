@@ -8,7 +8,7 @@
 local _delta = 0
 local _time = 0
 local _fps = 0
-local _stddt = 17
+local _stddt = 20
 local _updateTime = 0
 local _frame = 0
 local _calmness = false
@@ -49,7 +49,8 @@ function _TIME.Update(dt)
 		_calmness = false
 		_delta = 0
 	else
-		_delta = math.floor(dt * 1000)
+		-- _delta = math.floor(dt * 1000)
+		_delta = dt * 1000
 	end
 	
 	_time = love.timer.getTime()

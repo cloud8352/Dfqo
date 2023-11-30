@@ -1,6 +1,16 @@
 {
     "source": [
         {
+            "dir": "./main.lua",
+            "exclude": [
+            ]
+        },
+        {
+            "dir": "./conf.lua",
+            "exclude": [
+            ]
+        },
+        {
             "dir": "./source",
             "exclude": [
             ]

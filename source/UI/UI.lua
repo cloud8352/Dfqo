@@ -25,6 +25,9 @@ local HpRectBar = require("UI.hp_rect_bar")
 
 local _TABLE = require("lib.table")
 local Util = require("source.util.Util")
+local _TIME = require("lib.time")
+
+local IsShowFps = true
 
 ---@class WindowWidgetStruct
 local WindowWidgetStruct = {
@@ -110,6 +113,15 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(toolTipWindow, UI.draggingArticleItem)
 
+    if IsShowFps then
+        -- fps Label
+        UI.fpsLabel = Label.New(pushBtnWindow)
+        UI.fpsLabel:SetPosition(120, 20)
+        UI.fpsLabel:SetSize(80, 30)
+        -- UI.fpsLabel:SetText(_TIME.GetFPS())
+        UI.appendWindowWidget(pushBtnWindow, UI.fpsLabel)
+    end
+
     -- hp bar
     UI.hpRectBar = HpRectBar.New(pushBtnWindow)
     UI.hpRectBar:SetSize(500, 20)
@@ -173,6 +185,11 @@ function UI.Update(dt)
     UI.characterInfoWindow:Update(dt)
 
     -- UI.skillManagerWindow:Update(dt)
+
+    if IsShowFps then
+        UI.fpsLabel:Update(dt)
+        UI.fpsLabel:SetText("fps: "..tostring(_TIME.GetFPS()))
+    end
 
     UI.hpRectBar:SetHp(UI.model:GetHp())
     UI.hpRectBar:Update(dt)
