@@ -26,10 +26,10 @@ local _CONFIG = {
         transparency = false,
         transport = false,
         ui = true,
-        map = {
+        map = { -- 是否开启地图中碰撞盒图形
             object = false,
-            up = false,
-            down = false,
+            up = false, -- 地图上方物体
+            down = false, -- 地图下方物体
             obstacle = false
         }
     }
@@ -52,7 +52,7 @@ _CONFIG.code = {
     skill4 = "8",
     skill5 = "9",
     skill6 = "0",
-    step = "k",
+    jump = "k",
     counterAttack = "l",
     suptool1 = "q",
     suptool2 = "e",
@@ -61,10 +61,8 @@ _CONFIG.code = {
 
 _CONFIG.anticode = {}
 
-do
-    for k, v in pairs(_CONFIG.code) do
-        _CONFIG.anticode[v] = k
-    end
+for k, v in pairs(_CONFIG.code) do
+    _CONFIG.anticode[v] = k
 end
 
 return _CONFIG

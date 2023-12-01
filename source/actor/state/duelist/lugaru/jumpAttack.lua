@@ -40,9 +40,15 @@ function _JumpAttack:Init(entity)
     self._attack = _Gear_Attack.New(entity)
     self._easemoveX = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._jump = _Jump.New(self._entity.transform, self._entity.aspect, function (jump, process)
-        self:PlayFrameani(process + 1)
+        if (process == _Jump.ProcessEnum.Up2) then
+            self:PlayFrameani(2)
+        elseif (process == _Jump.ProcessEnum.Up3) then
+            self:PlayFrameani(3)
+        elseif (process == _Jump.ProcessEnum.Down2) then
+            self:PlayFrameani(4)
+        end
 
-        if (process == 2) then
+        if (process == _Jump.ProcessEnum.Up3) then
             self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
             _SOUND.Play(self._soundDataSet[2])
         end

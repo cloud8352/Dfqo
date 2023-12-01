@@ -47,7 +47,7 @@ function _HopSmash:Init(entity, ...)
     -- 跳跃动作
     self._jump = _Jump.New(self._entity.transform, self._entity.aspect, function (caller, param)
         print("_HopSmash state jump action func excuted! param: "..param)
-        if 3 == param then
+        if _Jump.ProcessEnum.Ground == param then
             print("ground attack")
 
             -- 先销毁原来的攻击子弹实例

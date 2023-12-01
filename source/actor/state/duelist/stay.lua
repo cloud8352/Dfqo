@@ -25,7 +25,7 @@ function _Stay:Ctor(data, param, name)
     -- 行走结束时间
     self.movingEndTime = 0
     -- 行走到奔跑之间的响应时间
-    self.movingReactTimeS = 0.7
+    self.movingReactTimeS = 0.3
     -- 上次的状态名称
     self.lastStateName = ""
 end

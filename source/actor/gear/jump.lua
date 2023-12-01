@@ -7,6 +7,8 @@
 local _Gear = require("core.gear")
 local _Easemove = require("actor.gear.easemove")
 
+local _MATH = require("lib.math")
+
 ---@class Actor.Gear.Jump : Core.Gear
 ---@field protected _transform Actor.Component.Transform
 ---@field protected _process int
@@ -15,6 +17,9 @@ local _Easemove = require("actor.gear.easemove")
 ---@field protected _downSpeed number
 ---@field protected _topZ int
 local _Jump = require("core.class")(_Gear)
+
+local ProcessEnum = {Up1 = 1, Up2 = 2, Up3 = 3, Down1 = 4, Down2 = 5, Ground = 6}
+_Jump.ProcessEnum = ProcessEnum
 
 ---@param transform Actor.Component.Transform
 ---@param aspect Actor.Component.Aspect
@@ -32,17 +37,32 @@ function _Jump:Update(rate)
     end
 
     self._easemove:Update(rate)
+    
+    if (self._process == ProcessEnum.Up1 and self._easemove:GetPower() <= self._nextProcessUpPower) then
+        self._process = ProcessEnum.Up2
+        self._nextProcessUpPower = _MATH.GetFixedDecimal(self._upPower * 0.3)
 
-    if (self._process == 1 and not self._easemove.isRunning) then
-        self._process = 2
-        self._topZ = self._transform.position.z
+        self:_Func(self._process)
+    elseif (self._process == ProcessEnum.Up2 and self._easemove:GetPower() <= self._nextProcessUpPower) then
+        self._process = ProcessEnum.Up3
+        self:_Func(self._process)
+    elseif (self._process == ProcessEnum.Up3 and not self._easemove.isRunning) then
+        self._process = ProcessEnum.Down1
         self._easemove:Enter("z", 0, -self._downSpeed, 1)
-        self:_Func(2)
-    elseif (self._process == 2 and self._transform.position.z > 0) then
-        self._process = 3
+        self._nextProcessZPosValue = _MATH.GetFixedDecimal(
+            self._transform.position.z * 0.6
+        )
+        self:_Func(self._process)
+    elseif (self._process == ProcessEnum.Down1 and
+            self._transform.position.z >= self._nextProcessZPosValue
+        ) then
+        self._process = ProcessEnum.Down2
+        self:_Func(self._process)
+    elseif (self._process == ProcessEnum.Down2 and self._transform.position.z > 0) then
+        self._process = ProcessEnum.Ground
         self._transform.position.z = 0
         self._transform.positionTick = true
-        self:_Func(3)
+        self:_Func(self._process)
         self:Exit()
     end
 end
@@ -55,10 +75,13 @@ function _Jump:Enter(upPower, upSpeed, downSpeed)
     _Gear.Enter(self)
 
     self._easemove:Enter("z", upPower, upSpeed, -1)
+    self._upPower = upPower
+    self._nextProcessUpPower = _MATH.GetFixedDecimal(self._upPower * 0.75)
+    self._nextProcessZPosValue = 0
     self._downSpeed = downSpeed
-    self._process = 1
+    self._process = ProcessEnum.Up1
     self._topZ = self._transform.position.z
-    self:_Func(1)
+    self:_Func(self._process)
 end
 
 ---@return int
