@@ -1,6 +1,6 @@
 local npk = require("npk")
 
-npk.extractNPK("sprite_character_swordman_equipment_avatar_coat.NPK")
+npk.extractNPK("sprite_character_swordman_effect_skill_icon.NPK")
 
 
 --[[

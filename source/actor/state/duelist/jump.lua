@@ -35,7 +35,6 @@ end
 function _Jump:Init(entity, ...)
     _Base.Init(self, entity, ...)
 
-
     self._xEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._yEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
 

@@ -8,6 +8,7 @@
 local Common = require("UI.ui_common")
 
 local _TABLE = require("lib.table")
+local _RESOURCE = require("lib.resource")
 
 -- service
 local SkillSrv = require("actor.service.skill")
@@ -50,6 +51,9 @@ function UiModel:Ctor()
         local articleInfo = Common.NewArticleInfo()
         self.mountedEquInfoList[i] = articleInfo
     end
+
+    -- sound of changing article position
+    self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
 end
 
 --- 获取携带的物品列表
@@ -179,6 +183,9 @@ function UiModel:DropArticleItem()
         -- 移动原先悬停处的物品到拖拽之前的位置
         self.articleInfoList[self.articleTableDraggingItemIndex] = hoveringArticleInfo
         self:RequestSetAticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
+
+        -- 播放物品移动音效
+        self:playChangedArticlePosSound()
     end
 
     -- 请求界面设置拖拽项为不可见
@@ -224,6 +231,9 @@ function UiModel:mountEqupment(articleTableIndex, itemInfo)
     -- 在ui上装载新装备
     self.mountedEquInfoList[itemInfo.equInfo.type] = itemInfo
     self:RequestSetEquTableItemInfo(itemInfo.equInfo.type, itemInfo)
+
+    -- 播放物品移动音效
+    self:playChangedArticlePosSound()
 end
 
 --- 卸载装备
@@ -260,6 +270,9 @@ function UiModel:unmountEqupment(equTableIndex, itemInfo)
     EquSrv.Del(self.player, keyTag)
     -- 在服务上调整实体装扮
     AspectSrv.AdjustAvatar(self.player.aspect, self.player.states)
+
+    -- 播放物品移动音效
+    self:playChangedArticlePosSound()
 end
 
 --- 请求界面设置拖拽项为可见性
@@ -728,6 +741,13 @@ function UiModel:GetHp()
     end
 
     return self.player.attributes.hp
+end
+
+function UiModel:playChangedArticlePosSound()
+    -- 播放物品移动音效
+    self.changedArticlePosSoundSource:stop()
+    self.changedArticlePosSoundSource:setVolume(_CONFIG.setting.sound)
+    self.changedArticlePosSoundSource:play()
 end
 
 return UiModel
