@@ -1,8 +1,5 @@
 --[[
-	desc: UpperSlash, a state of Swordman.
-	author: SkyFvcker
-	since: 2018-7-30
-	alter: 2019-5-16
+	desc: AshenFork, a state of Swordman.
 ]]--
 
 local _SOUND = require("lib.sound")
