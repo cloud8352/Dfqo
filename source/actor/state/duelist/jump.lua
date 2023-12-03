@@ -64,19 +64,21 @@ function _Jump:NormalUpdate(dt, rate)
         _INPUT.IsHold(self._entity.input, "jump")
         then
         local jumpParam = self._jumpParam
-        self._jump:Enter(jumpParam.power, jumpParam.speed, jumpParam.speed * 0.3)
+        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.5)
     end
     -- 判断是否常按了方向键
     if not self.isOnGround then
         local needEaseMoveX = false
         local easemoveParam = self._easemoveParam
-        if _INPUT.IsHold(self._entity.input, "left") and
-            self._entity.transform.direction == -1
+        if _INPUT.IsHold(self._entity.input, "left")
             then
+            self._entity.transform.direction = -1
+            self._entity.transform.scaleTick = 1
             needEaseMoveX = true
-        elseif _INPUT.IsHold(self._entity.input, "right") and
-            self._entity.transform.direction == 1
+        elseif _INPUT.IsHold(self._entity.input, "right")
             then
+            self._entity.transform.direction = 1
+            self._entity.transform.scaleTick = 1
             needEaseMoveX = true
         end
         if needEaseMoveX then
@@ -105,6 +107,12 @@ function _Jump:NormalUpdate(dt, rate)
 
     if self.autoPlayStateToEnd then
         _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
+    end
+
+    -- 空中技能逻辑
+    if _INPUT.IsPressed(self._entity.input, "counterAttack") then
+        print("_Jump:NormalUpdate(): jump -> ashenFork")
+        _STATE.Play(self._entity.states, "ashenFork")
     end
 end
 
