@@ -5,6 +5,8 @@
 	alter: 2022-11-15
 ]] --
 
+local Util = require("source.util.Util")
+
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
@@ -17,6 +19,8 @@ local Widget = require("UI.Widget")
 
 ---@class TitleBar
 local TitleBar = require("core.class")(Widget)
+
+local TitleBarMargin = 30 * Util.GetWindowSizeScale()
 
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
@@ -133,7 +137,8 @@ function TitleBar:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
     local closeBtnWidth = self.closeBtn:GetWidth()
-    self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - 10, y + self.topMargin + 15)
+    self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - 10,
+                            y + self.topMargin + 15 * Util.GetWindowSizeScale())
 
     -- position
     self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
@@ -143,7 +148,7 @@ end
 
 function TitleBar:SetSize(width, height)
     -- 关闭按钮
-    self.closeBtn:SetSize(height - 30, height - 30)
+    self.closeBtn:SetSize(height - TitleBarMargin, height - TitleBarMargin)
 
     Widget.SetSize(self, width, height)
 end

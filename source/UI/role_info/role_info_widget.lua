@@ -8,6 +8,7 @@
 local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
+local _MATH = require("lib.math")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
@@ -21,8 +22,8 @@ local UiModel = require("UI.ui_model")
 local Util = require("source.util.Util")
 
 
-local LeftPartWidth = 570
-local EachPartSpace = 30
+local LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
+local EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())
 
 ---@class RoleInfoWidget
 local RoleInfoWidget = require("core.class")(Widget)

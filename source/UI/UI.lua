@@ -61,7 +61,7 @@ function UI.Init()
     local pushBtnWindow = Window.New()
     UI.characterTopBtn = PushButton.New(pushBtnWindow)
     UI.characterTopBtn:SetPosition(10, 10)
-    UI.characterTopBtn:SetSize(80, 80)
+    UI.characterTopBtn:SetSize(80 * Util.GetWindowSizeScale(), 80 * Util.GetWindowSizeScale())
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
     UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
@@ -73,8 +73,11 @@ function UI.Init()
 
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
-    UI.characterInfoWindow:SetSize(1040, 670)
-    UI.characterInfoWindow:SetPosition(220, 40)
+    UI.characterInfoWindow:SetSize(1040 * Util.GetWindowSizeScale(),
+                            670 * Util.GetWindowSizeScale())
+    local characterInfoWindowWidth, _ = UI.characterInfoWindow:GetSize()
+    local characterInfoWindowOriginXPos = (Util.GetWindowWidth() - characterInfoWindowWidth) / 2
+    UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, 90)
     UI.characterInfoWindow:SetVisible(false)
 
     UI.roleInfoWidget = RoleInfoWidget.New(UI.characterInfoWindow, UI.model)
@@ -130,8 +133,8 @@ function UI.Init()
 
     -- comboBox test
     UI.mapSelectComboBox = ComboBox.New(pushBtnWindow)
-    UI.mapSelectComboBox:SetSize(300, 45)
-    UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 350, 150)
+    UI.mapSelectComboBox:SetSize(200, 45)
+    UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 210, 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(pushBtnWindow, UI.mapSelectComboBox)
 
@@ -140,7 +143,9 @@ function UI.Init()
 
     -- skill dock
     UI.skillDockViewFrame = SkillDockViewFrame.New(pushBtnWindow, UI.model)
-    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100, Util.GetWindowHeight() - 180)
+    local _, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
+    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100,
+                                    Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(pushBtnWindow, UI.skillDockViewFrame)
 

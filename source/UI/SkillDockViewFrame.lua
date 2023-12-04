@@ -8,6 +8,7 @@
 local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
+local _MATH = require("lib.math")
 
 local WindowManager = require("UI.WindowManager")
 local Label = require("UI.Label")
@@ -33,7 +34,8 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 
     self.model = model
 
-    local defaultItemWidth = 80
+    local defaultItemWidth = 65 * Util.GetWindowSizeScale()
+    defaultItemWidth = _MATH.Round(defaultItemWidth)
     self.width = defaultItemWidth * 6 + ItemSpace * 5
     self.lastWidth = 0
     self.height = ItemSpace + defaultItemWidth * 2
@@ -293,6 +295,10 @@ end
 function SkillDockViewFrame:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
+end
+
+function SkillDockViewFrame:GetSize()
+    return self.width, self.height
 end
 
 function SkillDockViewFrame:SetSize(width, height)

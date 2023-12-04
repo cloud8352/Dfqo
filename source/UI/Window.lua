@@ -5,11 +5,14 @@
 	alter: 2022-11-15
 ]] --
 
+local _Util = require("source.util.Util")
+
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
+local _MATH = require("lib.math")
 
 local TitleBar = require("UI.TitleBar")
 local WindowManager = require("UI.WindowManager")
@@ -18,8 +21,8 @@ local Widget = require("UI.Widget")
 ---@class Window
 local Window = require("core.class")()
 
-local MarginSpace = 15
-local TitleBarHeight = 50
+local MarginSpace =  _MATH.Round(15 * _Util.GetWindowSizeScale())
+local TitleBarHeight =  _MATH.Round(50 * _Util.GetWindowSizeScale())
 
 function Window:Ctor()
     -- WindowLayerIndex

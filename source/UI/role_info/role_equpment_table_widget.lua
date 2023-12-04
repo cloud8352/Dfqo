@@ -9,6 +9,7 @@ local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _TABLE = require("lib.table")
+local _MATH = require("lib.math")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
@@ -24,7 +25,8 @@ local Util = require("source.util.Util")
 local RoleEquTableWidget = require("core.class")(Widget)
 
 
-local ItemWidth = Common.ArticleItemWidth
+local ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+ItemWidth = _MATH.Round(ItemWidth)
 local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
