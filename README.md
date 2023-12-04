@@ -20,6 +20,14 @@ And DFQ use a code hinting plugin named [EmmyLua](https://github.com/EmmyLua/VSC
 
 You can learn more in [my blog](https://musoucrow.github.io). 
 
+## 开发环境
+
+推荐使用 Visual Studio Code 进行代码阅读和编写，步骤如下：
+
+- 安装 Visual Studio Code，安装方法可自行在网上搜索
+- 在 Visual Studio Code 插件商店中安装 EmmyLua 插件
+- 使用 Visual Studio Code 打开项目目录
+
 
 
 ## 启动
@@ -42,7 +50,7 @@ _CONFIG -> setting:
         sound 为音效音量大小
 
 _CONFIG -> code:
-         up 为向上键值
+        up 为向上键值
         down 为向下键值
         left 为向左键值
         right 为向右键值
