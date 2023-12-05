@@ -138,8 +138,8 @@ function AshenFork:Enter(laterState, skill)
 
 
     _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
-    self.xEasemove:Enter("x", 7, 0, self._entity.transform.direction)
-    self.zEasemove:Enter("z", 0, -3, 1)
+    self.xEasemove:Enter("x", 6, 0, self._entity.transform.direction)
+    self.zEasemove:Enter("z", 0, -2.5, 1)
 end
 
 function AshenFork:Exit(nextState)

@@ -1,7 +1,6 @@
 --[[
-	desc: HopSmash, a state of Swordman.
+	desc: Jump, a state of Swordman.
 	author: keke
-	since: 2022-9-3
 ]]--
 
 local _SOUND = require("lib.sound")
@@ -12,6 +11,7 @@ local _TIME = require("lib.time")
 
 local _Easemove = require("actor.gear.easemove")
 local GearJump = require("actor.gear.jump")
+local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
 
 ---@class Actor.State.Duelist.Swordman.HopSmash:Actor.State
@@ -30,6 +30,8 @@ function _Jump:Ctor(data, ...)
     self.autoPlayStateToEnd = false
     self.startTime = 0
     self.isOnGround = false
+    self.jumpStatus = GearJump.ProcessEnum.Ground
+    self.isJumpAttack = false
 end
 
 function _Jump:Init(entity, ...)
@@ -38,33 +40,46 @@ function _Jump:Init(entity, ...)
     self._xEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._yEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
 
+    self.jumpAttack = _Attack.New(self._entity)
+
     -- 跳跃动作
     self._jump = GearJump.New(self._entity.transform, self._entity.aspect, function (caller, param)
         -- print("_Jump state jump action func excuted! param: "..param)
-        if GearJump.ProcessEnum.Up1 == param then
-            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
-        elseif GearJump.ProcessEnum.Up2 == param then
-            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[2])
-        elseif GearJump.ProcessEnum.Down2 == param then
-            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
-        elseif GearJump.ProcessEnum.Ground == param then
+        self.jumpStatus = param
+
+        if GearJump.ProcessEnum.Ground == self.jumpStatus then
             _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[4])
             _SOUND.Play(self._soundDataSet.swing)
             self.autoPlayStateToEnd = true
             self.isOnGround = true
+            self.isJumpAttack = false
             self._xEasemove:Exit()
             self._yEasemove:Exit()
         end
+
+        if self.isJumpAttack then
+            return
+        end
+
+        self:updateSkyAspectFrameAni()
     end)
 end
 
 function _Jump:NormalUpdate(dt, rate)
+    local currentFrameAni = _ASPECT.GetPart(self._entity.aspect) ---@type Graphics.Drawable.Frameani
+
+    self._xEasemove:Update(rate)
+    self._yEasemove:Update(rate)
+    self._jump:Update(rate)
+
+    self.jumpAttack:Update(dt)
+
     -- 判断是否常按了跳跃键
     if self.startTime + AddJumpPowerTimeS > _TIME.GetTime() and
         _INPUT.IsHold(self._entity.input, "jump")
         then
         local jumpParam = self._jumpParam
-        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.5)
+        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.55)
     end
     -- 判断是否常按了方向键
     if not self.isOnGround then
@@ -101,18 +116,39 @@ function _Jump:NormalUpdate(dt, rate)
         end
     end
 
-    self._xEasemove:Update(rate)
-    self._yEasemove:Update(rate)
-    self._jump:Update(rate)
+    -- jump attack
+    local canJumpAttack = false
+    if self.isOnGround == false and self.isJumpAttack == false then
+        canJumpAttack = true
+    elseif self.isJumpAttack and currentFrameAni:GetTick() > 2 then
+        canJumpAttack = true
+    end
+    if canJumpAttack then
+        if _INPUT.IsPressed(self._entity.input, "normalAttack") then
+            self.isJumpAttack = true
+            -- print("JumpAttack")
+            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[5])
+            _SOUND.Play(self._soundDataSet.voice[2])
+
+            local skillAttackValues = {
+                {
+                    damageRate = 0.5,
+                    isPhysical = true
+                }
+            }
+            self.jumpAttack:Enter(self._attackDataSet[1], skillAttackValues[1], _)
+        end
+    end
+
+    if self.isJumpAttack then
+        if currentFrameAni:TickEnd() then
+            self.isJumpAttack = false
+            self:updateSkyAspectFrameAni()
+        end
+    end
 
     if self.autoPlayStateToEnd then
         _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
-    end
-
-    -- 空中技能逻辑
-    if _INPUT.IsPressed(self._entity.input, "counterAttack") then
-        print("_Jump:NormalUpdate(): jump -> ashenFork")
-        _STATE.Play(self._entity.states, "ashenFork")
     end
 end
 
@@ -122,13 +158,16 @@ function _Jump:Enter(laterState, skill)
     self.autoPlayStateToEnd = false
     self.startTime = _TIME.GetTime()
     self.isOnGround = false
+    self.jumpStatus = GearJump.ProcessEnum.Ground
+    self.isJumpAttack = false
 
     self._skill = skill
     self._xEasemove:Exit()
     self._yEasemove:Exit()
     self._jump:Exit()
+    self.jumpAttack:Exit()
 
-    _SOUND.Play(self._soundDataSet.voice)
+    _SOUND.Play(self._soundDataSet.voice[1])
 end
 
 function _Jump:Exit(nextState)
@@ -140,6 +179,21 @@ function _Jump:Exit(nextState)
 
     self._xEasemove:Exit()
     self._yEasemove:Exit()
+    self._jump:Exit()
+    self.jumpAttack:Exit()
+end
+
+function _Jump:updateSkyAspectFrameAni()
+    local jumpStatus = self.jumpStatus
+    if GearJump.ProcessEnum.Up1 == jumpStatus then
+        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
+    elseif GearJump.ProcessEnum.Up2 == jumpStatus then
+        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[2])
+    elseif GearJump.ProcessEnum.Down1 == jumpStatus then
+        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
+    elseif GearJump.ProcessEnum.Down2 == jumpStatus then
+        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
+    end
 end
 
 return _Jump
