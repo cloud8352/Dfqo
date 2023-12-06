@@ -15,7 +15,7 @@ local _MATH = require("lib.math")
 ---@field protected _easemove Actor.Gear.Easemove
 ---@field protected _Func function
 ---@field protected _downSpeed number
----@field protected _topZ int
+---@field protected _originZ int
 local _Jump = require("core.class")(_Gear)
 
 local ProcessEnum = {Up1 = 1, Up2 = 2, Up3 = 3, Down1 = 4, Down2 = 5, Ground = 6}
@@ -49,12 +49,10 @@ function _Jump:Update(rate)
     elseif (self._process == ProcessEnum.Up3 and not self._easemove.isRunning) then
         self._process = ProcessEnum.Down1
         self._easemove:Enter("z", 0, -self._downSpeed, 1)
-        self._nextProcessZPosValue = _MATH.GetFixedDecimal(
-            self._transform.position.z * 0.6
-        )
+        self._topZPosValue = self._transform.position.z
         self:_Func(self._process)
     elseif (self._process == ProcessEnum.Down1 and
-            self._transform.position.z >= self._nextProcessZPosValue
+            self._transform.position.z >= self._topZPosValue * 0.7
         ) then
         self._process = ProcessEnum.Down2
         self:_Func(self._process)
@@ -77,10 +75,10 @@ function _Jump:Enter(upPower, upSpeed, downSpeed)
     self._easemove:Enter("z", upPower, upSpeed, -1)
     self._upPower = upPower
     self._nextProcessUpPower = _MATH.GetFixedDecimal(self._upPower * 0.75)
-    self._nextProcessZPosValue = 0
+    self._topZPosValue = 0
     self._downSpeed = downSpeed
     self._process = ProcessEnum.Up1
-    self._topZ = self._transform.position.z
+    self._originZ = self._transform.position.z
     self:_Func(self._process)
 end
 
@@ -96,7 +94,7 @@ end
 
 ---@return number
 function _Jump:GetZRate()
-    return self._transform.position.z / self._topZ
+    return self._transform.position.z / self._originZ
 end
 
 return _Jump

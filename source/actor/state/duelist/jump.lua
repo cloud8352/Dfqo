@@ -79,7 +79,7 @@ function _Jump:NormalUpdate(dt, rate)
         _INPUT.IsHold(self._entity.input, "jump")
         then
         local jumpParam = self._jumpParam
-        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.55)
+        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.5)
     end
     -- 判断是否常按了方向键
     if not self.isOnGround then
@@ -120,7 +120,7 @@ function _Jump:NormalUpdate(dt, rate)
     local canJumpAttack = false
     if self.isOnGround == false and self.isJumpAttack == false then
         canJumpAttack = true
-    elseif self.isJumpAttack and currentFrameAni:GetTick() > 2 then
+    elseif self.isJumpAttack and currentFrameAni:GetTick() > 3 then
         canJumpAttack = true
     end
     if canJumpAttack then
@@ -190,7 +190,7 @@ function _Jump:updateSkyAspectFrameAni()
     elseif GearJump.ProcessEnum.Up2 == jumpStatus then
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[2])
     elseif GearJump.ProcessEnum.Down1 == jumpStatus then
-        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
+        _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[2])
     elseif GearJump.ProcessEnum.Down2 == jumpStatus then
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
     end
