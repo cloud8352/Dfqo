@@ -31,6 +31,9 @@ end
 ---@param path string
 ---@return string
 function _FILE.ReadFile(path)
+	if not _FILE.Exists(path) then
+		print("_FILE.ReadFile() ", "file not exists, ", path)
+	end
 	return love.filesystem.read(path)
 end
 

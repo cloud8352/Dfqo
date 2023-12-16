@@ -572,6 +572,18 @@ function UiModel:SetPlayer(player)
     articleInfo.equInfo.type = Common.EquType.Weapeon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/katana",
+    nil, nil, nil)
+    local articleInfo = self.articleInfoList[8]
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    articleInfo.uuid = 8
+    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.name = resMgrEquData.name
+    articleInfo.desc = resMgrEquData.comment or ""
+    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.resMgrEquData = resMgrEquData
+
     -- equ
     local itemDataFromContainer = self.player.equipments.container:Get("belt")
     if itemDataFromContainer then

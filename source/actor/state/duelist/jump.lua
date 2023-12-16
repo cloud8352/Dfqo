@@ -116,29 +116,7 @@ function _Jump:NormalUpdate(dt, rate)
         end
     end
 
-    -- jump attack
-    local canJumpAttack = false
-    if self.isOnGround == false and self.isJumpAttack == false then
-        canJumpAttack = true
-    elseif self.isJumpAttack and currentFrameAni:GetTick() > 3 then
-        canJumpAttack = true
-    end
-    if canJumpAttack then
-        if _INPUT.IsPressed(self._entity.input, "normalAttack") then
-            self.isJumpAttack = true
-            -- print("JumpAttack")
-            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[5])
-            _SOUND.Play(self._soundDataSet.voice[2])
-
-            local skillAttackValues = {
-                {
-                    damageRate = 0.5,
-                    isPhysical = true
-                }
-            }
-            self.jumpAttack:Enter(self._attackDataSet[1], skillAttackValues[1], _)
-        end
-    end
+    self:UpdateJumpAttackLogic(currentFrameAni)
 
     if self.isJumpAttack then
         if currentFrameAni:TickEnd() then
@@ -170,6 +148,7 @@ function _Jump:Enter(laterState, skill)
     _SOUND.Play(self._soundDataSet.voice[1])
 end
 
+---@param nextState Actor.State
 function _Jump:Exit(nextState)
     if (nextState == self) then
         return
@@ -193,6 +172,32 @@ function _Jump:updateSkyAspectFrameAni()
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[2])
     elseif GearJump.ProcessEnum.Down2 == jumpStatus then
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[3])
+    end
+end
+
+---@param currentFrameAni Graphics.Drawable.Frameani
+function _Jump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
+    local canJumpAttack = false
+    if self.isOnGround == false and self.isJumpAttack == false then
+        canJumpAttack = true
+    elseif self.isJumpAttack and currentFrameAni:GetTick() > 3 then
+        canJumpAttack = true
+    end
+    if canJumpAttack then
+        if _INPUT.IsPressed(self._entity.input, "normalAttack") then
+            self.isJumpAttack = true
+            -- print("JumpAttack")
+            _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[5])
+            _SOUND.Play(self._soundDataSet.voice[2])
+
+            local skillAttackValues = {
+                {
+                    damageRate = 0.5,
+                    isPhysical = true
+                }
+            }
+            self.jumpAttack:Enter(self._attackDataSet[1], skillAttackValues[1], _)
+        end
     end
 end
 
