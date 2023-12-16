@@ -8,6 +8,7 @@ local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
 local _INPUT = require("actor.service.input")
 local _FACTORY = require("actor.factory")
+local SkillSrv = require("actor.service.skill")
 
 local _Easemove = require("actor.gear.easemove")
 local GearJump = require("actor.gear.jump")
@@ -23,8 +24,13 @@ function SwordmanJump:NormalUpdate(dt, rate)
 
     -- 空中技能逻辑
     if _INPUT.IsPressed(self._entity.input, "counterAttack") then
-        print("SwordmanJump:NormalUpdate(): jump -> ashenFork")
-        _STATE.Play(self._entity.states, "ashenFork")
+        local skill = SkillSrv.GetSkillWithPath(self._entity.skills, "swordman/ashen_fork")
+        if skill then
+            if skill:CanUse() then
+                print("SwordmanJump:NormalUpdate(): jump -> ashenFork")
+                skill:Use()
+            end
+        end
     end
 end
 
