@@ -85,6 +85,24 @@ function AshenFork:NormalUpdate(dt, rate)
 
     if self._entity.transform.position.z < 0 then
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
+
+        -- effect
+        local needAddEffect = false
+        if self.effectEntity == nil then
+            needAddEffect = true
+        elseif self.effectEntity and self.effectEntity.identity.destroyProcess == 1 then
+            needAddEffect = true
+        end
+        if needAddEffect then
+            local effectParam = {
+                x = self._entity.transform.position.x,
+                y = self._entity.transform.position.y,
+                z = self._entity.transform.position.z,
+                direction = self._entity.transform.direction,
+                entity = self._entity
+            }
+            self.effectEntity = _FACTORY.New(self._actorDataSet[1], effectParam)
+        end
     elseif self._entity.transform.position.z > 0 then
         self.xEasemove:Exit()
         self.zEasemove:Exit()
@@ -108,7 +126,7 @@ function AshenFork:NormalUpdate(dt, rate)
             }
         }
 
-        local endOnGroundBulletEntity = _FACTORY.New(self._actorDataSet[1], param)
+        local endOnGroundBulletEntity = _FACTORY.New(self._actorDataSet[2], param)
         self.attack:Enter(self._attackDataSet[1], skillAttackValues[1], _, _, true)
         self.attack.collision[_ASPECT.GetPart(endOnGroundBulletEntity.aspect)] = "attack"
 
@@ -140,6 +158,13 @@ function AshenFork:Enter(laterState, skill)
     _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
     self.xEasemove:Enter("x", 6, 0, self._entity.transform.direction)
     self.zEasemove:Enter("z", 0, -2.5, 1)
+
+    -- effect
+    if self.effectEntity then
+        self.effectEntity.identity.destroyProcess = 1
+        ---@type Actor.Entity
+        self.effectEntity = nil
+    end
 end
 
 function AshenFork:Exit(nextState)
@@ -156,6 +181,13 @@ function AshenFork:Exit(nextState)
     self.attack:Exit()
     self.xEasemove:Exit()
     self.zEasemove:Exit()
+
+    -- effect
+    if self.effectEntity then
+        self.effectEntity.identity.destroyProcess = 1
+        ---@type Actor.Entity
+        self.effectEntity = nil
+    end
 end
 
 function AshenFork:EnterAttack()
