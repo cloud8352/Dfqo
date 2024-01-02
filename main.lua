@@ -16,7 +16,6 @@ local _MUSIC = require("lib.music")
 local _RESOURCE = require("lib.resource")
 local _DIRECTOR = require("director")
 local _CONFIG = require("config")
-local Timer = require("util.gear.timer")
 
 local _User = require("user")
 

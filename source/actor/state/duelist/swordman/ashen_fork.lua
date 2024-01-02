@@ -18,6 +18,7 @@ local _TIME = require("lib.time")
 local _Easemove = require("actor.gear.easemove")
 local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
+local Timer = require("util.gear.timer")
 
 ---@class Actor.State.Duelist.Swordman.UpperSlash:Actor.State
 ---@field protected attack Actor.Gear.Attack
@@ -38,6 +39,7 @@ local _Base = require("actor.state.base")
 local AshenFork = require("core.class")(_Base)
 
 local AttackJudgeIntervalS = 0.7
+local DropWaitTimeS = 0.13
 
 ---@param attack Actor.Gear.Attack
 ---@param entity Actor.Entity
@@ -60,21 +62,24 @@ end
 function AshenFork:Init(entity)
     _Base.Init(self, entity)
 
-
     self.originTImeS = 0
     self.nextAttackTimeS = 0
     self.originZ = 0
     self.buff = nil
+    self.isDropping = false
+    self.isOnGround = false
 
     self.attack = _Attack.New(self._entity)
     self.xEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self.zEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
+    self.zWaitEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
 end
 
 function AshenFork:NormalUpdate(dt, rate)
     self.attack:Update(dt)
     self.xEasemove:Update(rate)
     self.zEasemove:Update(rate)
+    self.zWaitEasemove:Update(rate)
 
     if self._entity.transform.position.z - self.originZ > 120 then
         -- buff
@@ -86,26 +91,17 @@ function AshenFork:NormalUpdate(dt, rate)
     if self._entity.transform.position.z < 0 then
         _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
 
-        -- effect
-        local needAddEffect = false
-        if self.effectEntity == nil then
-            needAddEffect = true
-        elseif self.effectEntity and self.effectEntity.identity.destroyProcess == 1 then
-            needAddEffect = true
+        -- effect update
+        if self.effectEntity and self.effectEntity.identity.destroyProcess == 1 then
+            self.effectEntity.identity.destroyProcess = 0
         end
-        if needAddEffect then
-            local effectParam = {
-                x = self._entity.transform.position.x,
-                y = self._entity.transform.position.y,
-                z = self._entity.transform.position.z,
-                direction = self._entity.transform.direction,
-                entity = self._entity
-            }
-            self.effectEntity = _FACTORY.New(self._actorDataSet[1], effectParam)
-        end
-    elseif self._entity.transform.position.z > 0 then
+
+    elseif self._entity.transform.position.z > 0 and not self.isOnGround then
+        self.isOnGround = true
+
         self.xEasemove:Exit()
         self.zEasemove:Exit()
+        self.zWaitEasemove:Exit()
 
         self._entity.transform.position.z = 0
         self._entity.transform.positionTick = true
@@ -140,6 +136,28 @@ function AshenFork:NormalUpdate(dt, rate)
         self.nextAttackTimeS = self.nextAttackTimeS + AttackJudgeIntervalS
     end
 
+    if _TIME.GetTime() - self.originTImeS > DropWaitTimeS and
+        not self.isDropping
+    then
+        self.isDropping = true
+
+        self.xEasemove:Enter("x", 6, 0, self._entity.transform.direction)
+        self.zEasemove:Enter("z", 0, -3.0, 1)
+        self.zWaitEasemove:Exit()
+
+        -- effect
+        if self.effectEntity == nil then
+            local effectParam = {
+                x = self._entity.transform.position.x,
+                y = self._entity.transform.position.y,
+                z = self._entity.transform.position.z,
+                direction = self._entity.transform.direction,
+                entity = self._entity
+            }
+            self.effectEntity = _FACTORY.New(self._actorDataSet[1], effectParam)
+        end
+    end
+
     _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
 end
 
@@ -149,15 +167,19 @@ function AshenFork:Enter(laterState, skill)
     self.nextAttackTimeS = 0
     self.originZ = self._entity.transform.position.z
     self.buff = nil
+    self.isDropping = false
+    self.isOnGround = false
 
     self.attack:Exit()
     self.xEasemove:Exit()
     self.zEasemove:Exit()
+    self.zWaitEasemove:Exit()
 
 
     _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[1])
-    self.xEasemove:Enter("x", 6, 0, self._entity.transform.direction)
-    self.zEasemove:Enter("z", 0, -2.5, 1)
+    -- 开始使用技能时短暂在空中停顿一下
+    self.zEasemove:Enter("z", 1, 0, 1)
+    self.zWaitEasemove:Enter("z", 1, 0, -1)
 
     -- effect
     if self.effectEntity then
@@ -181,6 +203,7 @@ function AshenFork:Exit(nextState)
     self.attack:Exit()
     self.xEasemove:Exit()
     self.zEasemove:Exit()
+    self.zWaitEasemove:Exit()
 
     -- effect
     if self.effectEntity then
