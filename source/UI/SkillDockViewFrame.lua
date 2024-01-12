@@ -174,10 +174,10 @@ function SkillDockViewFrame:Update(dt)
     self:MouseEvent()
 
     if (self.lastWidth ~= self.width
-        or self.lastHeight ~= self.height
-        or self.lastHeight ~= self.height
+            or self.lastHeight ~= self.height
+            or self.lastHeight ~= self.height
         )
-        then
+    then
         self:updateData()
     end
 
@@ -422,12 +422,13 @@ function SkillDockViewFrame:updateHoveringItemTipWindowData()
     local tipWindowYPos = 0
     local bgX, bgY = skillItemBgLabel:GetPosition()
     local bgW, bgH = skillItemBgLabel:GetSize()
-    tipWindowXPos = bgX + bgW/2
-    tipWindowYPos = bgY + bgH/2
+    tipWindowXPos = bgX + bgW / 2
+    tipWindowYPos = bgY + bgH / 2
 
     -- info
+    ---@type SkillInfo
     local skillInfo = Common.NewSkillInfo()
-    skillInfo.uuid = 1
+    skillInfo.id = 1
 
     -- 获取服务中正在运行的技能对象
     local skillMap = self.model:GetMapOfTagToSkillObj()

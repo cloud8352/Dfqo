@@ -3,7 +3,8 @@
 	author: keke <243768648@qq.com>
 	since: 2023-7-20
 	alter: 2023-7-21
-]] --
+]]
+--
 
 local Widget = require("UI.Widget")
 local Label = require("UI.Label")
@@ -20,11 +21,11 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
     self.isArticleInfoChanged = false
 
     self.nameLabel = Label.New(parentWindow)
-    self.nameLabel:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop})
+    self.nameLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
 
     self.type = Common.ArticleType.Empty
     self.typeLabel = Label.New(parentWindow)
-    self.typeLabel:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop})
+    self.typeLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
 
     --- 消耗品属性类型 到 标签控件 的映射表
     ---@type table<ConsumablePropType, Label>
@@ -34,7 +35,7 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
     self.mapOfConsumablePropTypeToValue = {}
     for _, typeValue in pairs(Common.ConsumablePropType) do
         local label = Label.New(parentWindow)
-        label:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop})
+        label:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
         self.mapOfConsumablePropTypeToLabel[typeValue] = label
 
         self.mapOfConsumablePropTypeToValue[typeValue] = 0
@@ -48,7 +49,7 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
     self.mapOfEquPropTypeToValue = {}
     for _, typeValue in pairs(Common.EquPropType) do
         local label = Label.New(parentWindow)
-        label:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop})
+        label:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
         self.mapOfEquPropTypeToLabel[typeValue] = label
 
         self.mapOfEquPropTypeToValue[typeValue] = 0
@@ -56,14 +57,14 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
 
     --- description
     self.descriptionLabel = Label.New(parentWindow)
-    self.descriptionLabel:SetAlignments({Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop})
+    self.descriptionLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
 end
 
 function HoveringArticleItemTipWidget:Update(dt)
     if (Widget.IsSizeChanged(self)
-        or self.isArticleInfoChanged
+            or self.isArticleInfoChanged
         )
-        then
+    then
         self.nameLabel:Update(dt)
         self.typeLabel:Update(dt)
         --- 更新各属性标签控件
@@ -219,7 +220,7 @@ function HoveringArticleItemTipWidget:AdjustWidgetsVisibilityByProp()
         for _, label in pairs(self.mapOfEquPropTypeToLabel) do
             label:SetVisible(false)
         end
-    elseif self.type == Common.ArticleType.Equpment then
+    elseif self.type == Common.ArticleType.Equipment then
         -- 隐藏消耗品属性控件
         for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
             label:SetVisible(false)
@@ -242,7 +243,7 @@ function HoveringArticleItemTipWidget:SetVisible(isVisible)
 
     self.nameLabel:SetVisible(isVisible)
     self.typeLabel:SetVisible(isVisible)
-    
+
     -- 通过属性调整各控件可见性
     self:AdjustWidgetsVisibilityByProp()
 
@@ -259,11 +260,11 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
 
     local typeStr = ""
     if info.type == Common.ArticleType.Consumable then
-        typeStr = "物品类型：".."消耗品"
-    elseif info.type == Common.ArticleType.Equpment then
-        typeStr = "物品类型：".."装备"
+        typeStr = "物品类型：" .. "消耗品"
+    elseif info.type == Common.ArticleType.Equipment then
+        typeStr = "物品类型：" .. "装备"
     elseif info.type == Common.ArticleType.Material then
-        typeStr = "物品类型：".."材料"
+        typeStr = "物品类型：" .. "材料"
     end
     self.typeLabel:SetText(typeStr)
     self.type = info.type
@@ -295,25 +296,25 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
     local equType = equInfo.type
     local equTypeStr = ""
     if equType == Common.EquType.Belt then
-        equTypeStr = "装备类型：".."Belt"
+        equTypeStr = "装备类型：" .. "Belt"
     elseif equType == Common.EquType.Cap then
-        equTypeStr = "装备类型：".."Cap"
+        equTypeStr = "装备类型：" .. "Cap"
     elseif equType == Common.EquType.Coat then
-        equTypeStr = "装备类型：".."Coat"
+        equTypeStr = "装备类型：" .. "Coat"
     elseif equType == Common.EquType.Face then
-        equTypeStr = "装备类型：".."Face"
+        equTypeStr = "装备类型：" .. "Face"
     elseif equType == Common.EquType.Hair then
-        equTypeStr = "装备类型：".."Hair"
+        equTypeStr = "装备类型：" .. "Hair"
     elseif equType == Common.EquType.Pants then
-        equTypeStr = "装备类型：".."Pants"
+        equTypeStr = "装备类型：" .. "Pants"
     elseif equType == Common.EquType.Shoes then
-        equTypeStr = "装备类型：".."Shoes"
+        equTypeStr = "装备类型：" .. "Shoes"
     elseif equType == Common.EquType.Skin then
-        equTypeStr = "装备类型：".."Skin"
+        equTypeStr = "装备类型：" .. "Skin"
     elseif equType == Common.EquType.Title then
-        equTypeStr = "装备类型：".."Title"
-    elseif equType == Common.EquType.Weapeon then
-        equTypeStr = "装备类型：".."Weapeon"
+        equTypeStr = "装备类型：" .. "Title"
+    elseif equType == Common.EquType.Weapon then
+        equTypeStr = "装备类型：" .. "Weapon"
     end
     label = self.mapOfEquPropTypeToLabel[Common.EquPropType.Type]
     label:SetText(equTypeStr)

@@ -3,7 +3,8 @@
 	author: keke <243768648@qq.com>
 	since: 2022-10-25
 	alter: 2022-10-25
-]] --
+]]
+--
 
 local PushButton = require("UI.PushButton")
 local Window = require("UI.Window")
@@ -74,7 +75,7 @@ function UI.Init()
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
     UI.characterInfoWindow:SetSize(1040 * Util.GetWindowSizeScale(),
-                            670 * Util.GetWindowSizeScale())
+        670 * Util.GetWindowSizeScale())
     local characterInfoWindowWidth, _ = UI.characterInfoWindow:GetSize()
     local characterInfoWindowOriginXPos = (Util.GetWindowWidth() - characterInfoWindowWidth) / 2
     UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, 90)
@@ -145,7 +146,7 @@ function UI.Init()
     UI.skillDockViewFrame = SkillDockViewFrame.New(pushBtnWindow, UI.model)
     local _, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
     UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100,
-                                    Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
+        Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(pushBtnWindow, UI.skillDockViewFrame)
 
@@ -169,7 +170,7 @@ function UI.Init()
     -- mapSelectComboBox
     UI.mapSelectComboBox:SetReceiverOfSelectedItemChanged(UI)
     -- model
-    UI.model:MocConnectSignal(UI.model.RequestSetAticleTableItemInfo, UI)
+    UI.model:MocConnectSignal(UI.model.RequestSetArticleTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetEquTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemInfo, UI)
@@ -180,7 +181,6 @@ function UI.Init()
     -- model - hoveringSkillItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowPosAndInfo, UI)
-
 end
 
 function UI.Update(dt)
@@ -193,7 +193,7 @@ function UI.Update(dt)
 
     if IsShowFps then
         UI.fpsLabel:Update(dt)
-        UI.fpsLabel:SetText("fps: "..tostring(_TIME.GetFPS()))
+        UI.fpsLabel:SetText("fps: " .. tostring(_TIME.GetFPS()))
     end
 
     UI.hpRectBar:SetHp(UI.model:GetHp())
@@ -265,9 +265,9 @@ end
 ---@param sender Object
 ---@param index number
 ---@param itemInfo ArticleInfo
-function UI.OnRequestSetAticleTableItemInfo(my, sender, index, itemInfo)
+function UI.OnRequestSetArticleTableItemInfo(my, sender, index, itemInfo)
     if sender == UI.model then
-        print("UI.OnRequestSetAticleTableItemInfo(my, sender, index, itemInfo)", index, itemInfo.name)
+        print("UI.OnRequestSetArticleTableItemInfo(my, sender, index, itemInfo)", index, itemInfo.name)
         UI.roleInfoWidget:SetArticleTableItemInfo(index, itemInfo)
     end
 end
@@ -284,11 +284,10 @@ function UI.OnRequestSetEquTableItemInfo(my, sender, index, itemInfo)
     end
 end
 
-
 --- 当被请求去设置拖拽项为可见性
 ---@param my Object
 ---@param sender Object
----@param info ArticleInfo
+---@param visible boolean
 function UI.OnRequestSetDraggingItemVisibility(my, sender, visible)
     if sender == UI.model then
         UI.draggingArticleItem:SetVisible(visible)
@@ -325,7 +324,6 @@ end
 
 function UI.OnRequestSetHoveringArticleItemTipWindowPosAndInfo(my, sender, xPos, yPos, info)
     if sender == UI.model then
-
         local gameWindowSizeW = Util.GetWindowWidth()
         local gameWindowSizeH = Util.GetWindowHeight()
         local hoveringItemTipWindowSizeW, hoveringItemTipWindowSizeH = UI.hoveringArticleItemTipWindow:GetSize()
@@ -353,7 +351,6 @@ end
 
 function UI.OnRequestSetHoveringSkillItemTipWindowPosAndInfo(my, sender, xPos, yPos, info)
     if sender == UI.model then
-
         local gameWindowSizeW = Util.GetWindowWidth()
         local gameWindowSizeH = Util.GetWindowHeight()
         local hoveringItemTipWindowSizeW, hoveringItemTipWindowSizeH = UI.hoveringSkillItemTipWindow:GetSize()
@@ -379,7 +376,7 @@ end
 function UI.appendWindowWidget(window, widget)
     -- 将组件添加到窗口组件列表
     ---@type WindowWidgetStruct
-    local windowWidget = _TABLE.Clone(WindowWidgetStruct)
+    local windowWidget = _TABLE.DeepClone(WindowWidgetStruct)
     windowWidget.window = window
     windowWidget.widget = widget
     table.insert(UI.windowWidgetList, windowWidget)

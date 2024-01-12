@@ -9,7 +9,7 @@ local _Mouse = require("lib.mouse")
 
 local WindowManager = {}
 
----@type table<int, Window>
+---@type table<number, Window>
 WindowManager.windowList = {}
 
 ---@param obj Window
@@ -53,11 +53,11 @@ function WindowManager.GetMaxLayerIndex()
 end
 
 --- 当前正被抓取的窗口层数
----@type int
+---@type number
 local grabbingWindowLayerIndex = -1
 
 --- 鼠标是否被上层窗口捕获
---- @param layerIndex int
+--- @param layerIndex number
 function WindowManager.IsMouseCapturedAboveLayer(layerIndex)
     if false == _Mouse.IsHold(1) then 
         grabbingWindowLayerIndex = -1

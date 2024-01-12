@@ -15,7 +15,7 @@ local Widget = require("UI.Widget")
 local Label = require("UI.Label")
 local SkillDockViewItem = require("UI.SkillDockViewItem")
 local Window = require("UI.Window")
-local RoleEquTableWidget = require("UI.role_info.role_equpment_table_widget")
+local RoleEquTableWidget = require("UI.role_info.role_equipment_table_widget")
 local ArticleTableWidget = require("UI.role_info.article_table_widget")
 local UiModel = require("UI.ui_model")
 

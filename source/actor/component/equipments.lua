@@ -14,7 +14,6 @@ local _Container = require("core.container")
 ---@field public container Core.Container
 ---@field public caller Core.Caller
 ---@field public hasWear boolean
----@field public defaultWeaponPath string
 local _Equipments = require("core.class")()
 
 function _Equipments.HandleData(data)

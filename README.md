@@ -108,23 +108,23 @@ config/actor/instance/duelist		// 此目录为角色实例数据的读取路径
 
 - 添加武器的图片放到 asset/image/actor/duelist 目录，如下图所示：
 
-![equpment_img_path](./asset/mark_down/equpment_img_path.png)
+![equipment_img_path](./asset/mark_down/equipment_img_path.png)
 
 - 添加武器的图标放到 asset/image/icon/equipment 目录，如下图所示：
 
-  ![equpment_icon_path](./asset/mark_down/equpment_icon_path.png)
+  ![equipment_icon_path](./asset/mark_down/equipment_icon_path.png)
 
 - 添加武器的图片的偏移中心数据放到 config/asset/sprite/actor/duelist 目录，如下图所示：
 
-![equpment_img_sprite_ox_oy_path](./asset/mark_down/equpment_img_sprite_ox_oy_path.png)
+![equipment_img_sprite_ox_oy_path](./asset/mark_down/equipment_img_sprite_ox_oy_path.png)
 
 - 添加武器的数据放到 config/actor/equipment 目录，如下图所示：
 
-![equpment_data_path](./asset/mark_down/equpment_data_path.png)
+![equipment_data_path](./asset/mark_down/equipment_data_path.png)
 
 - 添加角色武器的碰撞盒数据放到 config/actor/collider/duelist 目录，如下图所示：
 
-![actor_equpment_collider_path](./asset/mark_down/actor_equpment_collider_path.png)
+![actor_equipment_collider_path](./asset/mark_down/actor_equipment_collider_path.png)
 
 - 修改角色碰撞盒是否启用的配置表（config/actor/colliderMap.cfg），如下图所示：
 

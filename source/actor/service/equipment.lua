@@ -19,7 +19,7 @@ function _EQUIPMENT.Set(entity, key, data)
     local edata
 
     if (not data and key == "weapon") then
-        data = _RESMGR.NewEquipmentData(entity.equipments.defaultWeaponPath)
+        data = entity.equipments.container:Get("defaultWeapon"):GetData()
     end
 
     if (equ) then

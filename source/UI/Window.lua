@@ -3,7 +3,8 @@
 	author: keke <243768648@qq.com>
 	since: 2022-11-15
 	alter: 2022-11-15
-]] --
+]]
+--
 
 local _Util = require("source.util.Util")
 
@@ -21,8 +22,8 @@ local Widget = require("UI.Widget")
 ---@class Window
 local Window = require("core.class")()
 
-local MarginSpace =  _MATH.Round(15 * _Util.GetWindowSizeScale())
-local TitleBarHeight =  _MATH.Round(50 * _Util.GetWindowSizeScale())
+local MarginSpace = _MATH.Round(15 * _Util.GetWindowSizeScale())
+local TitleBarHeight = _MATH.Round(50 * _Util.GetWindowSizeScale())
 
 function Window:Ctor()
     -- WindowLayerIndex
@@ -199,13 +200,13 @@ function Window:SetSize(width, height)
         realTitleBarHeight = TitleBarHeight
     end
     self.contentWidget:SetSize(self.width - MarginSpace * 2,
-                        self.height - MarginSpace * 2 - realTitleBarHeight)
+        self.height - MarginSpace * 2 - realTitleBarHeight)
 
     -- 设置标题栏尺寸
     self.titleBar:SetSize(self.width, TitleBarHeight)
 end
 
----@return int, int
+---@return integer, integer
 function Window:GetSize()
     return self.width, self.height
 end
@@ -215,7 +216,7 @@ function Window:SetEnable(enable)
 end
 
 --- 是否可见
----@return visible boolean
+---@return boolean visible
 function Window:IsVisible()
     return self.isVisible
 end
@@ -286,7 +287,7 @@ end
 
 --- 获取窗口所处层数。
 --- 由窗管调用
----@return layerIndex number
+---@return number layerIndex
 function Window:GetWindowLayerIndex()
     return self.windowLayerIndex
 end
@@ -319,7 +320,7 @@ function Window:SetIsTipToolWindow(is)
     self.isTipToolWindow = is
 end
 
----@return isTipToolWindow boolean
+---@return boolean isTipToolWindow
 function Window:IsTipToolWindow()
     return self.isTipToolWindow
 end
@@ -334,7 +335,7 @@ function Window:SetContentWidget(widget)
     end
     self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
     self.contentWidget:SetSize(self.width - MarginSpace * 2,
-                        self.height - MarginSpace * 2 - realTitleBarHeight)
+        self.height - MarginSpace * 2 - realTitleBarHeight)
 end
 
 return Window

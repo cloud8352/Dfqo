@@ -3,7 +3,8 @@
 	author: keke <243768648@qq.com>
 	since: 2023-7-19
 	alter: 2023-7-19
-]] --
+]]
+--
 
 local Common = require("UI.ui_common")
 
@@ -41,13 +42,13 @@ function UiModel:Ctor()
     self.articleTableDraggingItemIndex = -1
 
     -- post init
-    for i = 1, Common.ArticleTableColCount*Common.ArticleTableRowCount do
+    for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
         local articleInfo = Common.NewArticleInfo()
         self.articleInfoList[i] = articleInfo
     end
 
     -- equ
-    for i = 1, Common.EquTableColCount*Common.EquTableRowCount do
+    for i = 1, Common.EquTableColCount * Common.EquTableRowCount do
         local articleInfo = Common.NewArticleInfo()
         self.mountedEquInfoList[i] = articleInfo
     end
@@ -78,8 +79,8 @@ function UiModel:OnRightKeyClickedArticleTableItem(index)
 
     if clickedItemInfo.type == Common.ArticleType.Consumable then
         self:useConsumable(index, clickedItemInfo)
-    elseif clickedItemInfo.type == Common.ArticleType.Equpment then
-        self:mountEqupment(index, clickedItemInfo)
+    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:mountEquipment(index, clickedItemInfo)
     end
 end
 
@@ -91,10 +92,10 @@ function UiModel:OnRightKeyClickedEquTableItem(index)
         return
     end
 
-    if clickedItemInfo.type == Common.ArticleType.Equpment then
-        self:unmountEqupment(index, clickedItemInfo)
+    if clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:unloadEquipment(index, clickedItemInfo)
     else
-        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: item info type is not equpment")
+        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: item info type is not Equipment")
     end
 end
 
@@ -113,16 +114,16 @@ end
 --- 请求去设置物品栏某一显示项的信息
 ---@param index number
 ---@param itemInfo ArticleInfo
-function UiModel:RequestSetAticleTableItemInfo(index, itemInfo)
-    print("UiModel:RequestSetAticleTableItemInfo(index, itemInfo)", index, itemInfo.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetAticleTableItemInfo]
+function UiModel:RequestSetArticleTableItemInfo(index, itemInfo)
+    print("UiModel:RequestSetArticleTableItemInfo(index, itemInfo)", index, itemInfo.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
     if receiverList == nil then
         return
     end
 
     for _, receiver in pairs(receiverList) do
         ---@type function
-        local func = receiver.OnRequestSetAticleTableItemInfo
+        local func = receiver.OnRequestSetArticleTableItemInfo
         if func == nil then
             goto continue
         end
@@ -138,7 +139,7 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:RequestSetEquTableItemInfo(index, itemInfo)
     print("UiModel:RequestSetEquTableItemInfo(index, itemInfo)", index, itemInfo.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetAticleTableItemInfo]
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
     if receiverList == nil then
         return
     end
@@ -151,7 +152,7 @@ function UiModel:RequestSetEquTableItemInfo(index, itemInfo)
         end
 
         func(receiver, self, index, itemInfo)
-        
+
         ::continue::
     end
 end
@@ -178,11 +179,11 @@ function UiModel:DropArticleItem()
         -- 移动拖拽项到当前悬停处
         local draggingArticleInfo = self.articleInfoList[self.articleTableDraggingItemIndex]
         self.articleInfoList[self.articleTableHoveringItemIndex] = draggingArticleInfo
-        self:RequestSetAticleTableItemInfo(self.articleTableHoveringItemIndex, draggingArticleInfo)
+        self:RequestSetArticleTableItemInfo(self.articleTableHoveringItemIndex, draggingArticleInfo)
 
         -- 移动原先悬停处的物品到拖拽之前的位置
         self.articleInfoList[self.articleTableDraggingItemIndex] = hoveringArticleInfo
-        self:RequestSetAticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
+        self:RequestSetArticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
 
         -- 播放物品移动音效
         self:playChangedArticlePosSound()
@@ -209,19 +210,19 @@ function UiModel:useConsumable(index, itemInfo)
         itemInfo.count = 0
         itemInfo.type = Common.ArticleType.Empty
     end
-    self:RequestSetAticleTableItemInfo(index, itemInfo)
+    self:RequestSetArticleTableItemInfo(index, itemInfo)
 end
 
 --- 装载装备
 ---@param articleTableIndex number
 ---@param itemInfo ArticleInfo
-function UiModel:mountEqupment(articleTableIndex, itemInfo)
-    print("UiModel:mountEqupment(index, itemInfo)", articleTableIndex, itemInfo.name)
+function UiModel:mountEquipment(articleTableIndex, itemInfo)
+    print("UiModel:mountEquipment(index, itemInfo)", articleTableIndex, itemInfo.name)
 
     local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
     -- 在ui上卸载原有装备到物品栏
     self.articleInfoList[articleTableIndex] = lastEquItemInfo
-    self:RequestSetAticleTableItemInfo(articleTableIndex, lastEquItemInfo)
+    self:RequestSetArticleTableItemInfo(articleTableIndex, lastEquItemInfo)
     -- 在服务上装载新装备
     local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
     EquSrv.Equip(self.player, keyTag, itemInfo.equInfo.resMgrEquData)
@@ -239,11 +240,11 @@ end
 --- 卸载装备
 ---@param equTableIndex number
 ---@param itemInfo ArticleInfo
-function UiModel:unmountEqupment(equTableIndex, itemInfo)
-    print("UiModel:unmountEqupment(index, itemInfo)", equTableIndex, itemInfo.name)
+function UiModel:unloadEquipment(equTableIndex, itemInfo)
+    print("UiModel:unloadEquipment(index, itemInfo)", equTableIndex, itemInfo.name)
     -- 在ui上找到物品栏中第一个空位置
     local emptyItemIndex = -1
-    ---@type ArticleItemInfo
+    ---@type ArticleInfo
     local emptyItemInfo = nil
     for i, info in pairs(self.articleInfoList) do
         if info.type == Common.ArticleType.Empty then
@@ -253,14 +254,14 @@ function UiModel:unmountEqupment(equTableIndex, itemInfo)
         end
     end
     if emptyItemInfo == nil then
-        print("UiModel:unmountEqupment(index, itemInfo)", "article table has no empty space")
+        print("UiModel:unloadEquipment(index, itemInfo)", "article table has no empty space")
         return
     end
 
     -- 在ui上卸载到物品栏的空位置
     self.articleInfoList[emptyItemIndex] = itemInfo
-    self:RequestSetAticleTableItemInfo(emptyItemIndex, itemInfo)
-    
+    self:RequestSetArticleTableItemInfo(emptyItemIndex, itemInfo)
+
     -- 在ui上将装备栏对应位置设置为空
     self.mountedEquInfoList[equTableIndex] = emptyItemInfo
     self:RequestSetEquTableItemInfo(equTableIndex, emptyItemInfo)
@@ -276,7 +277,7 @@ function UiModel:unmountEqupment(equTableIndex, itemInfo)
 end
 
 --- 请求界面设置拖拽项为可见性
----@param info ArticleInfo
+---@param visible boolean
 function UiModel:RequestSetDraggingItemVisibility(visible)
     print("UiModel:RequestSetDraggingItemVisibility(visible)", visible)
     local receiverList = self.mapOfSignalToReceiverList[self.RequestSetDraggingItemVisibility]
@@ -292,7 +293,7 @@ function UiModel:RequestSetDraggingItemVisibility(visible)
         end
 
         func(receiver, self, visible)
-        
+
         ::continue::
     end
 end
@@ -314,7 +315,7 @@ function UiModel:RequestSetDraggingItemInfo(info)
         end
 
         func(receiver, self, info)
-        
+
         ::continue::
     end
 end
@@ -337,7 +338,7 @@ function UiModel:RequestMoveDraggingItem(xPos, yPos)
         end
 
         func(receiver, self, xPos, yPos)
-        
+
         ::continue::
     end
 end
@@ -359,7 +360,7 @@ function UiModel:RequestSetHoveringArticleItemTipWindowVisibility(visible)
         end
 
         func(receiver, self, visible)
-        
+
         ::continue::
     end
 end
@@ -383,7 +384,7 @@ function UiModel:RequestSetHoveringArticleItemTipWindowPosAndInfo(xPos, yPos, in
         end
 
         func(receiver, self, xPos, yPos, info)
-        
+
         ::continue::
     end
 end
@@ -405,7 +406,7 @@ function UiModel:RequestSetHoveringSkillItemTipWindowVisibility(visible)
         end
 
         func(receiver, self, visible)
-        
+
         ::continue::
     end
 end
@@ -429,31 +430,7 @@ function UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info
         end
 
         func(receiver, self, xPos, yPos, info)
-        
-        ::continue::
-    end
-end
 
---- 请求界面去设置悬停处的技能项提示窗口物品信息
----@param xPos number
----@param yPos number
----@param info SkillInfo
-function UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)
-    -- print("UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)", xPos, yPos, info.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringSkillItemTipWindowPosAndInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetHoveringSkillItemTipWindowPosAndInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, xPos, yPos, info)
-        
         ::continue::
     end
 end
@@ -474,7 +451,7 @@ function UiModel:PlayerChanged()
         end
 
         func(receiver, self)
-        
+
         ::continue::
     end
 end
@@ -488,7 +465,7 @@ function UiModel:SetPlayer(player)
 
     -- 设置物品数据
     local articleInfo = self.articleInfoList[1]
-    articleInfo.uuid = 1
+    articleInfo.id = 1
     articleInfo.type = Common.ArticleType.Consumable
     articleInfo.name = "消耗1"
     articleInfo.desc = "desc 消耗1"
@@ -502,12 +479,12 @@ function UiModel:SetPlayer(player)
 
     -- 创建裤子装备资源
     local resMgrEquData = ResMgr.NewEquipmentData("clothes/swordman/pants/renewal",
-                    nil, nil, nil)
+        {}, {}, nil)
 
-    local articleInfo = self.articleInfoList[2]
+    articleInfo = self.articleInfoList[2]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 2
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 2
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -515,8 +492,8 @@ function UiModel:SetPlayer(player)
     articleInfo.equInfo.resMgrEquData = resMgrEquData
     -- articleInfo.equInfo.hpExtent = 100
 
-    local articleInfo = self.articleInfoList[3]
-    articleInfo.uuid = 3
+    articleInfo = self.articleInfoList[3]
+    articleInfo.id = 3
     articleInfo.type = Common.ArticleType.Consumable
     articleInfo.name = "消耗3"
     articleInfo.desc = "desc 消耗3"
@@ -524,64 +501,64 @@ function UiModel:SetPlayer(player)
     articleInfo.count = 15
     articleInfo.consumableInfo.hpRecovery = 50
 
-    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
-    nil, nil, nil)
-    local articleInfo = self.articleInfoList[4]
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
+        {}, {}, nil)
+    articleInfo = self.articleInfoList[4]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 4
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 4
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
-    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd5700",
-    nil, nil, nil)
-    local articleInfo = self.articleInfoList[5]
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd5700",
+        {}, {}, nil)
+    articleInfo = self.articleInfoList[5]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 5
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 5
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
-    local resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
-    nil, nil, nil)
-    local articleInfo = self.articleInfoList[6]
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
+        {}, {}, nil)
+    articleInfo = self.articleInfoList[6]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 6
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 6
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
     resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd2800",
-    nil, nil, nil)
-    local articleInfo = self.articleInfoList[7]
+        {}, {}, nil)
+    articleInfo = self.articleInfoList[7]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 7
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 7
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
     resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/katana",
-    nil, nil, nil)
-    local articleInfo = self.articleInfoList[8]
+        {}, {}, nil)
+    articleInfo = self.articleInfoList[8]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.uuid = 8
-    articleInfo.type = Common.ArticleType.Equpment
+    articleInfo.id = 8
+    articleInfo.type = Common.ArticleType.Equipment
     articleInfo.name = resMgrEquData.name
     articleInfo.desc = resMgrEquData.comment or ""
     articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapeon
+    articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
     -- equ
@@ -589,8 +566,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Belt]
-        articleInfo.uuid = 5
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 5
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name or ""
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -602,8 +579,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Cap]
-        articleInfo.uuid = 6
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 6
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -615,8 +592,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Coat]
-        articleInfo.uuid = 7
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 7
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -629,8 +606,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Face]
-        articleInfo.uuid = 7
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 7
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -643,8 +620,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Hair]
-        articleInfo.uuid = 8
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 8
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -656,8 +633,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Neck]
-        articleInfo.uuid = 9
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 9
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -669,8 +646,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Pants]
-        articleInfo.uuid = 10
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 10
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -682,8 +659,8 @@ function UiModel:SetPlayer(player)
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
         articleInfo = self.mountedEquInfoList[Common.EquType.Shoes]
-        articleInfo.uuid = 11
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo.id = 11
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
@@ -694,13 +671,13 @@ function UiModel:SetPlayer(player)
     itemDataFromContainer = self.player.equipments.container:Get("weapon")
     if itemDataFromContainer then
         resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Weapeon]
-        articleInfo.uuid = 12
-        articleInfo.type = Common.ArticleType.Equpment
+        articleInfo = self.mountedEquInfoList[Common.EquType.Weapon]
+        articleInfo.id = 12
+        articleInfo.type = Common.ArticleType.Equipment
         articleInfo.name = resMgrEquData.name
         articleInfo.desc = resMgrEquData.comment or ""
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Weapeon
+        articleInfo.equInfo.type = Common.EquType.Weapon
         articleInfo.equInfo.resMgrEquData = resMgrEquData
         -- articleInfo.equInfo.hpExtent = 100
         -- articleInfo.equInfo.hpExtentRate = 0.1
@@ -728,7 +705,7 @@ end
 
 ---@param mapID number
 function UiModel:SelectGameMap(mapID)
-    if 1 == mapID then 
+    if 1 == mapID then
         _MAP.Load(_MAP.Make("lorien"))
     elseif 2 == mapID then
         _MAP.Load(_MAP.Make("whitenight"))

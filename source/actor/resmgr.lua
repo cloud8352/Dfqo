@@ -502,7 +502,7 @@ local function _NewEquipmentData(path, keys)
     ---@field kind string
     ---@field subKind string
     local data = _NewItemData(path, "config/actor/equipment/%s.cfg", keys, "equipment",
-            "actor.equipment.", "ui/icon/equipment/", true)
+        "actor.equipment.", "ui/icon/equipment/", true)
 
     return data
 end
