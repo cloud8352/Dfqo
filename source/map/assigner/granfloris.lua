@@ -10,7 +10,7 @@ return function(config, data, matrixGroup, entry, bossProcess)
     local theme = data.info.theme
 
     if (gateMap.up) then
-        local x, y = data.scope.x + math.random(mid - 1, mid + 1) * 100 + 50, 360
+        local x, y = data.scope.x + math.random(mid - 1, mid + 1) * 100 + 50, data.scope.y - 5
         _PATHGATE.MakeUp(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess)
     end
 

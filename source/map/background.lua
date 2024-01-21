@@ -28,4 +28,9 @@ function _Background:_OnDraw()
     _GRAPHICS.Pop()
 end
 
+---@param rate number
+function _Background:SetTranslateRate(rate)
+    self.rate = rate
+end
+
 return _Background

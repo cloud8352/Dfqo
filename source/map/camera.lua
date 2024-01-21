@@ -37,7 +37,7 @@ function _Camera:Ctor(followTime, sx, sy)
     self._isNavigation = false
 
     self._moveTweener = _Tweener.New(self._current, _, "linear", function()
-        self:SetPosition(self._current.x, self._current.y + self._current.z)
+        self:SetPosition(self._current.x, self._current.y + self._current.z - 80) -- 相机视线坐标稍微偏人物坐标上方一点
     end)
 
     self._shaker = _Shaker.New(_Point.New(true), {x = {}, y = {}}, function (subject)

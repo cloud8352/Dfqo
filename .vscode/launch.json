@@ -20,11 +20,9 @@
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "command": "${workspaceFolder}/love2d-win32/love.exe"
+                "command": "${workspaceFolder}/debug.bat"
             },
             "args": [
-                "${workspaceFolder}",
-                "debug"
             ]
         }
     ]

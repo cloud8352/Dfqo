@@ -22,7 +22,7 @@ function _Article:Ctor(upperEvent)
 end
 
 function _Article:Update(dt)
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
 
         if (not e.identity.isPaused and e.battle.deadProcess > 0 and not e.article.isDead) then
@@ -33,7 +33,8 @@ function _Article:Update(dt)
                     x = pos.x,
                     y = pos.y,
                     z = pos.z - z,
-                    direction = -e.transform.direction,
+                    -- direction = -e.transform.direction,
+                    direction = e.battle.beatenConfig.direction,
                     entity = e
                 }
                 _FACTORY.New(e.article.effectData, param)
@@ -41,10 +42,14 @@ function _Article:Update(dt)
 
             if (e.article.frameaniData) then
                 _ASPECT.Play(e.aspect, e.article.frameaniData)
+            end
 
-                if (e.obstacle and e.article.clearObstacle) then
-                    _ECSMGR.DelComponent(e, "obstacle")
-                end
+            if (e.obstacle and e.article.clearObstacle) then
+                _ECSMGR.DelComponent(e, "obstacle")
+            end
+
+            if (e.article.whetherDestroyEntity) then
+                e.identity.destroyProcess = 1
             end
 
             e.article.isDead = true

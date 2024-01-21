@@ -15,6 +15,7 @@ local _RESMGR = require("actor.resmgr")
 ---@field public fairyDatas table<int, Actor.RESMGR.InstanceData>
 ---@field public isDead boolean
 ---@field public clearObstacle boolean
+---@field public whetherDestroyEntity boolean
 local _Article = require("core.class")()
 
 function _Article.HandleData(data)
@@ -31,6 +32,7 @@ function _Article:Ctor(data)
     self.frameaniData = data.frameani
     self.effectData = data.effect
     self.clearObstacle = data.clearObstacle or false
+    self.whetherDestroyEntity = data.whetherDestroyEntity or false
     self.isDead = false
 end
 

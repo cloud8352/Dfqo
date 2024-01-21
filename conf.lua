@@ -2,7 +2,7 @@ local Util = require("source.util.Util")
 
 function love.conf(t)
     io.stdout:setvbuf("no")
-    t.console = true                   -- Attach a console (boolean, Windows only)
+    -- t.console = true                   -- Attach a console (boolean, Windows only)
 
     t.window.title = "Dungeon Fighter Quest"
     t.window.width = 960

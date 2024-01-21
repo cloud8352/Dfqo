@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-11-10
 	alter: 2019-9-21
-]]--
+]]
+--
 
 local _CONFIG = require("config")
 local _TIME = require("lib.time")
@@ -62,16 +63,16 @@ local _MAP = {
 
 local _emptyTab = {}
 local _const = {
-    floorType = {"left", "middle", "right"},
-    namedIndex = {1, 3},
-    namedRange = {3, 4},
-    normalRange = {3, 5},
-    floorRange = {5, 15},
-    upRange = {0.5, 1},
-    summonRange = {0, 2},
-    boxRange = {-1, 2},
-    fairyRange = {0, 1},
-    articleRange = {4, 7},
+    floorType = { "left", "middle", "right" },
+    namedIndex = { 1, 3 },
+    namedRange = { 3, 4 },
+    normalRange = { 3, 5 },
+    floorRange = { 5, 15 },
+    upRange = { 0.5, 1 },
+    summonRange = { 0, 2 },
+    boxRange = { -1, 2 },
+    fairyRange = { 0, 1 },
+    articleRange = { 4, 7 },
     bossMax = 8,
     runningSoundData = _RESOURCE.GetSoundData("ui/running"),
     scale = 1.0,
@@ -120,8 +121,31 @@ local function _MakeBackground(layer, path, width)
     local spriteData = _RESOURCE.GetSpriteData("map/" .. path)
     local count = math.ceil(width / spriteData.w)
 
-    for n=1, count do
-        layer[n] = {sprite = path, x = spriteData.w * (n - 1), y = 0}
+    for n = 1, count do
+        layer[n] = { sprite = path, x = spriteData.w * (n - 1), y = 0 }
+    end
+end
+
+---@param layer table
+---@param pathList table<number, string>
+local function _MakeBackgroundFromPathList(layer, pathList, width)
+    if (#pathList < 1) then
+        return
+    end
+
+    local currentAssignXPos = 0
+    while (currentAssignXPos < width) do
+        local path = pathList[math.random(1, #pathList)]
+        local spriteData = _RESOURCE.GetSpriteData("map/" .. path)
+
+        table.insert(layer, {
+            sprite = path,
+            x = currentAssignXPos,
+            y = 0
+        }
+        )
+
+        currentAssignXPos = currentAssignXPos + spriteData.w
     end
 end
 
@@ -136,7 +160,7 @@ local function _GetFloor(part)
     local spriteData = _RESOURCE.GetSpriteData("map/" .. path)
 
     ---@class Map.FloorPart
-    return {path = path, spriteData = spriteData}
+    return { path = path, spriteData = spriteData }
 end
 
 local function _Sorting(a, b)
@@ -152,7 +176,7 @@ local function _Sorting(a, b)
     if (av == bv) then
         return ai > bi
     end
-    
+
     return av < bv
 end
 
@@ -163,12 +187,12 @@ end
 ---@param path string | table
 local function _Load(path)
     local data = _RESOURCE.ReadConfig(path, "config/map/instance/%s.cfg")
-    
+
     _MAP.info = data.info
     _load.caller:Call(data)
 
     local values = _MAP.values
-    
+
     if (_CONFIG.debug.bgm) then
         if (values.bgm.enable) then
             local musicData
@@ -180,7 +204,7 @@ local function _Load(path)
                 values.bgm.data = musicData
                 values.bgm.path = data.info.bgm
             end
-            
+
             _MUSIC.Play(musicData)
         end
 
@@ -214,7 +238,7 @@ local function _Load(path)
     matrix:Reset(data.scope.x, data.scope.y, data.scope.w, data.scope.h, true)
 
     if (data.obstacle) then
-        for n=1, #data.obstacle do
+        for n = 1, #data.obstacle do
             matrix:SetNode(data.obstacle[n][1], data.obstacle[n][2], true, true)
         end
     end
@@ -227,7 +251,7 @@ local function _Load(path)
     for k, v in pairs(_layerGroup) do
         if (data.layer[k]) then
             if (k == "effect") then
-                for n=1, #data.layer[k] do
+                for n = 1, #data.layer[k] do
                     local i = data.layer[k][n]
                     local obj
                     local resData
@@ -246,15 +270,15 @@ local function _Load(path)
                     obj:SetAttri("position", i.x, i.y)
                 end
             else
-                for n=1, #data.layer[k] do
+                for n = 1, #data.layer[k] do
                     local i = data.layer[k][n]
                     local spriteData = pool[i.sprite]
-    
+
                     if (not spriteData) then
                         spriteData = _RESOURCE.NewSpriteData("map/" .. i.sprite)
                         pool[i.sprite] = spriteData
                     end
-    
+
                     i.sprite = spriteData
                 end
 
@@ -265,16 +289,16 @@ local function _Load(path)
                 local canvas = _GRAPHICS.NewCanvas(data.info.width, data.info.height)
                 _GRAPHICS.SetCanvas(canvas)
 
-                for n=1, #data.layer[k] do
+                for n = 1, #data.layer[k] do
                     local i = data.layer[k][n]
-    
+
                     spriteBoard:SetData(i.sprite)
                     spriteBoard:SetAttri("position", i.x, i.y)
-    
+
                     i.sx = i.sx or 1
                     i.sy = i.sy or 1
                     local sx, sy = spriteBoard:GetAttri("scale")
-    
+
                     spriteBoard:SetAttri("scale", i.sx * sx, i.sy * sy)
                     spriteBoard:Draw()
                 end
@@ -289,7 +313,7 @@ local function _Load(path)
 
     _load.process = 1
 
-    for n=1, #data.actor do
+    for n = 1, #data.actor do
         _ACTOR_FACTORY.New(data.actor[n].path, data.actor[n]) -- 地图中的角色由_ACTOR_FACTORY统一管理
     end
 
@@ -327,7 +351,7 @@ end
 
 function _MAP.Draw()
     _MAP.camera:Apply()
-    
+
     _layerGroup.far:Draw()
     _layerGroup.near:Draw()
     _layerGroup.effect:Draw()
@@ -367,10 +391,10 @@ function _MAP.Make(path, entry)
         scope = {
             x = config.scope.x,
             y = config.scope.y,
-            wv = config.scope.wv or _const.scope.wv,
-            hv = config.scope.hv or _const.scope.hv,
-            uv = config.scope.uv or _const.scope.uv,
-            dv = config.scope.dv or _const.scope.dv
+            wv = config.scope.wv or _const.scope.wv, -- width 调整值
+            hv = config.scope.hv or _const.scope.hv, -- height 调整值
+            uv = config.scope.uv or _const.scope.uv, -- up 调整值
+            dv = config.scope.dv or _const.scope.dv  -- down 调整值
         },
         actor = config.actor and config.actor.custom or {},
         layer = {
@@ -389,13 +413,14 @@ function _MAP.Make(path, entry)
     local upMatrix = _MAP.matrixGroup.up
     local downMatrix = _MAP.matrixGroup.down
     local values = _MAP.values
-    
+
     objectMatrix:Reset(data.scope.x, data.scope.y, data.scope.w, data.scope.h, true)
     upMatrix:Reset(data.scope.x, data.info.horizon + data.scope.uv, data.scope.w, upMatrix:GetGridSize(), true)
-    downMatrix:Reset(data.scope.x, data.scope.y + data.scope.h + data.scope.dv, data.scope.w, downMatrix:GetGridSize(), true)
+    downMatrix:Reset(data.scope.x, data.scope.y + data.scope.h + data.scope.dv, data.scope.w, downMatrix:GetGridSize(),
+        true)
 
     require("map.assigner." .. data.info.theme)(config, data, _MAP.matrixGroup, entry, 0)
-    
+
     table.insert(data.actor, {
         path = _const.wall.left, -- 左侧障碍墙
         x = 0,
@@ -410,7 +435,17 @@ function _MAP.Make(path, entry)
 
     -- 创建背景
     _MakeBackground(data.layer.far, config.far, data.info.width)
-    _MakeBackground(data.layer.near, config.near, data.info.width)
+
+    if (config.nearBgTranslateRate) then
+        _layerGroup.near:SetTranslateRate(config.nearBgTranslateRate)
+    else
+        _layerGroup.near:SetTranslateRate(_const.backgroundRate.near)
+    end
+    if (config.near) then
+        _MakeBackground(data.layer.near, config.near, data.info.width)
+    elseif (config.nearBgPathList) then
+        _MakeBackgroundFromPathList(data.layer.near, config.nearBgPathList, data.info.width)
+    end
 
     if (config.floor) then -- 地面，包括：上（首部）、中（中部）、下（尾部）
         local x = 0
@@ -423,16 +458,16 @@ function _MAP.Make(path, entry)
             local y = config.floor.y or config.floor.horizon
             local height = config.floor.height or top.spriteData.h
 
-            table.insert(data.layer.floor, {sprite = top.path, x = x, y = y})
+            table.insert(data.layer.floor, { sprite = top.path, x = x, y = y })
             y = y + height
 
             while (y < data.info.height) do
-                table.insert(data.layer.floor, {sprite = extra.path, x = x, y = y})
+                table.insert(data.layer.floor, { sprite = extra.path, x = x, y = y })
                 y = y + extra.spriteData.h
             end
 
             if (tail) then
-                table.insert(data.layer.floor, {sprite = tail.path, x = x, y = data.info.height - tail.spriteData.h})
+                table.insert(data.layer.floor, { sprite = tail.path, x = x, y = data.info.height - tail.spriteData.h })
             end
 
             x = x + top.spriteData.w
@@ -444,20 +479,21 @@ function _MAP.Make(path, entry)
             local a = config.object.floorRange and config.object.floorRange[1] or _const.floorRange[1]
             local b = config.object.floorRange and config.object.floorRange[2] or _const.floorRange[2]
 
-            objectMatrix:Assign(function (x, y)
+            objectMatrix:Assign(function(x, y)
                 local path = config.object.floor[math.random(1, #config.object.floor)]
-                table.insert(data.layer.floor, {sprite = path, x = x, y = y})
+                table.insert(data.layer.floor, { sprite = path, x = x, y = y })
             end, math.random(a, b), true)
         end
 
         if (config.object.up) then
+            -- 使用矩阵算法布置上侧物体
             local w = upMatrix:GetWidth()
             local a = config.object.upRange and config.object.upRange[1] or _const.upRange[1]
             local b = config.object.upRange and config.object.upRange[2] or _const.upRange[2]
 
-            upMatrix:Assign(function (x, y, id)
+            upMatrix:Assign(function(x, y, id)
                 local obj = config.object.up[math.random(1, #config.object.up)]
-                table.insert(data.layer.object, {sprite = obj.sprite, x = x, y = y + obj.y, order = obj.order, id = id})
+                table.insert(data.layer.object, { sprite = obj.sprite, x = x, y = y + obj.y, order = obj.order, id = id })
             end, math.random(math.floor(w * a), math.floor(w * b)))
         end
     end
@@ -468,24 +504,25 @@ function _MAP.Make(path, entry)
         if (config.actor.enemy) then
             local normalCount = math.random(_const.normalRange[1], _const.normalRange[2])
 
-            objectMatrix:Assign(function (x, y)
+            objectMatrix:Assign(function(x, y)
                 local path = config.actor.enemy.normal[math.random(1, #config.actor.enemy.normal)]
                 local direction = math.random(1, 2) == 1 and 1 or -1
-                table.insert(data.actor, {path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, isEnemy = true})
+                table.insert(data.actor,
+                    { path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, isEnemy = true })
             end, normalCount)
         end
 
         if (config.actor.article) then
-            objectMatrix:Assign(function (x, y)
+            objectMatrix:Assign(function(x, y)
                 local path = config.actor.article[math.random(1, #config.actor.article)]
-                table.insert(data.actor, {path = "article/" .. path, x = x, y = y})
+                table.insert(data.actor, { path = "article/" .. path, x = x, y = y })
             end, math.random(_const.articleRange[1], _const.articleRange[2]))
         end
 
         if (config.actor.down) then
-            downMatrix:Assign(function (x, y)
+            downMatrix:Assign(function(x, y)
                 local path = config.actor.down[math.random(1, #config.actor.down)]
-                table.insert(data.actor, {path = "article/" .. path, x = x, y = y, obstacle = false})
+                table.insert(data.actor, { path = "article/" .. path, x = x, y = y, obstacle = false })
             end, math.random(0, math.floor(downMatrix:GetWidth() * 0.5)))
         end
     end
