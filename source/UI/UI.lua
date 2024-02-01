@@ -23,10 +23,13 @@ local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 local WindowManager = require("UI.WindowManager")
 local HpRectBar = require("UI.hp_rect_bar")
+local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
+local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 
 local _TABLE = require("lib.table")
-local Util = require("source.util.Util")
+local Util = require("util.Util")
 local _TIME = require("lib.time")
+local System = require("lib.system")
 
 local IsShowFps = true
 
@@ -46,6 +49,7 @@ local function windowWidgetListSortFuc(windowWidgetA, windowWidgetB)
     return windowWidgetA.window:GetWindowLayerIndex() < windowWidgetB.window:GetWindowLayerIndex()
 end
 
+---@class UI
 local UI = {}
 
 function UI.Init()
@@ -120,16 +124,16 @@ function UI.Init()
     if IsShowFps then
         -- fps Label
         UI.fpsLabel = Label.New(pushBtnWindow)
-        UI.fpsLabel:SetPosition(120, 20)
-        UI.fpsLabel:SetSize(80, 30)
+        UI.fpsLabel:SetPosition(120 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
+        UI.fpsLabel:SetSize(80 * Util.GetWindowSizeScale(), 30 * Util.GetWindowSizeScale())
         -- UI.fpsLabel:SetText(_TIME.GetFPS())
         UI.appendWindowWidget(pushBtnWindow, UI.fpsLabel)
     end
 
     -- hp bar
     UI.hpRectBar = HpRectBar.New(pushBtnWindow)
-    UI.hpRectBar:SetSize(500, 20)
-    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 150, 20)
+    UI.hpRectBar:SetSize(500 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
+    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
     UI.appendWindowWidget(pushBtnWindow, UI.hpRectBar)
 
     -- comboBox test
@@ -161,9 +165,18 @@ function UI.Init()
     UI.hoveringSkillItemTipWindow:SetContentWidget(UI.hoveringSkillItemTipWidget)
     UI.appendWindowWidget(UI.hoveringSkillItemTipWindow, UI.hoveringSkillItemTipWindow)
 
+    -- DirKeyGroupWidget
+    UI.dirKeyGroupWidget = DirKeyGroupWidget.New(pushBtnWindow, UI.model)
+    UI.dirKeyGroupWidget:SetPosition(150 * Util.GetWindowSizeScale(),
+        Util.GetWindowHeight() - UI.dirKeyGroupWidget.baseWidget.height - 50 * Util.GetWindowSizeScale())
+    UI.appendWindowWidget(pushBtnWindow, UI.dirKeyGroupWidget)
+
+    -- itemKeyGroup
+    UI.itemKeyGroup = ItemKeyGroup.New(pushBtnWindow, UI, UI.model)
+
     ---- connect
     -- characterTopBtn
-    UI.characterTopBtn:SetReceiverOfBtnClicked(UI)
+    UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_Clicked, UI)
     -- characterInfoWindow
     UI.characterInfoWindow:SetReceiverOfRequestMoveWindow(UI)
     UI.characterInfoWindow:SetReceiverOfRequestCloseWindow(UI)
@@ -181,6 +194,14 @@ function UI.Init()
     -- model - hoveringSkillItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowPosAndInfo, UI)
+
+    -- post init
+    if (System.IsMobile()) then
+        UI.skillDockViewFrame:SetVisible(false)
+    else
+        UI.dirKeyGroupWidget:SetVisible(false)
+        UI.itemKeyGroup:SetVisible(false)
+    end
 end
 
 function UI.Update(dt)
@@ -204,6 +225,9 @@ function UI.Update(dt)
 
     UI.skillDockViewFrame:Update(dt)
 
+    UI.dirKeyGroupWidget:Update(dt)
+    UI.itemKeyGroup:Update(dt)
+
     UI.hoveringSkillItemTipWindow:Update(dt)
 
     UI.hoveringArticleItemTipWindow:Update(dt)
@@ -221,8 +245,8 @@ function UI.Draw()
 end
 
 ---@param my Obj 对象自身，这里指UI自身
----@param sender Obj 调用者
-function UI.OnBtnsClicked(my, sender)
+---@param sender PushButton 被电击的按钮对象
+function UI.Slot_BtnClicked(my, sender)
     if UI.characterTopBtn == sender then
         local isVisible = UI.characterInfoWindow:IsVisible()
         UI.characterInfoWindow:SetVisible(not isVisible)
@@ -258,6 +282,8 @@ function UI.SetPlayer(player)
 
     UI.hpRectBar:SetMaxHp(UI.model:GetMaxHp())
     UI.skillDockViewFrame:ReloadSkillsViewData()
+
+    UI.itemKeyGroup:SetPlayer(player)
 end
 
 --- 当请求去设置物品栏某一显示项的信息

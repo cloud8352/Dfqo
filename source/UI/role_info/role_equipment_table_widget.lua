@@ -19,13 +19,13 @@ local Window = require("UI.Window")
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 
-local Util = require("source.util.Util")
+local Util = require("util.Util")
 
 ---@class RoleEquTableWidget
 local RoleEquTableWidget = require("core.class")(Widget)
 
 
-local ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+local ItemWidth = Common.ArticleItemWidth
 ItemWidth = _MATH.Round(ItemWidth)
 local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
@@ -37,6 +37,8 @@ local RowCount = Common.EquTableRowCount
 ---@param model UiModel
 function RoleEquTableWidget:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
+    ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
 

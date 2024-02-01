@@ -5,21 +5,14 @@
 	alter: 20122-12-10
 ]] --
 
+local System = require("lib.system")
+
 local Util = {}
 
 -- 获取窗口缩放比例
 function Util.GetWindowSizeScale()
-    local sizeScale = 1
-    local _, _, flags = love.window.getMode()
-
-    -- The window's flags contain the index of the monitor it's currently in.
-    local screenW, _ = love.window.getDesktopDimensions(flags.display)
-
-    if 0 < screenW then
-        sizeScale = screenW / 1920 --以1920x1080为基准缩放窗口尺寸
-    end
-
-    return sizeScale
+    local sx, _ = System.GetScale()
+    return sx
 end
 
 ---@return number

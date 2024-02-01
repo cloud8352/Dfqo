@@ -19,11 +19,11 @@ local RoleEquTableWidget = require("UI.role_info.role_equipment_table_widget")
 local ArticleTableWidget = require("UI.role_info.article_table_widget")
 local UiModel = require("UI.ui_model")
 
-local Util = require("source.util.Util")
+local Util = require("util.Util")
 
 
-local LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
-local EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())
+local LeftPartWidth = 570
+local EachPartSpace = 30
 
 ---@class RoleInfoWidget
 local RoleInfoWidget = require("core.class")(Widget)
@@ -33,6 +33,9 @@ local RoleInfoWidget = require("core.class")(Widget)
 function RoleInfoWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+
+    LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
+    EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())
 
     self.model = model
     self.roleEquTableWidget = RoleEquTableWidget.New(parentWindow, self.model)
@@ -45,7 +48,7 @@ function RoleInfoWidget:Update(dt)
 
     if (Widget.IsSizeChanged(self)
         )
-        then
+    then
         self:updateData()
     end
 

@@ -17,7 +17,7 @@ local Window = require("UI.Window")
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 
-local Util = require("source.util.Util")
+local Util = require("util.Util")
 
 ---@class SkillDockViewFrame
 local SkillDockViewFrame = require("core.class")()
@@ -45,6 +45,7 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
     self.yPos = 0
     self.lastYPos = 0
     self.enable = true
+    self.isVisible = true
 
     ---- skill item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
@@ -171,6 +172,9 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 end
 
 function SkillDockViewFrame:Update(dt)
+    if (not self.isVisible) then
+        return
+    end
     self:MouseEvent()
 
     if (self.lastWidth ~= self.width
@@ -241,6 +245,9 @@ function SkillDockViewFrame:Update(dt)
 end
 
 function SkillDockViewFrame:Draw()
+    if (not self.isVisible) then
+        return
+    end
     -- skill item bg
     for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
         v:Draw()
@@ -308,6 +315,11 @@ end
 
 function SkillDockViewFrame:SetEnable(enable)
     self.enable = enable
+end
+
+---@param isVisible boolean
+function SkillDockViewFrame:SetVisible(isVisible)
+    self.isVisible = isVisible
 end
 
 function SkillDockViewFrame:ReloadSkillsViewData()

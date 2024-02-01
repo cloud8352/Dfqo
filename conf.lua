@@ -1,4 +1,3 @@
-local Util = require("source.util.Util")
 
 function love.conf(t)
     io.stdout:setvbuf("no")

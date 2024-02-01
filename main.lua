@@ -38,6 +38,7 @@ local function _Update()
 end
 
 function love.load()
+    _SYSTEM.InitWindowSize()
     math.randomseed(os.time())
 
     _CONFIG.user = _User.New()
@@ -87,16 +88,36 @@ if (not _SYSTEM.IsMobile()) then
         _TOUCH.Released(0, x, y, dx, dy, 1)
     end
 else
-    function love.touchmoved(id, x, y, dx, dy, pressure)
-        _TOUCH.Moved(id, x, y, dx, dy, pressure)
+    -- todo 
+    -- function love.touchmoved(id, x, y, dx, dy, pressure)
+    --     _TOUCH.Moved(id, x, y, dx, dy, pressure)
+    -- end
+
+    -- function love.touchpressed(id, x, y, dx, dy, pressure)
+    --     _TOUCH.Pressed(id, x, y, dx, dy, pressure)
+    -- end
+
+    -- function love.touchreleased(id, x, y, dx, dy, pressure)
+    --     _TOUCH.Released(id, x, y, dx, dy, pressure)
+    -- end
+
+    function love.mousemoved(x, y, dx, dy, istouch)
+        _MOUSE.Moved(x, y, dx, dy)
+        _TOUCH.Moved(0, x, y, dx, dy, 1)
     end
 
-    function love.touchpressed(id, x, y, dx, dy, pressure)
-        _TOUCH.Pressed(id, x, y, dx, dy, pressure)
+    function love.mousepressed(x, y, button, istouch)
+        _MOUSE.Pressed(button)
+
+        local dx, dy = _MOUSE.GetMoving()
+        _TOUCH.Pressed(0, x, y, dx, dy, 1)
     end
 
-    function love.touchreleased(id, x, y, dx, dy, pressure)
-        _TOUCH.Released(id, x, y, dx, dy, pressure)
+    function love.mousereleased(x, y, button, istouch)
+        _MOUSE.Released(button)
+
+        local dx, dy = _MOUSE.GetMoving()
+        _TOUCH.Released(0, x, y, dx, dy, 1)
     end
 end
 

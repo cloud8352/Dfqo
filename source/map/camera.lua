@@ -46,7 +46,8 @@ function _Camera:Ctor(followTime, sx, sy)
     end)
 
     self._scaleTweener = _Tweener.New(self._scale, _Point.New(false))
-    self:SetScale(1, 1)
+    local windowSizeScaleX, _ = _SYSTEM.GetScale()
+    self:SetScale(windowSizeScaleX * 0.9, windowSizeScaleX * 0.9)
 end
 
 ---@param dt milli

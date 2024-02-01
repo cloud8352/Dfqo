@@ -5,7 +5,7 @@
 	alter: 2022-11-15
 ]] --
 
-local Util = require("source.util.Util")
+local Util = require("util.Util")
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
@@ -20,11 +20,13 @@ local Widget = require("UI.Widget")
 ---@class TitleBar
 local TitleBar = require("core.class")(Widget)
 
-local TitleBarMargin = 30 * Util.GetWindowSizeScale()
+local TitleBarMargin = 30
 
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+
+    TitleBarMargin = 30 * Util.GetWindowSizeScale()
 
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
@@ -71,7 +73,7 @@ function TitleBar:Ctor(parentWindow)
     self.receiverOfRequestCloseWindow = nil
 
     -- connect
-    self.closeBtn:SetReceiverOfBtnClicked(self)
+    self.closeBtn:MocConnectSignal(self.closeBtn.Signal_Clicked, self)
 
     -- post init
     self:adjustScaleByMargin()
@@ -87,7 +89,7 @@ function TitleBar:Update(dt)
     
     if (Widget.IsSizeChanged(self)
         )
-        then
+    then
         self:PaintEvent()
     end
 
@@ -138,12 +140,12 @@ function TitleBar:SetPosition(x, y)
 
     local closeBtnWidth = self.closeBtn:GetWidth()
     self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - 10,
-                            y + self.topMargin + 15 * Util.GetWindowSizeScale())
+        y + self.topMargin + 15 * Util.GetWindowSizeScale())
 
     -- position
     self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
     self.iconSprite:SetAttri("position", self.xPos + self.leftMargin + self.iconLeftMargin,
-                        self.yPos + self.topMargin + self.iconTopMargin)
+        self.yPos + self.topMargin + self.iconTopMargin)
 end
 
 function TitleBar:SetSize(width, height)
@@ -288,7 +290,8 @@ function TitleBar:SetIconSpriteDataPath(path)
     self:adjustScaleByMargin()
 end
 
-function TitleBar:OnBtnsClicked(sender)
+---@param sender PushButton
+function TitleBar:Slot_BtnClicked(sender)
     if sender == self.closeBtn then
         self:judgeAndExecRequestCloseWindow()
     end

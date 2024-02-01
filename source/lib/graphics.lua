@@ -7,9 +7,8 @@
 
 local _TABLE = require("lib.table")
 local _MATH = require("lib.math")
-local _SYSTEM = require("lib.system")
 
-local Util = require("source.util.Util")
+-- local Util = require("util.Util")
 
 local _Tweener = require("util.gear.tweener")
 
@@ -39,24 +38,6 @@ _GRAPHICS.Clear = love.graphics.clear
 
 function _GRAPHICS.Init()
     love.graphics.setBackgroundColor(0, 0, 0, 255)
-
-    local windowSizeScale = Util.GetWindowSizeScale()
-
-    -- 设置初始适合的窗口大小
-    local _, _, flags = love.window.getMode()
-    local windowWidth = 1600 * windowSizeScale
-    local windowHeight = 900 * windowSizeScale
-    love.window.setMode(windowWidth, windowHeight, flags)
-    _SYSTEM.OnResize(windowWidth, windowHeight)
-
-    -- 把窗口移到屏幕中央
-    local screenW, screenH = love.window.getDesktopDimensions(flags.display)
-    love.window.setPosition(screenW / 2 - windowWidth / 2, screenH / 2 - windowHeight / 2)
-
-    -- 设置字体
-    --字体文件,支持中文 SourceHanSerifSC-Medium.otf yan_zhen_qing_kai_shu_font.TTF
-    local font = love.graphics.newFont("asset/font/yan_zhen_qing_kai_shu_font.TTF", 16 * windowSizeScale)
-    _GRAPHICS.SetFont(font)
 end
 
 ---@param shader Shader

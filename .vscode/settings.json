@@ -15,7 +15,8 @@
         "Btns",
         "dest",
         "filesystem",
-        "ctrlled"
+        "ctrlled",
+        "Struct"
     ],
     "files.exclude": {
         "**/love2d": true

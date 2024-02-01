@@ -18,6 +18,7 @@ local _MAP = require("map.init")
 local ResMgr = require("actor.resmgr")
 local EquSrv = require("actor.service.equipment")
 local AspectSrv = require("actor.service.aspect")
+local InputSrv = require("actor.service.input")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -730,6 +731,23 @@ function UiModel:GetHp()
     end
 
     return self.player.attributes.hp
+end
+
+---@param key string
+function UiModel:PressPlayerKey(key)
+    if (not self.player) then
+        return
+    end
+
+    InputSrv.Press(self.player.input, key)
+end
+
+---@param key string
+function UiModel:ReleasePlayerKey(key)
+    if (not self.player) then
+        return
+    end
+    InputSrv.Release(self.player.input, key)
 end
 
 function UiModel:playChangedArticlePosSound()

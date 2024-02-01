@@ -38,11 +38,11 @@ end
 
 function SkillDockViewItem:Update(dt)
     if (self.lastWidth ~= self.width
-        or self.lastHeight ~= self.height
-        or self.lastHeight ~= self.height
-        or self.lastCoolDownProgress ~= self.coolDownProgress
+            or self.lastHeight ~= self.height
+            or self.lastHeight ~= self.height
+            or self.lastCoolDownProgress ~= self.coolDownProgress
         )
-        then
+    then
         self:updateSprite()
 
 

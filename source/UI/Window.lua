@@ -6,7 +6,7 @@
 ]]
 --
 
-local _Util = require("source.util.Util")
+local _Util = require("util.Util")
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
@@ -22,10 +22,13 @@ local Widget = require("UI.Widget")
 ---@class Window
 local Window = require("core.class")()
 
-local MarginSpace = _MATH.Round(15 * _Util.GetWindowSizeScale())
-local TitleBarHeight = _MATH.Round(50 * _Util.GetWindowSizeScale())
+local MarginSpace = 15
+local TitleBarHeight = 50
 
 function Window:Ctor()
+    MarginSpace = _MATH.Round(15 * _Util.GetWindowSizeScale())
+    TitleBarHeight = _MATH.Round(50 * _Util.GetWindowSizeScale())
+
     -- WindowLayerIndex
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
     WindowManager.AppendToWindowList(self)
