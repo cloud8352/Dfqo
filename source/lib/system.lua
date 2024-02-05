@@ -44,8 +44,8 @@ end
 
 ---@return bool
 function _SYSTEM.IsMobile()
-    -- return true
-    return _os == "Android" or _os == "iOS"
+    return true
+    -- return _os == "Android" or _os == "iOS"
 end
 
 ---@param isReal boolean

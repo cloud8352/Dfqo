@@ -69,45 +69,54 @@ function DirKeyGroupWidget:Ctor(parentWindow, model)
     -- 上
     self.upKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.upKeyBtn)
+    self.upKeyBtn:EnableClickedSound(false)
     self.upKeyBtn:SetText("up")
     self.upKeyBtn:SetSize(MainKeyBtnWidth, MainKeyBtnHeight)
+    self.upKeyBtn:SetObjectName("up")
 
     -- 上右
     self.upRightKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.upRightKeyBtn)
+    self.upRightKeyBtn:EnableClickedSound(false)
     self.upRightKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnHeight)
 
     -- 右
     self.rightKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.rightKeyBtn)
+    self.rightKeyBtn:EnableClickedSound(false)
     self.rightKeyBtn:SetText("right")
     self.rightKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnWidth)
 
     -- 右下
     self.rightDownKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.rightDownKeyBtn)
+    self.rightDownKeyBtn:EnableClickedSound(false)
     self.rightDownKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnHeight)
 
     -- 下
     self.downKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.downKeyBtn)
+    self.downKeyBtn:EnableClickedSound(false)
     self.downKeyBtn:SetText("down")
     self.downKeyBtn:SetSize(MainKeyBtnWidth, MainKeyBtnHeight)
 
     -- 下左
     self.downLeftKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.downLeftKeyBtn)
+    self.downLeftKeyBtn:EnableClickedSound(false)
     self.downLeftKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnHeight)
 
     -- 左
     self.leftKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.leftKeyBtn)
+    self.leftKeyBtn:EnableClickedSound(false)
     self.leftKeyBtn:SetText("left")
     self.leftKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnWidth)
 
     -- 左上
     self.leftUpKeyBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.leftUpKeyBtn)
+    self.leftUpKeyBtn:EnableClickedSound(false)
     self.leftUpKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnHeight)
 
     -- connect

@@ -98,4 +98,10 @@ function _DIRECTOR.StartGame()
     _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
 end
 
+---@param w number
+---@param h number
+function _DIRECTOR.OnWindowResize(w, h)
+    UI.OnWindowResize(w, h)
+end
+
 return _DIRECTOR

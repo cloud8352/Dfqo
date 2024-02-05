@@ -63,8 +63,10 @@ function UI.Init()
     toolTipWindow:SetIsTipToolWindow(true)
 
     -- 角色概况
-    local pushBtnWindow = Window.New()
-    UI.characterTopBtn = PushButton.New(pushBtnWindow)
+    local bottomWindow = Window.New()
+    UI.bottomWindow = bottomWindow
+    bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
+    UI.characterTopBtn = PushButton.New(bottomWindow)
     UI.characterTopBtn:SetPosition(10, 10)
     UI.characterTopBtn:SetSize(80 * Util.GetWindowSizeScale(), 80 * Util.GetWindowSizeScale())
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
@@ -74,7 +76,7 @@ function UI.Init()
     UI.characterTopBtn:SetPressingSpriteDataPath("ui/CharacterPortraits/Swordsman/Pressing")
     UI.characterTopBtn:SetDisabledSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     -- 将组件添加到窗口组件列表
-    UI.appendWindowWidget(pushBtnWindow, UI.characterTopBtn)
+    UI.appendWindowWidget(bottomWindow, UI.characterTopBtn)
 
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
@@ -123,36 +125,36 @@ function UI.Init()
 
     if IsShowFps then
         -- fps Label
-        UI.fpsLabel = Label.New(pushBtnWindow)
+        UI.fpsLabel = Label.New(bottomWindow)
         UI.fpsLabel:SetPosition(120 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
         UI.fpsLabel:SetSize(80 * Util.GetWindowSizeScale(), 30 * Util.GetWindowSizeScale())
         -- UI.fpsLabel:SetText(_TIME.GetFPS())
-        UI.appendWindowWidget(pushBtnWindow, UI.fpsLabel)
+        UI.appendWindowWidget(bottomWindow, UI.fpsLabel)
     end
 
     -- hp bar
-    UI.hpRectBar = HpRectBar.New(pushBtnWindow)
+    UI.hpRectBar = HpRectBar.New(bottomWindow)
     UI.hpRectBar:SetSize(500 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
     UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
-    UI.appendWindowWidget(pushBtnWindow, UI.hpRectBar)
+    UI.appendWindowWidget(bottomWindow, UI.hpRectBar)
 
     -- comboBox test
-    UI.mapSelectComboBox = ComboBox.New(pushBtnWindow)
+    UI.mapSelectComboBox = ComboBox.New(bottomWindow)
     UI.mapSelectComboBox:SetSize(200, 45)
     UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 210, 10)
     -- 将组件添加到窗口组件列表
-    UI.appendWindowWidget(pushBtnWindow, UI.mapSelectComboBox)
+    UI.appendWindowWidget(bottomWindow, UI.mapSelectComboBox)
 
     UI.mapSelectComboBox:AppendItem("格兰")
     UI.mapSelectComboBox:AppendItem("极昼")
 
     -- skill dock
-    UI.skillDockViewFrame = SkillDockViewFrame.New(pushBtnWindow, UI.model)
+    UI.skillDockViewFrame = SkillDockViewFrame.New(bottomWindow, UI.model)
     local _, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
     UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100,
         Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
     -- 将组件添加到窗口组件列表
-    UI.appendWindowWidget(pushBtnWindow, UI.skillDockViewFrame)
+    UI.appendWindowWidget(bottomWindow, UI.skillDockViewFrame)
 
     -- skill item tip window
     UI.hoveringSkillItemTipWindow = Window.New()
@@ -166,13 +168,13 @@ function UI.Init()
     UI.appendWindowWidget(UI.hoveringSkillItemTipWindow, UI.hoveringSkillItemTipWindow)
 
     -- DirKeyGroupWidget
-    UI.dirKeyGroupWidget = DirKeyGroupWidget.New(pushBtnWindow, UI.model)
+    UI.dirKeyGroupWidget = DirKeyGroupWidget.New(bottomWindow, UI.model)
     UI.dirKeyGroupWidget:SetPosition(150 * Util.GetWindowSizeScale(),
         Util.GetWindowHeight() - UI.dirKeyGroupWidget.baseWidget.height - 50 * Util.GetWindowSizeScale())
-    UI.appendWindowWidget(pushBtnWindow, UI.dirKeyGroupWidget)
+    UI.appendWindowWidget(bottomWindow, UI.dirKeyGroupWidget)
 
     -- itemKeyGroup
-    UI.itemKeyGroup = ItemKeyGroup.New(pushBtnWindow, UI, UI.model)
+    UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI, UI.model)
 
     ---- connect
     -- characterTopBtn
@@ -394,6 +396,12 @@ function UI.OnRequestSetHoveringSkillItemTipWindowPosAndInfo(my, sender, xPos, y
         -- info
         UI.hoveringSkillItemTipWidget:SetSkillInfo(info)
     end
+end
+
+---@param w number
+---@param h number
+function UI.OnWindowResize(w, h)
+    UI.bottomWindow:SetSize(w, h)
 end
 
 ---

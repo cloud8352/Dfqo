@@ -82,6 +82,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- normal attack
     self.normalAttackBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.normalAttackBtn)
+    self.normalAttackBtn:EnableClickedSound(false)
     self.normalAttackBtn:SetSize(LargeBtnWidth, LargeBtnWidth)
     ui.appendWindowWidget(parentWindow, self.normalAttackBtn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.NormalAttack] = self.normalAttackBtn
@@ -89,6 +90,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- jump
     self.jumpBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.jumpBtn)
+    self.jumpBtn:EnableClickedSound(false)
     self.jumpBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.jumpBtn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Jump] = self.jumpBtn
@@ -96,6 +98,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- counter Attack
     self.counterAttackBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.counterAttackBtn)
+    self.counterAttackBtn:EnableClickedSound(false)
     self.counterAttackBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.counterAttackBtn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.CounterAttack] = self.counterAttackBtn
@@ -103,6 +106,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill1
     self.skill1Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill1Btn)
+    self.skill1Btn:EnableClickedSound(false)
     self.skill1Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill1Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill1] = self.skill1Btn
@@ -110,6 +114,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill2
     self.skill2Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill2Btn)
+    self.skill2Btn:EnableClickedSound(false)
     self.skill2Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill2Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill2] = self.skill2Btn
@@ -117,6 +122,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill3
     self.skill3Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill3Btn)
+    self.skill3Btn:EnableClickedSound(false)
     self.skill3Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill3Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill3] = self.skill3Btn
@@ -124,6 +130,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill4
     self.skill4Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill4Btn)
+    self.skill4Btn:EnableClickedSound(false)
     self.skill4Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill4Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill4] = self.skill4Btn
@@ -131,6 +138,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill5
     self.skill5Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill5Btn)
+    self.skill5Btn:EnableClickedSound(false)
     self.skill5Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill5Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill5] = self.skill5Btn
@@ -138,6 +146,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill6
     self.skill6Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill6Btn)
+    self.skill6Btn:EnableClickedSound(false)
     self.skill6Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill6Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill6] = self.skill6Btn
@@ -145,6 +154,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     -- skill7
     self.skill7Btn = PushButton.New(parentWindow)
     initBtnImgPaths(self.skill7Btn)
+    self.skill7Btn:EnableClickedSound(false)
     self.skill7Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill7Btn)
     self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill7] = self.skill7Btn

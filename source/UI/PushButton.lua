@@ -11,6 +11,7 @@ local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
+local Touch = require("lib.touch")
 
 local WindowManager = require("UI.WindowManager")
 local Label = require("UI.Label")
@@ -32,17 +33,21 @@ function PushButton:Ctor(parentWindow)
     ---@type table<function, table<number, Object>>
     self.mapOfSignalToReceiverList = {}
 
+    self.objectName = ""
+
     assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
 
     self.normalSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/normal")
-    self.hoveringImgData = _RESOURCE.GetSpriteData("ui/PushButton/hovering")
-    self.pressingImgData = _RESOURCE.GetSpriteData("ui/PushButton/pressing")
-    self.disableImgData = _RESOURCE.GetSpriteData("ui/PushButton/disable")
+    self.hoveringSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/hovering")
+    self.pressingSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/pressing")
+    self.disableSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/disable")
+    self.whetherSpriteDataUpdate = true
 
     -- clicked sound
     self.clickedSoundSource = _RESOURCE.NewSource("asset/sound/ui/btn_clicked.wav")
+    self.whetherEnableClickedSound = true
 
     ---@type Graphics.Drawable.Sprite
     self.bgSprite = nil -- 背景，默认无背景
@@ -66,7 +71,6 @@ function PushButton:Ctor(parentWindow)
     self.isPosUpdated = true
     self.enable = true
     self.isVisible = true
-    self.isDisplayStateUpdated = true
     self.lastDisplayState = DisplayState.Unknown
     self.displayState = DisplayState.Normal
 
@@ -88,12 +92,15 @@ function PushButton:Update(dt)
         return
     end
     self:MouseEvent()
+    self:TouchEvent()
+    self:judgeSignals()
 
     if (self.isBgSpriteUpdated
             or self.isContentsMarginsUpdated
             or self.isSizeUpdated
             or self.isPosUpdated
-            or self.isDisplayStateUpdated
+            or self.whetherSpriteDataUpdate
+            or self.lastDisplayState ~= self.displayState
             or self.isMaskPercentUpdated
             or self.isTextUpdated)
     then
@@ -106,9 +113,10 @@ function PushButton:Update(dt)
     self.isContentsMarginsUpdated = false
     self.isSizeUpdated = false
     self.isPosUpdated = false
-    self.isDisplayStateUpdated = false
+    self.whetherSpriteDataUpdate = false
     self.isMaskPercentUpdated = false
     self.isTextUpdated = false
+    self.lastDisplayState = self.displayState
 end
 
 function PushButton:Draw()
@@ -154,43 +162,62 @@ function PushButton:MouseEvent()
             self.displayState = DisplayState.Pressing
             break
         end
+
         -- 处于悬停中
         self.displayState = DisplayState.Hovering
         break
     end
+end
 
-    -- 根据状态设置按钮图片
-    if self.lastDisplayState ~= self.displayState then
-        if DisplayState.Normal == self.displayState then
-            self.sprite:SetData(self.normalSpriteData)
-        elseif DisplayState.Hovering == self.displayState then
-            self.sprite:SetData(self.hoveringImgData)
-        elseif DisplayState.Pressing == self.displayState then
-            -- 播放点击音效
-            self.clickedSoundSource:stop()
-            self.clickedSoundSource:setVolume(_CONFIG.setting.sound)
-            self.clickedSoundSource:play()
-            -- 设置按钮图片
-            self.sprite:SetData(self.pressingImgData)
-
-            self.isPressing = true
-        elseif DisplayState.Disable == self.displayState then
-            self.sprite:SetData(self.disableImgData)
+function PushButton:TouchEvent()
+    -- 判断鼠标
+    while true do
+        -- 是否处于禁用状态
+        if false == self.enable then
+            self.displayState = DisplayState.Disable
+            break
         end
-        self.isDisplayStateUpdated = true
+
+        -- 检查是否有上层窗口遮挡
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.parentWindow)
+        if #capturedTouchIdList == 0
+            or self.parentWindow:IsInMoving() then
+            self.displayState = DisplayState.Normal
+            break
+        end
+
+        ---@param sprite Graphics.Drawable.Sprite
+        ---@param idList table<number, string>
+        ---@return id string
+        local function getSpriteTouchedId(sprite, idList)
+            for _, id in pairs(idList) do
+                local point = Touch.GetPoint(id)
+                if (sprite:CheckPoint(point.x, point.y)) then
+                    return id
+                end
+            end
+
+            return ""
+        end
+
+        -- 确保触控点在按钮上
+        local touchedId = getSpriteTouchedId(self.sprite, capturedTouchIdList)
+        if "" == touchedId then
+            self.displayState = DisplayState.Normal
+            break
+        end
+
+        -- 是否处于按压中
+        local point = Touch.GetPoint(touchedId)
+        if (Touch.WhetherPointIsHold(point)) then
+            self.displayState = DisplayState.Pressing
+            break
+        end
+
+        -- 处于悬停中
+        self.displayState = DisplayState.Hovering
+        break
     end
-
-    -- 释放点击后
-    if self.lastDisplayState == DisplayState.Pressing
-        and self.displayState ~= DisplayState.Pressing
-    then
-        self.isPressing = false
-
-        -- 判断和执行点击触发事件
-        self:Signal_Clicked()
-    end
-
-    self.lastDisplayState = self.displayState
 end
 
 ---@param path string
@@ -210,21 +237,22 @@ function PushButton:SetNormalSpriteDataPath(path)
         return
     end
     self.normalSpriteData = _RESOURCE.GetSpriteData(path)
+    self.whetherSpriteDataUpdate = true
 end
 
 ---@param path string
 function PushButton:SetHoveringSpriteDataPath(path)
-    self.hoveringImgData = _RESOURCE.GetSpriteData(path)
+    self.hoveringSpriteData = _RESOURCE.GetSpriteData(path)
 end
 
 ---@param path string
 function PushButton:SetPressingSpriteDataPath(path)
-    self.pressingImgData = _RESOURCE.GetSpriteData(path)
+    self.pressingSpriteData = _RESOURCE.GetSpriteData(path)
 end
 
 ---@param path string
 function PushButton:SetDisabledSpriteDataPath(path)
-    self.disableImgData = _RESOURCE.GetSpriteData(path)
+    self.disableSpriteData = _RESOURCE.GetSpriteData(path)
 end
 
 ---@param left int
@@ -302,6 +330,16 @@ function PushButton:SetMaskPercent(percent)
     self.isMaskPercentUpdated = true
 end
 
+---@param name string
+function PushButton:SetObjectName(name)
+    self.objectName = name
+end
+
+---@param enable boolean
+function PushButton:EnableClickedSound(enable)
+    self.whetherEnableClickedSound = enable
+end
+
 --- 连接信号
 ---@param signal function
 ---@param obj Object
@@ -345,7 +383,27 @@ function PushButton:updateSprites()
         self.bgSprite:SetAttri("position", self.xPos, self.yPos)
     end
 
-    -- 更新 sprite
+    --- 更新 sprite
+    -- 根据状态设置按钮图片
+    if DisplayState.Normal == self.displayState then
+        self.sprite:SetData(self.normalSpriteData)
+    elseif DisplayState.Hovering == self.displayState then
+        self.sprite:SetData(self.hoveringSpriteData)
+    elseif DisplayState.Pressing == self.displayState then
+        if self.whetherEnableClickedSound then
+            -- 播放点击音效
+            self.clickedSoundSource:stop()
+            self.clickedSoundSource:setVolume(_CONFIG.setting.sound)
+            self.clickedSoundSource:play()
+        end
+        -- 设置按钮图片
+        self.sprite:SetData(self.pressingSpriteData)
+
+        self.isPressing = true
+    elseif DisplayState.Disable == self.displayState then
+        self.sprite:SetData(self.disableSpriteData)
+    end
+
     local spriteWidth, spriteHeight = self.sprite:GetImageDimensions()
     local spriteXScale = (self.width - self.leftMargin - self.rightMargin) / spriteWidth
     local spriteYScale = (self.height - self.topMargin - self.bottomMargin) / spriteHeight
@@ -378,6 +436,18 @@ function PushButton:updateMaskSprite()
     self.maskSprite:SetImage(canvas)
     self.maskSprite:AdjustDimensions()
     self.maskSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+function PushButton:judgeSignals()
+    -- 释放点击后
+    if self.lastDisplayState == DisplayState.Pressing
+        and self.displayState ~= DisplayState.Pressing
+    then
+        self.isPressing = false
+
+        -- 判断和执行点击触发事件
+        self:Signal_Clicked()
+    end
 end
 
 return PushButton

@@ -6,6 +6,7 @@
 ]] --
 
 local _Mouse = require("lib.mouse")
+local Touch = require("lib.touch")
 
 local WindowManager = {}
 
@@ -81,7 +82,7 @@ function WindowManager.IsMouseCapturedAboveLayer(layerIndex)
             -- 如果当前窗口被抓取
             if _Mouse.IsHold(1) then
                 grabbingWindowLayerIndex = layerIndexTmp
-			end
+            end
 
             return true
         end
@@ -90,6 +91,52 @@ function WindowManager.IsMouseCapturedAboveLayer(layerIndex)
     end
 
     return false
+end
+
+--- 触控是否被上层窗口捕获
+---@param w Window
+---@return idList table<number, string>
+function WindowManager.GetWindowCapturedTouchIdList(w)
+    ---@type table<number, string>
+    local idList = {} -- 处于待获取窗口内且没有被上层窗口捕获的触控点
+    ---@type table<number, string>
+    local idListTmp = {} -- 初步过滤出处于待获取窗口内的触控点
+    for id, point in pairs(Touch.GetPoints()) do
+        if (point) then
+            if w:CheckPoint(point.x, point.y) then
+                table.insert(idListTmp, id)
+            end
+        end
+    end
+
+    local layerIndex = w:GetWindowLayerIndex()
+    -- 过滤出处于待获取窗口内且没有被上层窗口捕获的触控点
+    for _, id in pairs(idListTmp) do
+        local whetherPointIsCapturedByUpperWindow = false
+        local point = Touch.GetPoint(id)
+        for _, window in pairs(WindowManager.windowList) do
+            if nil == window.GetWindowLayerIndex then
+                goto continue
+            end
+    
+            local layerIndexTmp = window.GetWindowLayerIndex(window)
+            if layerIndex >= layerIndexTmp then
+                goto continue
+            end
+            if window:CheckPoint(point.x, point.y) then
+                whetherPointIsCapturedByUpperWindow = true
+                break
+            end
+
+            ::continue::
+        end
+
+        if not whetherPointIsCapturedByUpperWindow then
+            table.insert(idList, id)
+        end
+    end
+
+    return idList
 end
 
 ---

@@ -186,6 +186,16 @@ https://gitee.com/ct243768648/DFQ-Original/commit/bd381e11461b2d5471c8409f32a86e
 
 
 
+### 安卓调试方法
+
+查看游戏输出命令：
+
+```shell
+adb logcat |grep SDL/APP
+```
+
+
+
 ## 更多功能的修改方法
 
 更多功能的修改方法请尝试阅读和理解项目代码，后续我会慢慢更新...
