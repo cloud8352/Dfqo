@@ -22,6 +22,7 @@ local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 local player = nil
 
 function _DIRECTOR.Init()
+    ---@type Graphics.Curtain
     _curtain = _Curtain.New()
 
     _WORLD.Init()

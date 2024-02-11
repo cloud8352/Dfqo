@@ -19,6 +19,7 @@ local _width, _height = love.graphics.getDimensions()
 -- local _realWidth, _realHeight = _width, _height
 local _screenDiv = { x = 0, y = 0 }
 
+--[[
 do
     if ((_height / 9) ~= math.floor(_height / 9)) then
         local height = math.floor(_width / 16 * 9)
@@ -30,6 +31,7 @@ do
         _width = width
     end
 end
+--]]
 
 local _sx, _sy = _width / _stdWidth, _height / _stdHeight
 
@@ -44,8 +46,8 @@ end
 
 ---@return bool
 function _SYSTEM.IsMobile()
-    return true
-    -- return _os == "Android" or _os == "iOS"
+    -- return true
+    return _os == "Android" or _os == "iOS"
 end
 
 ---@param isReal boolean
@@ -84,10 +86,14 @@ end
 
 function _SYSTEM.InitWindowSize()
     local windowWidth, windowHeight = love.graphics.getDimensions()
-    if (WhetherSetWindowToDefaultSize) then
+    local whetherWindowIsFullScreen = love.window.getFullscreen()
+    if (WhetherSetWindowToDefaultSize and
+            not whetherWindowIsFullScreen and
+            not _SYSTEM.IsMobile()
+        ) then
         local _, _, flags = love.window.getMode()
         local screenW, screenH = love.window.getDesktopDimensions(flags.display)
-        local percentage = 0.9
+        local percentage = 0.85
 
         windowWidth = screenW * percentage
         windowHeight = screenW * percentage * 9 / 16

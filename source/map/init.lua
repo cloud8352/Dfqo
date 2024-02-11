@@ -323,8 +323,8 @@ local function _Load(path)
 end
 
 function _MAP.Init(OnDraw)
-    local sx, sy = _SYSTEM.GetScale()
-    _MAP.camera = _Camera.New(_const.cameraSpped, sx * _const.scale, sy * _const.scale)
+    local sx, _ = _SYSTEM.GetScale()
+    _MAP.camera = _Camera.New(_const.cameraSpped, sx * _const.scale, sx * _const.scale)
     _MAP.camera:SetWorld(0, 0, _SYSTEM.GetStdDimensions())
 
     _MAP.OnDraw = OnDraw

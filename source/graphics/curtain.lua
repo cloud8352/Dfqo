@@ -94,6 +94,8 @@ function _Curtain:Enter(color, upTime, downTime, wattingTime, OnFull, OnDown, On
     self._OnDown = OnDown or _emptyFunc
     self._OnEnd = OnEnd or _emptyFunc
     self.isRunning = true
+    self.width, self.height = _SYSTEM.GetWindowDimensions()
+    print(111, self.width, self.height)
 end
 
 return _Curtain
