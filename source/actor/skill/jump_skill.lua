@@ -29,7 +29,7 @@ function JumpSkill:CanUse()
     -- 只有当前状态为 stay 或 move 或 run，才可以使用跳跃技能
     local currentStateName = ""
     if self._entity.states.later then
-        currentStateName =  self._entity.states.current:GetName()
+        currentStateName = self._entity.states.current:GetName()
     end
     local isLastStateNameStayOrMoveOrRun = (currentStateName == "stay") or
         (currentStateName == "move") or (currentStateName == "run")
