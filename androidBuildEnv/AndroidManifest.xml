@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.ccc.dfqo" platformBuildVersionCode="25" platformBuildVersionName="7.1.1">
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+        <application
+            android:allowBackup="true"
+            android:icon="@drawable/love"
+            android:label="dfqo"
+            android:usesCleartextTraffic="true" >
+            <activity
+                    android:name="org.love2d.android.GameActivity"
+                    android:exported="true"
+                    android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboard|keyboardHidden|navigation"
+                    android:label="dfqo"
+                    android:launchMode="singleInstance"
+                    android:screenOrientation="landscape"
+                    android:resizeableActivity="false"
+                    android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN" />
+                    <category android:name="android.intent.category.LAUNCHER" />
+                    <category android:name="tv.ouya.intent.category.GAME" />
+                </intent-filter>
+                <intent-filter>
+                    <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+                </intent-filter>
+            </activity>
+        </application>
+    <uses-feature android:glEsVersion="0x00020000"/>
+</manifest>

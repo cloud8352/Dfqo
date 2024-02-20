@@ -1,0 +1,25 @@
+version: 2.9.3
+apkFileName: love2d.apk
+isFrameworkApk: false
+usesFramework:
+  ids:
+  - 1
+  tag: null
+sdkInfo:
+  minSdkVersion: 10
+  targetSdkVersion: 23
+packageInfo:
+  forcedPackageId: 127
+  renameManifestPackage: null
+versionInfo:
+  versionCode: 22
+  versionName: 0.10.2
+resourcesAreCompressed: false
+sharedLibrary: false
+sparseResources: false
+unknownFiles:
+  org/libsdl/app/SDLActivity.java.orig: 8
+  org/libsdl/app/SDLActivity.java.rej: 8
+doNotCompress:
+- resources.arsc
+- png

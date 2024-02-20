@@ -186,7 +186,7 @@ https://gitee.com/ct243768648/DFQ-Original/commit/bd381e11461b2d5471c8409f32a86e
 
 
 
-### 安卓调试方法
+## 安卓调试方法
 
 查看游戏输出命令：
 
@@ -194,6 +194,20 @@ https://gitee.com/ct243768648/DFQ-Original/commit/bd381e11461b2d5471c8409f32a86e
 adb logcat |grep SDL/APP
 ```
 
+## 安卓打包
+
+java.exe -jar .\apktool_2.9.3.jar d -s .\love2d.apk
+
+java.exe -jar .\apktool_2.9.3.jar b -o 1.apk .\love2d\
+
+创建签名密钥库
+```
+"C:\Program Files\Java\jdk-21\bin\keytool.exe" -genkeypair -keystore ccc.keystore -alias release -validity 30000
+```
+签名
+```
+"C:\Program Files\Java\jdk-21\bin\jarsigner.exe" -verbose -keystore ccc.keystore -signedjar .\1_signed.apk .\1.apk release
+```
 
 
 ## 更多功能的修改方法
