@@ -77,7 +77,7 @@ function RoleInfoWidget:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
 
-    self.roleEquTableWidget:SetPosition(self.xPos, self.yPos)
+    self.roleEquTableWidget:SetPosition(self.xPos + 6 * Util.GetWindowSizeScale(), self.yPos)
 
     self.articleTableWidget:SetPosition(self.xPos + LeftPartWidth + EachPartSpace, self.yPos)
 end

@@ -20,13 +20,13 @@ local Widget = require("UI.Widget")
 ---@class TitleBar
 local TitleBar = require("core.class")(Widget)
 
-local TitleBarMargin = 30
+local TitleBarMargin = 5
 
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
 
-    TitleBarMargin = 30 * Util.GetWindowSizeScale()
+    TitleBarMargin = 10 * Util.GetWindowSizeScale()
 
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
@@ -139,8 +139,8 @@ function TitleBar:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
     local closeBtnWidth = self.closeBtn:GetWidth()
-    self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - 10,
-        y + self.topMargin + 15 * Util.GetWindowSizeScale())
+    self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - TitleBarMargin * 0.8,
+        y + self.topMargin + TitleBarMargin)
 
     -- position
     self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
@@ -150,7 +150,7 @@ end
 
 function TitleBar:SetSize(width, height)
     -- 关闭按钮
-    self.closeBtn:SetSize(height - TitleBarMargin, height - TitleBarMargin)
+    self.closeBtn:SetSize(height - TitleBarMargin * 2, height - TitleBarMargin * 2)
 
     Widget.SetSize(self, width, height)
 end

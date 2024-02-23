@@ -80,11 +80,11 @@ function UI.Init()
 
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
-    UI.characterInfoWindow:SetSize(1040 * Util.GetWindowSizeScale(),
-        670 * Util.GetWindowSizeScale())
+    UI.characterInfoWindow:SetSize(1026 * Util.GetWindowSizeScale(),
+        642 * Util.GetWindowSizeScale())
     local characterInfoWindowWidth, _ = UI.characterInfoWindow:GetSize()
     local characterInfoWindowOriginXPos = (Util.GetWindowWidth() - characterInfoWindowWidth) / 2
-    UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, 90)
+    UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, 40)
     UI.characterInfoWindow:SetVisible(false)
 
     UI.roleInfoWidget = RoleInfoWidget.New(UI.characterInfoWindow, UI.model)

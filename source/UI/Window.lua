@@ -23,11 +23,11 @@ local Widget = require("UI.Widget")
 local Window = require("core.class")()
 
 local MarginSpace = 15
-local TitleBarHeight = 50
+local TitleBarHeight = 20
 
 function Window:Ctor()
-    MarginSpace = _MATH.Round(15 * _Util.GetWindowSizeScale())
-    TitleBarHeight = _MATH.Round(50 * _Util.GetWindowSizeScale())
+    MarginSpace = _MATH.Round(5 * _Util.GetWindowSizeScale())
+    TitleBarHeight = _MATH.Round(40 * _Util.GetWindowSizeScale())
 
     -- WindowLayerIndex
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
