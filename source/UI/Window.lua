@@ -26,8 +26,8 @@ local MarginSpace = 15
 local TitleBarHeight = 20
 
 function Window:Ctor()
-    MarginSpace = _MATH.Round(5 * _Util.GetWindowSizeScale())
-    TitleBarHeight = _MATH.Round(40 * _Util.GetWindowSizeScale())
+    MarginSpace = math.floor(5 * _Util.GetWindowSizeScale())
+    TitleBarHeight = math.floor(40 * _Util.GetWindowSizeScale())
 
     -- WindowLayerIndex
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
@@ -137,8 +137,8 @@ function Window:SetPosition(x, y)
 end
 
 function Window:SetSize(width, height)
-    self.width = width
-    self.height = height
+    self.width = math.floor(width)
+    self.height = math.floor(height)
 
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
@@ -336,9 +336,9 @@ function Window:SetContentWidget(widget)
     if self.titleBar:IsVisible() then
         realTitleBarHeight = TitleBarHeight
     end
-    self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
     self.contentWidget:SetSize(self.width - MarginSpace * 2,
         self.height - MarginSpace * 2 - realTitleBarHeight)
+    self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
 end
 
 return Window

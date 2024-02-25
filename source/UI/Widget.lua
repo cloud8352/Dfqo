@@ -58,7 +58,7 @@ function Widget:SetSize(width, height)
     self.height = height
 end
 
----@return number w, number h
+---@return number, number w, h
 function Widget:GetSize()
     return self.width, self.height
 end
@@ -80,7 +80,7 @@ end
 ---@return changed boolean
 function Widget:IsSizeChanged()
     return (self.lastWidth ~= self.width
-            or self.lastHeight ~= self.height)
+        or self.lastHeight ~= self.height)
 end
 
 return Widget

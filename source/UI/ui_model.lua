@@ -733,6 +733,42 @@ function UiModel:GetHp()
     return self.player.attributes.hp
 end
 
+---@param type ActorAttributeType
+function UiModel:GetActorAttribute(type)
+    if self.player == nil then
+        print("UiModel:GetActorAttribute(type)", "player is nil")
+        return 0
+    end
+
+    if type == Common.ActorAttributeType.Hp then
+        return self.player.attributes.hp
+    elseif type == Common.ActorAttributeType.MaxHp then
+        return self.player.attributes.maxHp
+    elseif type == Common.ActorAttributeType.HpRecovery then
+        return self.player.attributes.hpRecovery
+    elseif type == Common.ActorAttributeType.Mp then
+        return self.player.attributes.mp
+    elseif type == Common.ActorAttributeType.MaxMp then
+        return self.player.attributes.maxMp
+    elseif type == Common.ActorAttributeType.PhyAtk then
+        return self.player.attributes.phyAtk
+    elseif type == Common.ActorAttributeType.MagAtk then
+        return self.player.attributes.magAtk
+    elseif type == Common.ActorAttributeType.PhyDef then
+        return self.player.attributes.phyDef
+    elseif type == Common.ActorAttributeType.MagDef then
+        return self.player.attributes.magDef
+    elseif type == Common.ActorAttributeType.MoveSpeed then
+        return self.player.attributes.moveRate
+    elseif type == Common.ActorAttributeType.AttackSpeed then
+        return self.player.attributes.attackRate
+    elseif type == Common.ActorAttributeType.PhyAtkRate then
+        return self.player.attributes.phyAtkRate
+    elseif type == Common.ActorAttributeType.MagAtkRate then
+        return self.player.attributes.magAtkRate
+    end
+end
+
 ---@param key string
 function UiModel:PressPlayerKey(key)
     if (not self.player) then

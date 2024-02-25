@@ -37,6 +37,7 @@ local RowCount = Common.ArticleTableRowCount
 function ArticleTableWidget:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
     ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+    ItemWidth = math.floor(ItemWidth)
 
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
@@ -233,8 +234,9 @@ function ArticleTableWidget:SetPosition(x, y)
     end
 end
 
-function ArticleTableWidget:SetSize(width, height)
-    self.baseWidget:SetSize(width, height)
+---@return number, number w, h
+function ArticleTableWidget:GetSize()
+    return self.baseWidget:GetSize()
 end
 
 function ArticleTableWidget:SetEnable(enable)
@@ -319,8 +321,8 @@ function ArticleTableWidget:updateHoveringItemTipWindowData()
     local tipWindowYPos = 0
     local bgX, bgY = skillItemBgLabel:GetPosition()
     local bgW, bgH = skillItemBgLabel:GetSize()
-    tipWindowXPos = bgX + bgW/2
-    tipWindowYPos = bgY + bgH/2
+    tipWindowXPos = bgX + bgW / 2
+    tipWindowYPos = bgY + bgH / 2
 
     self.model:RequestSetHoveringArticleItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, self.hoveringItemInfo)
 end

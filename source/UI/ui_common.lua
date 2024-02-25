@@ -130,10 +130,10 @@ function UiCommon.NewArticleInfo()
     return _TABLE.DeepClone(ArticleInfo)
 end
 
-UiCommon.ArticleItemWidth = 58
+UiCommon.ArticleItemWidth = 45
 
-UiCommon.ArticleTableColCount = 7
-UiCommon.ArticleTableRowCount = 10
+UiCommon.ArticleTableColCount = 8
+UiCommon.ArticleTableRowCount = 12
 
 UiCommon.EquTableColCount = 5
 UiCommon.EquTableRowCount = 2
@@ -174,5 +174,23 @@ local SkillInfo = {
 function UiCommon.NewSkillInfo()
     return _TABLE.DeepClone(SkillInfo)
 end
+
+--- 角色属性类型
+---@enum ActorAttributeType
+UiCommon.ActorAttributeType = {
+    Hp = 1,
+    MaxHp = 2,
+    HpRecovery = 3,
+    Mp = 4,
+    MaxMp = 5,
+    PhyAtk = 6,
+    MagAtk = 7,
+    PhyDef = 8,
+    MagDef = 9,
+    MoveSpeed = 10,
+    AttackSpeed = 11,
+    PhyAtkRate = 12,
+    MagAtkRate = 13
+}
 
 return UiCommon
