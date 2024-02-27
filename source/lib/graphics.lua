@@ -20,6 +20,8 @@ local _lateColor = { 255, 255, 255, 255 }
 local _nowFont = love.graphics.getFont()
 local _laterFont
 
+local savedCanvas = nil
+
 local _GRAPHICS = {} ---@class Lib.GRAPHICS
 _GRAPHICS.Print = love.graphics.print
 _GRAPHICS.SetScissor = love.graphics.setScissor
@@ -33,7 +35,6 @@ _GRAPHICS.Stencil = love.graphics.stencil
 _GRAPHICS.SetStencilTest = love.graphics.setStencilTest
 _GRAPHICS.SetLineWidth = love.graphics.setLineWidth
 _GRAPHICS.GetLineWidth = love.graphics.getLineWidth
-_GRAPHICS.SetCanvas = love.graphics.setCanvas
 _GRAPHICS.Clear = love.graphics.clear
 
 function _GRAPHICS.Init()
@@ -176,6 +177,26 @@ end
 function _GRAPHICS.NewCanvas(width, height)
     -- print("NewCanvas")
     return love.graphics.newCanvas(width, height)
+end
+
+---@param canvas Love.Graphics.Canvas
+function _GRAPHICS.SetCanvas(canvas)
+    love.graphics.setCanvas(canvas)
+end
+
+---@return Love.Graphics.Canvas canvas
+function _GRAPHICS.GetCanvas()
+    return love.graphics.getCanvas()
+end
+
+---@param canvas Love.Graphics.Canvas
+function _GRAPHICS.SaveCanvas()
+    savedCanvas = _GRAPHICS.GetCanvas()
+end
+
+---@param canvas Love.Graphics.Canvas
+function _GRAPHICS.RestoreCanvas()
+    _GRAPHICS.SetCanvas(savedCanvas)
 end
 
 return _GRAPHICS

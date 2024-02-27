@@ -50,7 +50,7 @@ function PushButton:Ctor(parentWindow)
     self.whetherEnableClickedSound = true
 
     ---@type Graphics.Drawable.Sprite
-    self.bgSprite = nil -- 背景，默认无背景
+    self.bgSprite = _Sprite.New() -- 背景，默认无背景
     ---@type Graphics.Drawable.Sprite
     self.sprite = _Sprite.New()
     self.sprite:SwitchRect(true) -- 使用矩形
@@ -68,7 +68,6 @@ function PushButton:Ctor(parentWindow)
     self.isSizeUpdated = true
     self.xPos = 0
     self.yPos = 0
-    self.isPosUpdated = true
     self.enable = true
     self.isVisible = true
     self.lastDisplayState = DisplayState.Unknown
@@ -98,7 +97,6 @@ function PushButton:Update(dt)
     if (self.isBgSpriteUpdated
             or self.isContentsMarginsUpdated
             or self.isSizeUpdated
-            or self.isPosUpdated
             or self.whetherSpriteDataUpdate
             or self.lastDisplayState ~= self.displayState
             or self.isMaskPercentUpdated
@@ -112,7 +110,6 @@ function PushButton:Update(dt)
     self.isBgSpriteUpdated = false
     self.isContentsMarginsUpdated = false
     self.isSizeUpdated = false
-    self.isPosUpdated = false
     self.whetherSpriteDataUpdate = false
     self.isMaskPercentUpdated = false
     self.isTextUpdated = false
@@ -124,10 +121,7 @@ function PushButton:Draw()
         return
     end
 
-    if nil ~= self.bgSprite then
-        self.bgSprite:Draw()
-    end
-
+    self.bgSprite:Draw()
     self.sprite:Draw()
     self.textLabel:Draw()
     self.maskSprite:Draw()
@@ -224,9 +218,6 @@ end
 function PushButton:SetBgSpriteDataPath(path)
     local spriteData = _RESOURCE.GetSpriteData(path)
 
-    if nil == self.bgSprite then
-        self.bgSprite = _Sprite.New()
-    end
     self.bgSprite:SetData(spriteData)
     self.isBgSpriteUpdated = true
 end
@@ -274,7 +265,9 @@ function PushButton:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
 
-    self.isPosUpdated = true
+    self.bgSprite:SetAttri("position", self.xPos, self.yPos)
+    self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
+    self.maskSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 ---@return int, int @宽，高
@@ -374,14 +367,11 @@ function PushButton:Signal_Clicked()
 end
 
 function PushButton:updateSprites()
-    if nil ~= self.bgSprite then
-        -- 更新 bgSprite
-        local bgSpriteWidth, bgSpriteHeight = self.bgSprite:GetImageDimensions()
-        local bgSpriteXScale = (self.width / bgSpriteWidth)
-        local bgSpriteYScale = (self.height / bgSpriteHeight)
-        self.bgSprite:SetAttri("scale", bgSpriteXScale, bgSpriteYScale)
-        self.bgSprite:SetAttri("position", self.xPos, self.yPos)
-    end
+    -- 更新 bgSprite
+    local bgSpriteWidth, bgSpriteHeight = self.bgSprite:GetImageDimensions()
+    local bgSpriteXScale = (self.width / bgSpriteWidth)
+    local bgSpriteYScale = (self.height / bgSpriteHeight)
+    self.bgSprite:SetAttri("scale", bgSpriteXScale, bgSpriteYScale)
 
     --- 更新 sprite
     -- 根据状态设置按钮图片
@@ -408,7 +398,6 @@ function PushButton:updateSprites()
     local spriteXScale = (self.width - self.leftMargin - self.rightMargin) / spriteWidth
     local spriteYScale = (self.height - self.topMargin - self.bottomMargin) / spriteHeight
     self.sprite:SetAttri("scale", spriteXScale, spriteYScale)
-    self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
 
     self.textLabel:SetSize(self.width - self.leftMargin - self.rightMargin,
         self.height - self.topMargin - self.bottomMargin)
@@ -418,10 +407,10 @@ function PushButton:updateSprites()
 end
 
 function PushButton:updateMaskSprite()
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
 
     ---@type int
     local r, g, b, a
@@ -430,12 +419,10 @@ function PushButton:updateMaskSprite()
     _Graphics.DrawRect(0, self.height * self.maskPercent, self.width, shadowHeight, "fill")
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
 
     self.maskSprite:SetImage(canvas)
     self.maskSprite:AdjustDimensions()
-    self.maskSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 function PushButton:judgeSignals()

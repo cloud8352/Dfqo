@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-4-26
 	alter: 2019-9-17
-]]--
+]]
+--
 
 local _Color = require("graphics.drawunit.color")
 local _Base = require("graphics.drawable.base")
@@ -21,26 +22,26 @@ local _Sprite = require("core.class")(_Base, _IRect, _IPath)
 ---@param data Lib.RESOURCE.SpriteData
 ---@param rectEnabled boolean @default=false
 function _Sprite:Ctor(upperEvent, data, rectEnabled)
-	_Base.Ctor(self, upperEvent)
-	_IRect.Ctor(self, rectEnabled)
-	_IPath.Ctor(self)
+    _Base.Ctor(self, upperEvent)
+    _IRect.Ctor(self, rectEnabled)
+    _IPath.Ctor(self)
 
-	if (data) then
-		self:SetData(data)
-	end
+    if (data) then
+        self:SetData(data)
+    end
 end
 
 ---@param data Lib.RESOURCE.SpriteData
 ---@param forced boolean @forced setting
 ---@return boolean
 function _Sprite:SetData(data, forced)
-	if (self._data == data and not forced) then
-		return false
-	end
+    if (self._data == data and not forced) then
+        return false
+    end
 
-	local rectEnabled = self._rectEnabled
-	self._rectEnabled = false
-	data = data or _emptyTable
+    local rectEnabled = self._rectEnabled
+    self._rectEnabled = false
+    data = data or _emptyTable
     self._data = data
 
     local ox = data.ox or 0
@@ -58,54 +59,55 @@ function _Sprite:SetData(data, forced)
     self:SetAttri("radian", angle, true)
     self:SetAttri("color", color:Get())
     self:SetAttri("blendmode", blendmode)
-	
-	if (data.shader) then
-		self:SetAttri("shader", data.shader)
-	end
 
-	self._rectEnabled = rectEnabled
-	self:AdjustDimensions()
+    if (data.shader) then
+        self:SetAttri("shader", data.shader)
+    end
 
-	return true
+    self._rectEnabled = rectEnabled
+    self:AdjustDimensions()
+
+    return true
 end
 
 ---@param image Image
 ---@param path string
 function _Sprite:SetImage(image, path)
-	self._drawableObj = image
-	self._path = path or ""
+    self._drawableObj = nil
+    self._drawableObj = image
+    self._path = path or ""
 end
 
 ---@param quad Quad
 function _Sprite:SetQuad(quad)
-	_Base.SetQuad(self, quad)
+    _Base.SetQuad(self, quad)
     self:AdjustDimensions()
 end
 
 ---@param notAdjustRect boolean @can null
-function _Sprite:AdjustDimensions(notAdjustRect)	
-	local _, _, w, h = self:GetQuadValues()
-	local iw, ih = self:GetImageDimensions()
+function _Sprite:AdjustDimensions(notAdjustRect)
+    local _, _, w, h = self:GetQuadValues()
+    local iw, ih = self:GetImageDimensions()
 
-	self._width = w or iw
-	self._height = h or ih
-	
-	if (not notAdjustRect) then
-		self:AdjustRect()
-	end
+    self._width = w or iw
+    self._height = h or ih
+
+    if (not notAdjustRect) then
+        self:AdjustRect()
+    end
 end
 
 ---@return int, int @w & h
 function _Sprite:GetImageDimensions()
-	if (self._drawableObj) then
-		return self._drawableObj:getDimensions()
-	else
-		return 0, 0
-	end
+    if (self._drawableObj) then
+        return self._drawableObj:getDimensions()
+    else
+        return 0, 0
+    end
 end
 
 function _Sprite:_OnDraw()
-	self._renderer:DrawObj(self._drawableObj)
+    self._renderer:DrawObj(self._drawableObj)
 end
 
 return _Sprite

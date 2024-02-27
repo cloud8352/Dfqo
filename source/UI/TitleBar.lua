@@ -192,6 +192,7 @@ function TitleBar:adjustScaleByMargin()
 end
 
 function TitleBar:createFrameCanvasBySize(width, height)
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(width, height)
     _Graphics.SetCanvas(canvas)
@@ -218,7 +219,7 @@ function TitleBar:createFrameCanvasBySize(width, height)
     painterSprite:SetAttri("scale", 1, allYScale)
     painterSprite:Draw()
 
-    _Graphics.SetCanvas()
+    _Graphics.RestoreCanvas()
     return canvas
 end
 

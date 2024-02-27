@@ -152,7 +152,7 @@ function ComboBox:SetPosition(x, y)
     self.frameSprite:SetAttri("position", x, y)
     self.textLabel:SetPosition(x + 15, y)
     self.dropDownBtn:SetPosition(x + self.width - self.dropDownBtnRightMargin - self.dropDownBtn:GetWidth(),
-                                y + self.dropDownBtnTopMargin)
+        y + self.dropDownBtnTopMargin)
     self.dropDownListView:SetPosition(x, y + self.height - 5)
     self.posX = x
     self.posY = y
@@ -170,7 +170,7 @@ function ComboBox:SetSize(width, height)
 
     -- 下拉按钮
     self.dropDownBtn:SetSize(self.height - self.dropDownBtnTopMargin - self.dropDownBtnBottomMargin, 
-                            self.height - self.dropDownBtnLeftMargin - self.dropDownBtnRightMargin)
+        self.height - self.dropDownBtnLeftMargin - self.dropDownBtnRightMargin)
 
     self.dropDownListView:SetSize(width, 300)
 end
@@ -189,6 +189,7 @@ function ComboBox:SetVisible(isVisible)
 end
 
 function ComboBox:createFrameCanvasBySize(width, height)
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(width, height)
     _Graphics.SetCanvas(canvas)
@@ -215,7 +216,7 @@ function ComboBox:createFrameCanvasBySize(width, height)
     painterSprite:SetAttri("scale", 1, allYScale)
     painterSprite:Draw()
 
-    _Graphics.SetCanvas()
+    _Graphics.RestoreCanvas()
     return canvas
 end
 

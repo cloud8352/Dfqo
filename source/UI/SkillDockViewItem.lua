@@ -111,10 +111,10 @@ function SkillDockViewItem:SetKey(key)
 end
 
 function SkillDockViewItem:updateSprite()
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
 
     ---@type int
     local r, g, b, a
@@ -123,8 +123,7 @@ function SkillDockViewItem:updateSprite()
     _Graphics.DrawRect(0, self.height * self.coolDownProgress, self.width, shadowHeight, "fill")
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
 
     self.coolDownShadowSprite:SetImage(canvas)
     self.coolDownShadowSprite:AdjustDimensions()

@@ -50,6 +50,7 @@ function _Matrix:Reset(x, y, w, h, initOpenNodes)
 end
 
 function _Matrix:MakeSprite()
+    _GRAPHICS.SaveCanvas()
     local canvas = _GRAPHICS.NewCanvas(self._rect:Get("w"), self._rect:Get("h"))
     _GRAPHICS.SetCanvas(canvas)
     _GRAPHICS.SetColor(255, 0, 0, 127)
@@ -70,7 +71,7 @@ function _Matrix:MakeSprite()
         end
     end
 
-    _GRAPHICS.SetCanvas()
+    _GRAPHICS.RestoreCanvas()
     self._sprite:SetImage(canvas)
 end
 

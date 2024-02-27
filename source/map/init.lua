@@ -286,6 +286,7 @@ local function _Load(path)
                     table.sort(data.layer[k], _Sorting)
                 end
 
+                _GRAPHICS.SaveCanvas()
                 local canvas = _GRAPHICS.NewCanvas(data.info.width, data.info.height)
                 _GRAPHICS.SetCanvas(canvas)
 
@@ -303,7 +304,7 @@ local function _Load(path)
                     spriteBoard:Draw()
                 end
 
-                _GRAPHICS.SetCanvas()
+                _GRAPHICS.RestoreCanvas()
                 v:SetImage(canvas)
             end
         elseif (v.SetImage) then

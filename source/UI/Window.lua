@@ -122,6 +122,11 @@ function Window:GetObjName()
     return self.objName
 end
 
+
+function Window:GetPosition()
+    return self.posX, self.posY
+end
+
 function Window:SetPosition(x, y)
     self.bgSprite:SetAttri("position", x, y)
     self.posX = x
@@ -140,6 +145,7 @@ function Window:SetSize(width, height)
     self.width = math.floor(width)
     self.height = math.floor(height)
 
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
@@ -193,7 +199,7 @@ function Window:SetSize(width, height)
     painterSprite:SetAttri("position", self.width - self.rightBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
 
-    _Graphics.SetCanvas()
+    _Graphics.RestoreCanvas()
     self.bgSprite:SetImage(canvas)
     self.bgSprite:AdjustDimensions()
 

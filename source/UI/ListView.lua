@@ -88,9 +88,10 @@ function ListView:Update(dt)
     end
 
     if self.needUpdateItemListContentSprite then
+        _Graphics.SaveCanvas()
         -- 创建背景画布
         local canvas = _Graphics.NewCanvas(self.width - self.leftMargin - self.rightMargin,
-                                            self.height - self.topMargin - self.bottomMargin)
+            self.height - self.topMargin - self.bottomMargin)
         _Graphics.SetCanvas(canvas)
 
         -- 注意：不可用深度克隆方法，因为StandardItem中的sprite成员初始化时绑定了信号槽，克隆后也会继承之前的信号槽，导致调用SetAttri后使被克隆对象属性改变
@@ -103,12 +104,12 @@ function ListView:Update(dt)
             painterSprite:SetAttri("position", 0, self.itemListContentYOffset + self.itemHeight * (i - 1))
             painterSprite:Draw()
         end
-        _Graphics.SetCanvas()
+        _Graphics.RestoreCanvas()
 
         self.itemListContentSprite:SetImage(canvas)
         self.itemListContentSprite:AdjustDimensions()
         self.itemListContentSprite:SetAttri("position", self.posX + self.leftMargin,
-                                            self.posY + self.topMargin)
+            self.posY + self.topMargin)
         self.needUpdateItemListContentSprite = false
     end
 
@@ -214,13 +215,14 @@ function ListView:SetPosition(x, y)
     end
 
     self.scrollBar:SetPosition(self.posX + self.width - self.scrollBar:GetWidth() - self.rightMargin,
-                            self.posY + self.topMargin)
+        self.posY + self.topMargin)
 end
 
 function ListView:SetSize(width, height)
     self.width = width
     self.height = height
 
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
@@ -274,7 +276,7 @@ function ListView:SetSize(width, height)
     painterSprite:SetAttri("position", self.width - self.rightBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
 
-    _Graphics.SetCanvas()
+    _Graphics.RestoreCanvas()
     self.bgSprite:SetImage(canvas)
     self.bgSprite:AdjustDimensions()
 
@@ -348,7 +350,7 @@ function ListView:InsertItem(i, text)
     self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList - self.topMargin - self.bottomMargin)
     -- scroll bar position
     self.scrollBar:SetPosition(self.posX + self.width - self.scrollBar:GetWidth() - self.rightMargin,
-    self.posY + self.topMargin)
+        self.posY + self.topMargin)
 
     self.needUpdateItemListContentSprite = true
 end

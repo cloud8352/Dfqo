@@ -10,6 +10,7 @@ local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _TABLE = require("lib.table")
 local _MATH = require("lib.math")
+local _Graphics = require("lib.graphics")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")

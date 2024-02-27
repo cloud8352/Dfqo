@@ -102,14 +102,14 @@ function Label:Update(dt)
     end
 
     if (self.lastWidth ~= self.width
-        or self.lastHeight ~= self.height
-        or self.lastText ~= self.text
-        or self.lastAlignment ~= self.alignment
-        or self.lastIconSpriteDataPath ~= self.iconSpriteDataPath
-        or self.lastIconSizeW ~= self.iconSizeW
-        or self.lastIconSizeH ~= self.iconSizeH
+            or self.lastHeight ~= self.height
+            or self.lastText ~= self.text
+            or self.lastAlignment ~= self.alignment
+            or self.lastIconSpriteDataPath ~= self.iconSpriteDataPath
+            or self.lastIconSizeW ~= self.iconSizeW
+            or self.lastIconSizeH ~= self.iconSizeH
         )
-        then
+    then
         self:updateSprite()
     end
 
@@ -239,10 +239,10 @@ function Label:GetViewContentSize()
 end
 
 function Label:updateSprite()
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
 
     local txtR, txtG, txtB, txtA
     txtR = 255; txtG = 255; txtB = 255; txtA = 255
@@ -282,8 +282,7 @@ function Label:updateSprite()
     end
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
 
     -- 设置鼠标判断矩形数据
     self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0)

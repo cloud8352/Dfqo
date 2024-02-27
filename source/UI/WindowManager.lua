@@ -12,6 +12,7 @@ local WindowManager = {}
 
 ---@type table<number, Window>
 WindowManager.windowList = {}
+local whetherNeedUpdateUiWindowWidgetList = false
 
 ---@param obj Window
 function WindowManager.AppendToWindowList(obj)
@@ -147,14 +148,14 @@ function WindowManager.SetWindowToTopLayer(window)
     local bottomToTopWindowList = {}
     ---@type table<number, Window>
     local toolTipWindowList = {}
-    while(#WindowManager.windowList > 0) do
+    while (#WindowManager.windowList > 0) do
         local bottomLayerWindowIndex = 1
         ---@type Window
         local bottomLayerWindow = WindowManager.windowList[1]
         if bottomLayerWindow:IsTipToolWindow() then
             table.insert(toolTipWindowList, bottomLayerWindow)
             table.remove(WindowManager.windowList, bottomLayerWindowIndex)
-            goto dispathLoopContinue
+            goto dispatchLoopContinue
         end
 
         for i, windowTmp in pairs(WindowManager.windowList) do
@@ -167,7 +168,7 @@ function WindowManager.SetWindowToTopLayer(window)
         table.insert(bottomToTopWindowList, bottomLayerWindow)
         table.remove(WindowManager.windowList, bottomLayerWindowIndex)
 
-        ::dispathLoopContinue::
+        ::dispatchLoopContinue::
     end
 
     -- 重新设置层索引，使入参window的索引为最大值
@@ -196,6 +197,16 @@ function WindowManager.SetWindowToTopLayer(window)
             layerIndex = layerIndex + 1
         end
     end
+
+    whetherNeedUpdateUiWindowWidgetList = true
+end
+
+function WindowManager.WhetherNeedUpdateUiWindowWidgetList()
+    return whetherNeedUpdateUiWindowWidgetList
+end
+
+function WindowManager.OnUiWindowWidgetListUpdateFinished()
+    whetherNeedUpdateUiWindowWidgetList = false
 end
 
 --- 重新排序窗口列表

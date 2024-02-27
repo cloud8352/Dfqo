@@ -91,11 +91,11 @@ function HpRectBar:SetMaxHp(maxHp)
 end
 
 function HpRectBar:updateSprite()
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local rightLabelWidth, _ = self.rightLabel:GetSize()
     local canvas = _Graphics.NewCanvas(self.baseWidget.width - rightLabelWidth, self.baseWidget.height)
     _Graphics.SetCanvas(canvas)
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
 
     -- 先画血槽背景
     _Graphics.SetColor(10, 10, 10, 150)
@@ -110,8 +110,7 @@ function HpRectBar:updateSprite()
     _Graphics.DrawRect(0, 0, hpRectWidth, self.baseWidget.height, "fill")
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
 
     self.rectSprite:SetImage(canvas)
     self.rectSprite:AdjustDimensions()

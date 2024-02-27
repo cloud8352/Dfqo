@@ -9,6 +9,7 @@ local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _MATH = require("lib.math")
+local _Graphics = require("lib.graphics")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
@@ -123,7 +124,7 @@ function ArticleTableWidget:Update(dt)
     -- 空物品不显示悬浮提示
     if self.hoveringItemInfo == nil or
         self.hoveringItemInfo.type == Common.ArticleType.Empty
-        then
+    then
         self.isShowHoveringItemTip = false
     end
     -- 更新悬浮提示

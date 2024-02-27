@@ -26,6 +26,9 @@ local HpRectBar = require("UI.hp_rect_bar")
 local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 
+local _Sprite = require("graphics.drawable.sprite")
+local _Graphics = require("lib.graphics")
+
 local _TABLE = require("lib.table")
 local Util = require("util.Util")
 local _TIME = require("lib.time")
@@ -53,6 +56,10 @@ end
 local UI = {}
 
 function UI.Init()
+    -- 统一显示对象
+    UI.totalSprite = _Sprite.New()
+    UI.totalSpriteCanvas = _Graphics.NewCanvas(Util.GetWindowWidth(), Util.GetWindowHeight())
+    -- model
     UI.model = UiModel.New()
 
     ---@type table<number, WindowWidgetStruct>
@@ -67,9 +74,9 @@ function UI.Init()
     UI.bottomWindow = bottomWindow
     bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
     UI.characterTopBtn = PushButton.New(bottomWindow)
-    UI.characterTopBtn:SetPosition(10, 10)
     UI.characterTopBtn:SetSize(80 * Util.GetWindowSizeScale(), 80 * Util.GetWindowSizeScale())
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
+    UI.characterTopBtn:SetPosition(10, 10)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
     UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.characterTopBtn:SetHoveringSpriteDataPath("ui/CharacterPortraits/Swordsman/Hovering")
@@ -236,14 +243,15 @@ function UI.Update(dt)
 
     UI.draggingArticleItem:Update(dt)
 
-    WindowManager.SortWindowList()
+    if WindowManager.WhetherNeedUpdateUiWindowWidgetList() then
+        table.sort(UI.windowWidgetList, windowWidgetListSortFuc)
+        WindowManager.OnUiWindowWidgetListUpdateFinished()
+    end
+    UI.mergeTotalSprite()
 end
 
 function UI.Draw()
-    table.sort(UI.windowWidgetList, windowWidgetListSortFuc)
-    for _, windowWidget in pairs(UI.windowWidgetList) do
-        windowWidget.widget:Draw()
-    end
+    UI.totalSprite:Draw()
 end
 
 ---@param my Obj 对象自身，这里指UI自身
@@ -414,6 +422,24 @@ function UI.appendWindowWidget(window, widget)
     windowWidget.window = window
     windowWidget.widget = widget
     table.insert(UI.windowWidgetList, windowWidget)
+end
+
+function UI.mergeTotalSprite()
+    _Graphics.SaveCanvas()
+    _Graphics.SetCanvas(UI.totalSpriteCanvas)
+    _Graphics.Clear()
+    
+    local txtR, txtG, txtB, txtA
+    txtR = 255; txtG = 255; txtB = 255; txtA = 255
+    _Graphics.SetColor(txtR, txtG, txtB, txtA)
+
+    for _, windowWidget in pairs(UI.windowWidgetList) do
+        windowWidget.widget:Draw()
+    end
+    UI.totalSprite:SetImage(UI.totalSpriteCanvas)
+    
+    -- 还原绘图数据
+    _Graphics.RestoreCanvas()
 end
 
 return UI

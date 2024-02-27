@@ -101,16 +101,13 @@ end
 function ScrollBar:SetSlideLength(length)
     self.slideLength = length
 
-    -- test，为显示滑道轮廓
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.slideLength)
     _Graphics.SetCanvas(canvas)
 
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
-
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
     self.slideSprite:SetImage(canvas)
     self.slideSprite:AdjustDimensions() -- 设置图片后调整精灵维度
 
@@ -154,17 +151,16 @@ function ScrollBar:GetWidth()
 end
 
 function ScrollBar:createSliderCanvasBySize(width, height)
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(width, height)
     _Graphics.SetCanvas(canvas)
 
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
     _Graphics.SetColor(150, 150, 150, 180)
     _Graphics.DrawRect(0, 0, width, height, "fill")
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
     return canvas
 end
 

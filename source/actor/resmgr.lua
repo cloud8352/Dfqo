@@ -253,6 +253,7 @@ local function _InitAvatarSpriteDatas(avatar)
     w = w - 1
     h = y + h
 
+    _GRAPHICS.SaveCanvas()
     local canvas = _GRAPHICS.NewCanvas(w, h)
     _GRAPHICS.SetCanvas(canvas)
 
@@ -276,8 +277,7 @@ local function _InitAvatarSpriteDatas(avatar)
         end
     end
 
-    _GRAPHICS.SetBlendmode("alpha")
-    _GRAPHICS.SetCanvas()
+    _GRAPHICS.RestoreCanvas()
 
     for n=1, #spriteDatas do
         local spriteData = spriteDatas[n]

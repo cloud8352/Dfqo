@@ -130,11 +130,11 @@ end
 
 ---@param state StandardItem.DisplayState
 function StandardItem:createDisplayStateCanvas(state)
+    _Graphics.SaveCanvas()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
 
-    local originColorR, originColorG, originColorB, originColorA = _Graphics.GetColor()
     ---@type int
     local r, g, b, a
     ---@type int
@@ -163,8 +163,7 @@ function StandardItem:createDisplayStateCanvas(state)
     _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
 
     -- 还原绘图数据
-    _Graphics.SetCanvas()
-    _Graphics.SetColor(originColorR, originColorG, originColorB, originColorA)
+    _Graphics.RestoreCanvas()
     return canvas
 end
 
