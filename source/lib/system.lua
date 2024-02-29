@@ -10,6 +10,7 @@ local _CONFIG = require("config")
 local _FILE = require("lib.file")
 local _TABLE = require("lib.table")
 local Graphics = require("lib.graphics")
+local String = require("lib.string")
 
 local _os = love.system.getOS()
 local _stdWidth = 1280
@@ -36,18 +37,29 @@ end
 local _sx, _sy = _width / _stdWidth, _height / _stdHeight
 
 local WhetherSetWindowToDefaultSize = true
+local WindowsOsDpi = 1.0
 
 local _SYSTEM = {} ---@class Lib.SYSTEM
+
+function _SYSTEM.Init()
+    _SYSTEM.initWindowOsDpi()
+    _SYSTEM.initWindowSize()
+end
 
 ---@return string @OS X, Windows, Linux, Android, iOS
 function _SYSTEM.GetOS()
     return _os
 end
 
----@return bool
+---@return boolean
 function _SYSTEM.IsMobile()
     -- return true
     return _os == "Android" or _os == "iOS"
+end
+
+---@return boolean
+function _SYSTEM.IsWindowsOs()
+    return _os == "Windows"
 end
 
 ---@param isReal boolean
@@ -60,18 +72,20 @@ function _SYSTEM.GetWindowDimensions(notReal)
     end
 end
 
----@return int @w & h
+---@return number w
+---@return number h
 function _SYSTEM.GetStdDimensions()
     return _stdWidth, _stdHeight
 end
 
----@return int @w & h
+---@return number w
+---@return number h
 function _SYSTEM.GetUIStdDimensions()
     return _stdWidth, _stdHeight
 end
 
----@param w int
----@param h int
+---@param w number
+---@param h number
 function _SYSTEM.OnResize(w, h)
     _width = w
     _height = h
@@ -80,11 +94,11 @@ function _SYSTEM.OnResize(w, h)
 
     -- 设置字体
     --字体文件,支持中文 SourceHanSerifSC-Medium.otf yan_zhen_qing_kai_shu_font.TTF
-    local font = love.graphics.newFont("asset/font/yan_zhen_qing_kai_shu_font.TTF", 16 * _sx)
+    local font = love.graphics.newFont("asset/font/yan_zhen_qing_kai_shu_font.TTF", 16 * _sx * WindowsOsDpi)
     Graphics.SetFont(font)
 end
 
-function _SYSTEM.InitWindowSize()
+function _SYSTEM.initWindowSize()
     local windowWidth, windowHeight = love.graphics.getDimensions()
     local whetherWindowIsFullScreen = love.window.getFullscreen()
     if (WhetherSetWindowToDefaultSize and
@@ -118,6 +132,35 @@ end
 ---@return int, int
 function _SYSTEM.GetScreenDiv()
     return _screenDiv.x, _screenDiv.y
+end
+
+function _SYSTEM.GetWindowsOsDpi()
+    return WindowsOsDpi
+end
+
+function _SYSTEM.initWindowOsDpi()
+    if _SYSTEM.IsWindowsOs() then
+        local file = io.open("realWindowsOsScreenWidth.tmp", "r")
+        if nil == file then
+            print("_SYSTEM.initWindowOsDpi()" .. "open realWindowsOsScreenWidth.tmp failed!")
+            return
+        end
+
+        local output = file:read('*a')
+        local strList = String.Split(output, "\n")
+        if strList[1] ~= "ScreenWidth" then
+            return
+        end
+
+        local realWindowsOsScreenWidth = tonumber(strList[2]) or 0
+        if realWindowsOsScreenWidth < 1 then
+            return
+        end
+        -- 计算dpi
+        local _, _, flags = love.window.getMode()
+        local screenW, _ = love.window.getDesktopDimensions(flags.display)
+        WindowsOsDpi = realWindowsOsScreenWidth / screenW
+    end
 end
 
 return _SYSTEM

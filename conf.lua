@@ -6,7 +6,6 @@ function love.conf(t)
     t.window.title = "Dungeon Fighter Quest"
     t.window.width = 960
     t.window.height = 540
-    t.window.highdpi = true
 
     t.window.borderless = false -- 移除所有程序边框的视觉效果 (boolean)
     t.window.resizable = false -- 允许鼠标拖动调整窗口的宽度和高度 (boolean)
@@ -19,8 +18,8 @@ function love.conf(t)
     t.window.vsync = false -- 垂直同步 (boolean)
     t.window.fsaa = 0 -- 采用多样本采样抗锯齿 (number)
     t.window.display = 1 -- 显示器的指示显示窗口 (number)
-    t.window.highdpi = true -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
-    t.window.usedpiscale = true -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
+    t.window.highdpi = false -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
+    t.window.usedpiscale = false -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
     t.window.srgb = false -- 在屏幕上显示时允许使用sRGB伽马校正 (boolean)
 
     t.modules.audio = true -- 加载 audio        模块 (boolean)

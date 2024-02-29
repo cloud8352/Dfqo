@@ -49,7 +49,7 @@ function _GRAPHICS.SetShader(shader)
     end
 end
 
----@param blendmode Blendmode @alpha, add, subtract, multiply, replace, screen
+---@param blendmode string @Blendmode: "alpha" or "add" or "subtract" or "multiply" or "replace" or "screen"
 function _GRAPHICS.SetBlendmode(blendmode)
     if (_nowBlendmode ~= blendmode) then
         love.graphics.setBlendMode(blendmode)
@@ -87,23 +87,23 @@ function _GRAPHICS.GetColor()
     return unpack(_nowColor)
 end
 
----@return font Font
+---@return love.Font font
 function _GRAPHICS.GetFont()
     return _nowFont
 end
 
----@return height number
+---@return number height
 function _GRAPHICS.GetFontHeight()
     return _nowFont:getHeight()
 end
 
 ---@param text string
----@return Width number
+---@return number width
 function _GRAPHICS.GetFontWidth(text)
     return _nowFont:getWidth(text)
 end
 
----@param font Font
+---@param font love.Font
 function _GRAPHICS.SetFont(font)
     if (_nowFont ~= font) then
         _laterFont = _nowFont
@@ -116,17 +116,17 @@ function _GRAPHICS.ResetFont()
     _GRAPHICS.SetFont(_laterFont)
 end
 
----@param x int
----@param y int
+---@param x integer
+---@param y integer
 ---@param size number
----@param mode DrawMode @fill, line
+---@param mode string @DrawMode, value is: "fill" or "line"
 function _GRAPHICS.DrawCircle(x, y, size, mode)
     mode = mode or "line"
 
     love.graphics.circle(mode, x, y, size)
 end
 
----@param mode DrawMode @fill, line
+---@param mode string @DrawMode, value is: "fill" or "line"
 function _GRAPHICS.DrawPolygon(mode, ...)
     love.graphics.polygon(mode, ...)
 end

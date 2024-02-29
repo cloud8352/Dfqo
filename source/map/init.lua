@@ -75,8 +75,8 @@ local _const = {
     articleRange = { 4, 7 },
     bossMax = 8,
     runningSoundData = _RESOURCE.GetSoundData("ui/running"),
-    scale = 1.0,
-    cameraSpped = 280,
+    scale = 1.4,
+    cameraSpeed = 280,
     backgroundRate = {
         far = 0.3,
         near = 0.2
@@ -324,8 +324,8 @@ local function _Load(path)
 end
 
 function _MAP.Init(OnDraw)
-    local sx, _ = _SYSTEM.GetScale()
-    _MAP.camera = _Camera.New(_const.cameraSpped, sx * _const.scale, sx * _const.scale)
+    local sx, _ = _SYSTEM.GetScale() * _SYSTEM.GetWindowsOsDpi()
+    _MAP.camera = _Camera.New(_const.cameraSpeed, sx * _const.scale, sx * _const.scale)
     _MAP.camera:SetWorld(0, 0, _SYSTEM.GetStdDimensions())
 
     _MAP.OnDraw = OnDraw

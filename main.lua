@@ -38,7 +38,7 @@ local function _Update()
 end
 
 function love.load()
-    _SYSTEM.InitWindowSize()
+    _SYSTEM.Init()
     math.randomseed(os.time())
 
     _CONFIG.user = _User.New()
