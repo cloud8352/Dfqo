@@ -7,6 +7,7 @@
 --
 
 local _CONFIG = require("config")
+
 local _TIME = require("lib.time")
 local _SOUND = require("lib.sound")
 local _MUSIC = require("lib.music")
@@ -66,7 +67,7 @@ local _const = {
     floorType = { "left", "middle", "right" },
     namedIndex = { 1, 3 },
     namedRange = { 3, 4 },
-    normalRange = { 3, 5 },
+    normalRange = { 4, 7 },
     floorRange = { 5, 15 },
     upRange = { 0.5, 1 },
     summonRange = { 0, 2 },
@@ -112,6 +113,24 @@ local _layerGroup = {
     object = _Sprite.New(),
     effect = _Layer.New()
 }
+
+-- ============  boss 方向相关变量 =============
+---@class Map.DirectionStruct
+local DirectionStruct = {
+    None = "none",
+    Up = "up",
+    Down = "down",
+    Left = "left",
+    Right = "right"
+}
+_MAP.DirectionStruct = DirectionStruct
+
+-- 到达领主房间需要经过的房间数
+local roomCountNeedToPassToGetToBossRoom = 1
+--- 到达领主房间需要经过的房间数范围
+_const.roomCountNeedToPassToGetToBossRoomRange = {1, 7}
+local bossRoomDirection = _MAP.DirectionStruct.None
+-- ============ end - boss 方向相关变量 =============
 
 local function _MakeBackground(layer, path, width)
     if (not path) then
@@ -370,6 +389,62 @@ function _MAP.Draw()
     _MAP.camera:Reset()
 end
 
+function _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
+    roomCountNeedToPassToGetToBossRoom = math.random(_const.roomCountNeedToPassToGetToBossRoomRange[1],
+        _const.roomCountNeedToPassToGetToBossRoomRange[2]
+    )
+end
+
+---@param entity Actor.Entity
+function _MAP.UpdateRoomCountNeedToPassToGetToBossRoom(entity)
+    if roomCountNeedToPassToGetToBossRoom == 0 then
+        _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
+        return
+    end
+
+    if entity.transport.direction == bossRoomDirection then
+        roomCountNeedToPassToGetToBossRoom = roomCountNeedToPassToGetToBossRoom - 1
+    else 
+        _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
+    end
+end
+
+function _MAP.RefreshBossRoomDirection()
+    local dirStrList = { _MAP.DirectionStruct.Up, _MAP.DirectionStruct.Down, _MAP.DirectionStruct.Left, _MAP.DirectionStruct.Right }
+    ---@type table<integer, map.assigner.PathGateInfoStruct>
+    local pathGateInfoList = {}
+    if type(_load.path) == "table" then
+        if type(_load.path.pathGateInfoList) == "table" then
+            pathGateInfoList = _load.path.pathGateInfoList 
+        end
+    end
+    if #pathGateInfoList > 0 then
+        dirStrList = {}
+        for i, pathGateInfo in pairs(pathGateInfoList) do
+            if pathGateInfo.IsBossGatePath and not pathGateInfo.IsEntrance then
+                dirStrList = {}
+                table.insert(dirStrList, pathGateInfo.Direction)
+                break
+            end
+
+            if not pathGateInfo.IsEntrance then
+                table.insert(dirStrList, pathGateInfo.Direction)
+            end
+        end
+    end
+        
+    bossRoomDirection = dirStrList[math.random(1, #dirStrList)]
+end
+
+function _MAP.GetBossRoomDirection()
+    return bossRoomDirection
+end
+
+function _MAP.ResetBossRoomDirection()
+    bossRoomDirection = _MAP.DirectionStruct.None
+end
+
+--- Make方法是指采用随机生成的方式，直接 _MAP.Load() 时采取固定生成的方式，如城镇
 ---@param path string
 ---@param entry Actor.Entity
 ---@return table @data
@@ -420,7 +495,11 @@ function _MAP.Make(path, entry)
     downMatrix:Reset(data.scope.x, data.scope.y + data.scope.h + data.scope.dv, data.scope.w, downMatrix:GetGridSize(),
         true)
 
-    require("map.assigner." .. data.info.theme)(config, data, _MAP.matrixGroup, entry, 0)
+    local bossProcess = 0
+    if ( roomCountNeedToPassToGetToBossRoom == 1 ) then
+        bossProcess = 1
+    end
+    require("map.assigner." .. data.info.theme)(config, data, _MAP.matrixGroup, entry, bossProcess)
 
     table.insert(data.actor, {
         path = _const.wall.left, -- 左侧障碍墙
@@ -503,14 +582,33 @@ function _MAP.Make(path, entry)
         local isBoss = data.info.isBoss
 
         if (config.actor.enemy) then
-            local normalCount = math.random(_const.normalRange[1], _const.normalRange[2])
+            if config.actor.enemy.normal then
+                local normalCount = math.random(_const.normalRange[1], _const.normalRange[2])
 
-            objectMatrix:Assign(function(x, y)
-                local path = config.actor.enemy.normal[math.random(1, #config.actor.enemy.normal)]
-                local direction = math.random(1, 2) == 1 and 1 or -1
-                table.insert(data.actor,
-                    { path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, isEnemy = true })
-            end, normalCount)
+                objectMatrix:Assign(function(x, y)
+                    local path = config.actor.enemy.normal[math.random(1, #config.actor.enemy.normal)]
+                    local direction = math.random(1, 2) == 1 and 1 or -1
+                    table.insert(data.actor, {
+                        path = "duelist/" .. path,
+                        x = x, y = y, direction = direction, camp = 2,
+                        dulist = {
+                            isEnemy = true
+                        }
+                    })
+                end, normalCount)
+            end
+
+            if (config.actor.enemy.boss) then
+                local bossCount = math.random(1, #config.actor.enemy.boss)
+    
+                local dulistParam = { rank = 2, isEnemy = true } -- 敌人风险为2，意味着该单位为boss
+                objectMatrix:Assign(function(x, y)
+                    local path = config.actor.enemy.boss[math.random(1, #config.actor.enemy.boss)]
+                    local direction = math.random(1, 2) == 1 and 1 or -1
+                    table.insert(data.actor,
+                        { path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, dulist = dulistParam })
+                end, bossCount)
+            end
         end
 
         if (config.actor.article) then

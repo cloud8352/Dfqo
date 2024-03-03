@@ -26,6 +26,8 @@ local HpRectBar = require("UI.hp_rect_bar")
 local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 
+local Map = require("map.init")
+
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 
@@ -163,6 +165,15 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.skillDockViewFrame)
 
+    --
+    UI.bossDirectionTipLabel = Label.New(bottomWindow)
+    UI.bossDirectionTipLabel:SetSize(300 * Util.GetWindowSizeScale(), 70 * Util.GetWindowSizeScale())
+    local bossDirectionTipLabelWidth, bossDirectionTipLabelHeight = UI.bossDirectionTipLabel:GetSize()
+    local bossDirectionTipLabelOriginXPos = Util.GetWindowWidth() - bossDirectionTipLabelWidth - 50 * Util.GetWindowSizeScale()
+    local bossDirectionTipLabelOriginYPos = (Util.GetWindowHeight() - bossDirectionTipLabelHeight) / 2 - 150 * Util.GetWindowSizeScale()
+    UI.bossDirectionTipLabel:SetPosition(bossDirectionTipLabelOriginXPos, bossDirectionTipLabelOriginYPos)
+    UI.appendWindowWidget(bottomWindow, UI.bossDirectionTipLabel)
+
     -- skill item tip window
     UI.hoveringSkillItemTipWindow = Window.New()
     UI.hoveringSkillItemTipWindow:SetSize(350, 500)
@@ -197,6 +208,8 @@ function UI.Init()
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestMoveDraggingItem, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_EnemyCleared, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_EnemyAppeared, UI)
     -- model - hoveringArticleItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowPosAndInfo, UI)
@@ -233,6 +246,8 @@ function UI.Update(dt)
     UI.mapSelectComboBox:Update(dt)
 
     UI.skillDockViewFrame:Update(dt)
+
+    UI.bossDirectionTipLabel:Update(dt)
 
     UI.dirKeyGroupWidget:Update(dt)
     UI.itemKeyGroup:Update(dt)
@@ -410,6 +425,26 @@ end
 ---@param h number
 function UI.OnWindowResize(w, h)
     UI.bottomWindow:SetSize(w, h)
+end
+
+function UI.Slot_EnemyCleared()
+    local dirStr = UI.model:GetBossRoomDirection()
+    local dirTranStr = ""
+    if dirStr == Map.DirectionStruct.Up then
+        dirTranStr = "上"
+    elseif dirStr == Map.DirectionStruct.Down then
+        dirTranStr = "下"
+    elseif dirStr == Map.DirectionStruct.Left then
+        dirTranStr = "左"
+    elseif dirStr == Map.DirectionStruct.Right then
+        dirTranStr = "右"
+    end
+    UI.bossDirectionTipLabel:SetVisible(true)
+    UI.bossDirectionTipLabel:SetText("感受到来自于 " .. dirTranStr .. " 方的领主气息...")
+end
+
+function UI.Slot_EnemyAppeared()
+    UI.bossDirectionTipLabel:SetVisible(false)
 end
 
 ---

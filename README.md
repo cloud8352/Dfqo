@@ -25,7 +25,7 @@ You can learn more in [my blog](https://musoucrow.github.io).
 推荐使用 Visual Studio Code 进行代码阅读和编写，步骤如下：
 
 - 安装 Visual Studio Code，安装方法可自行在网上搜索
-- 在 Visual Studio Code 插件商店中安装 EmmyLua 插件
+- 在 Visual Studio Code 插件商店中安装 EmmyLua、Local Lua Debugger 插件
 - 使用 Visual Studio Code 打开项目目录
 
 

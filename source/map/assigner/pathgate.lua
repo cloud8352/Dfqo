@@ -1,3 +1,32 @@
+
+---@class map.assigner.PathGateInfoStruct
+---@field Direction string
+---@field IsBossGatePath boolean
+---@field IsEntrance boolean
+local PathGateInfoStruct = {
+    Direction = "up",
+    IsBossGatePath = false,
+    IsEntrance = false  
+}
+
+-- 把门口信息保存到data中
+---@param data table
+---@param dir string
+---@param isBossPathGate boolean
+---@param isEntrance boolean
+local function insertPathGateInfoToData(data, dir, isBossPathGate, isEntrance)
+    ---@type map.assigner.PathGateInfoStruct
+    local pathGateInfo = {
+        Direction = dir,
+        IsBossGatePath = isBossPathGate,
+        IsEntrance = isEntrance
+    }
+    if data.pathGateInfoList == nil then
+        data.pathGateInfoList = {}
+    end
+    table.insert(data.pathGateInfoList, pathGateInfo)
+end
+
 local function _NewGateMap(data, laterGate, bossProcess)
     local gateMap = {
         left = laterGate == "right",
@@ -38,7 +67,8 @@ end
 local function _MakeUp(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess)
     local path = "article/" .. data.info.theme .. "/pathgate/up"
 
-    if (bossRoom == "up") then
+    local isBossPathGate = bossRoom == "up"
+    if (isBossPathGate) then
         path = path .. "Boss"
     end
 
@@ -78,12 +108,16 @@ local function _MakeUp(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess
             data.init.y = py
         end
     end
+
+    -- 把门口信息保存到data中
+    insertPathGateInfoToData(data, "up", isBossPathGate, isEntrance)
 end
 
 local function _MakeDown(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess)
     local path = "article/" .. data.info.theme .. "/pathgate/down"
 
-    if (bossRoom == "down") then
+    local isBossPathGate = bossRoom == "down"
+    if (isBossPathGate) then
         path = path .. "Boss"
     end
 
@@ -123,12 +157,16 @@ local function _MakeDown(x, y, bossRoom, data, matrixGroup, laterGate, bossProce
             data.init.y = py
         end
     end
+    
+    -- 把门口信息保存到data中
+    insertPathGateInfoToData(data, "down", isBossPathGate, isEntrance)
 end
 
 local function _MakeLeft(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess)
     local path = "article/" .. data.info.theme .. "/pathgate/left"
 
-    if (bossRoom == "left") then
+    local isBossPathGate = bossRoom == "left"
+    if (isBossPathGate) then
         path = path .. "Boss"
     end
 
@@ -157,12 +195,16 @@ local function _MakeLeft(x, y, bossRoom, data, matrixGroup, laterGate, bossProce
         data.init.y = py
         data.init.direction = 1
     end
+    
+    -- 把门口信息保存到data中
+    insertPathGateInfoToData(data, "left", isBossPathGate, isEntrance)
 end
 
 local function _MakeRight(x, y, bossRoom, data, matrixGroup, laterGate, bossProcess)
     local path = "article/" .. data.info.theme .. "/pathgate/right"
 
-    if (bossRoom == "right") then
+    local isBossPathGate = bossRoom == "right"
+    if (isBossPathGate) then
         path = path .. "Boss"
     end
 
@@ -193,6 +235,9 @@ local function _MakeRight(x, y, bossRoom, data, matrixGroup, laterGate, bossProc
         data.init.y = py
         data.init.direction = -1
     end
+    
+    -- 把门口信息保存到data中
+    insertPathGateInfoToData(data, "right", isBossPathGate, isEntrance)
 end
 
 return {

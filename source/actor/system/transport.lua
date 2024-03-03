@@ -42,12 +42,16 @@ function _Transport:LateUpdate(dt)
             local e = self._list:Get(n) ---@type Actor.Entity
 
             if (e.transport.enable and e.transport.collider:CheckPoint(x, y)) then
+                -- 更新距离boss的房间数
+                _MAP.UpdateRoomCountNeedToPassToGetToBossRoom(e)
                 if (e.transport.type == "make") then
                     _MAP.Load(_MAP.Make(e.transport.map, e))
                 else
                     _MAP.Load(e.transport.map)
                 end
-                
+
+                -- 更新boss房间方向
+                _MAP.RefreshBossRoomDirection()
                 break
             end
         end

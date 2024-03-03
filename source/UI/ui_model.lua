@@ -56,6 +56,15 @@ function UiModel:Ctor()
 
     -- sound of changing article position
     self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
+
+    -- send signals
+    local _DUELIST = require("actor.service.duelist")
+    _DUELIST.AddListener("clear", _, function ()
+        self:Signal_EnemyCleared()
+    end)
+    _DUELIST.AddListener("appeared", _, function ()
+        self:Signal_EnemyAppeared()
+    end)
 end
 
 --- 获取携带的物品列表
@@ -457,6 +466,44 @@ function UiModel:PlayerChanged()
     end
 end
 
+function UiModel:Signal_EnemyCleared()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyCleared]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_EnemyCleared
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_EnemyAppeared()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyAppeared]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_EnemyAppeared
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
 ---@param player Actor.Entity
 function UiModel:SetPlayer(player)
     if self.player == player then
@@ -791,6 +838,10 @@ function UiModel:playChangedArticlePosSound()
     self.changedArticlePosSoundSource:stop()
     self.changedArticlePosSoundSource:setVolume(_CONFIG.setting.sound)
     self.changedArticlePosSoundSource:play()
+end
+
+function UiModel:GetBossRoomDirection()
+    return _MAP.GetBossRoomDirection()
 end
 
 return UiModel

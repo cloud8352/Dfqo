@@ -94,9 +94,27 @@ function _DIRECTOR.StartGame()
     })
 
     _CONFIG.user:SetPlayer(player)
+
+    -- 创建伙伴
+    local partner = _FACTORY.New("duelist/goblinThrower", {
+        x = 400,
+        y = 400,
+        direction = 1,
+        camp = 1,
+        dulist = {
+            isEnemy = false
+        }
+    })
+    partner.identity.canCross = true -- 设置伙伴可以过地图，否则到达下一个地图就会被销毁，原理见 source\actor\system\life.lua 的 OnClean 函数
+
     _DIRECTOR.Update(0) -- Flush player.
 
+    -- 刷新距离boss的房间数
+    _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
+    -- 加载地图
     _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
+    -- 刷新boss房间方向
+    _MAP.RefreshBossRoomDirection()
 end
 
 ---@param w number

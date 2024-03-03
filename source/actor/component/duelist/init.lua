@@ -40,7 +40,26 @@ function _Duelist:Ctor(data, param)
         self.playerIconShift:Set(self.iconShift:Get())
     end
 
-    self.isEnemy = data.isEnemy or param.isEnemy or false
+    self.isEnemy = data.isEnemy or false
+
+    -- 应用参数 param
+    if param.dulist then
+        if param.dulist.moveSpeed then
+            self.moveSpeed = param.dulist.moveSpeed
+        end
+        if param.dulist.weight then
+            self.weight = param.dulist.weight + 1
+        end
+        if param.dulist.rank then
+            self.rank = param.dulist.rank
+        end
+        if param.dulist.category then
+            self.category = param.dulist.category
+        end
+        if param.dulist.isEnemy then
+            self.isEnemy = param.dulist.isEnemy
+        end
+    end
 end
 
 return _Duelist
