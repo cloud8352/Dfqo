@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-5-8
 	alter: 2018-12-17
-]]--
+]]
+--
 
 local _delta = 0
 local _time = 0
@@ -17,53 +18,53 @@ local _TIME = {} ---@class Lib.TIME
 
 ---@return number
 function _TIME.GetDelta()
-	return _stddt
+    return _updateTime
 end
 
 ---@return number
 function _TIME.GetTime()
-	return _time
+    return _time
 end
 
 ---@return number
 function _TIME.GetFPS()
-	return _fps
+    return _fps
 end
 
 ---@return int
 function _TIME.GetFrame()
-	return _frame
+    return _frame
 end
 
 function _TIME.Calmness()
-	_calmness = true
+    _calmness = true
 end
 
 function _TIME.CanUpdate()
-	return _updateTime >= _stddt
+    return _updateTime >= _stddt
 end
 
 ---@param dt number
 function _TIME.Update(dt)
-	if (_calmness) then
-		_calmness = false
-		_delta = 0
-	else
-		-- _delta = math.floor(dt * 1000)
-		_delta = dt * 1000
-	end
-	
-	_time = love.timer.getTime()
-	_fps = love.timer.getFPS()
-	_updateTime = _updateTime + _delta
+    if (_calmness) then
+        _calmness = false
+        _delta = 0
+    else
+        -- _delta = math.floor(dt * 1000)
+        _delta = dt * 1000
+    end
+
+    _time = love.timer.getTime()
+    _fps = love.timer.getFPS()
+    _updateTime = _updateTime + _delta
 end
 
 function _TIME.LateUpdate()
-	_updateTime = _updateTime - _stddt
+    _updateTime = 0
 end
 
 function _TIME.FrameUpdate()
-	_frame = _frame + 1
+    _frame = _frame + 1
 end
 
 return _TIME

@@ -131,7 +131,7 @@ function AshenFork:NormalUpdate(dt, rate)
 
     -- 每隔 AttackJudgeIntervalS 时间 攻击一次
     if _TIME.GetTime() - self.originTImeS > self.nextAttackTimeS and
-       self.attack.isRunning == false then
+        self.attack.isRunning == false then
         self:EnterAttack()
         self.nextAttackTimeS = self.nextAttackTimeS + AttackJudgeIntervalS
     end

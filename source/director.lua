@@ -96,7 +96,7 @@ function _DIRECTOR.StartGame()
     _CONFIG.user:SetPlayer(player)
 
     -- 创建伙伴
-    local partner = _FACTORY.New("duelist/goblinThrower", {
+    local partner = _FACTORY.New("duelist/atswordman", {
         x = 400,
         y = 400,
         direction = 1,

@@ -3,25 +3,26 @@
 	author: Musoucrow
 	since: 2018-3-7
 	alter: 2018-7-4
-]]--
+]]
+--
 
 ---@class Core.Gear
 ---@field public isRunning boolean
 local _Gear = require("core.class")()
 
 function _Gear:Ctor()
-	self.isRunning = false
+    self.isRunning = false
 end
 
 function _Gear:Update()
 end
 
 function _Gear:Enter()
-	self.isRunning = true
+    self.isRunning = true
 end
 
 function _Gear:Exit()
-	self.isRunning = false
+    self.isRunning = false
 end
 
 return _Gear
