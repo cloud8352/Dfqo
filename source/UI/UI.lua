@@ -143,9 +143,18 @@ function UI.Init()
 
     -- hp bar
     UI.hpRectBar = HpRectBar.New(bottomWindow)
-    UI.hpRectBar:SetSize(500 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
-    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
+    UI.hpRectBar:SetSize(400 * Util.GetWindowSizeScale(), 15 * Util.GetWindowSizeScale())
+    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 130 * Util.GetWindowSizeScale(), 10 * Util.GetWindowSizeScale())
     UI.appendWindowWidget(bottomWindow, UI.hpRectBar)
+
+    -- hit enemy hp bar
+    UI.hitEnemyHpRectBar = HpRectBar.New(bottomWindow)
+    UI.hitEnemyHpRectBar:SetRightLabelVisible(false)
+    UI.hitEnemyHpRectBar:SetSize(500 * Util.GetWindowSizeScale(), 22 * Util.GetWindowSizeScale())
+    UI.hitEnemyHpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * Util.GetWindowSizeScale(),
+        35 * Util.GetWindowSizeScale())
+    UI.appendWindowWidget(bottomWindow, UI.hitEnemyHpRectBar)
+    UI.hitEnemyHpRectBar:SetVisible(false)
 
     -- comboBox test
     UI.mapSelectComboBox = ComboBox.New(bottomWindow)
@@ -210,6 +219,7 @@ function UI.Init()
     UI.model:MocConnectSignal(UI.model.RequestMoveDraggingItem, UI)
     UI.model:MocConnectSignal(UI.model.Signal_EnemyCleared, UI)
     UI.model:MocConnectSignal(UI.model.Signal_EnemyAppeared, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_PlayerHitEnemy, UI)
     -- model - hoveringArticleItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowPosAndInfo, UI)
@@ -241,6 +251,14 @@ function UI.Update(dt)
 
     UI.hpRectBar:SetHp(UI.model:GetHp())
     UI.hpRectBar:Update(dt)
+
+    local hitEnemyHp = UI.model:GetHitEnemyHp()
+    if hitEnemyHp > 0 then
+        UI.hitEnemyHpRectBar:SetHp(hitEnemyHp)
+    else
+        UI.hitEnemyHpRectBar:SetVisible(false)
+    end
+    UI.hitEnemyHpRectBar:Update(dt)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
@@ -445,6 +463,20 @@ end
 
 function UI.Slot_EnemyAppeared()
     UI.bossDirectionTipLabel:SetVisible(false)
+end
+
+---@param my obj
+---@param sender obj
+---@param attack Actor.Gear.Attack | Core.Gear
+---@param hitEntity Actor.Entity
+function UI.Slot_PlayerHitEnemy(my, sender, attack, hitEntity)
+    if sender ~= UI.model then
+        return
+    end
+
+    UI.hitEnemyHpRectBar:SetText(UI.model:GetHitEnemyName())
+    UI.hitEnemyHpRectBar:SetMaxHp(UI.model:GetHitEnemyMaxHp())
+    UI.hitEnemyHpRectBar:SetVisible(true)
 end
 
 ---

@@ -42,6 +42,10 @@ function UiModel:Ctor()
     self.articleTableHoveringItemIndex = -1
     self.articleTableDraggingItemIndex = -1
 
+    -- 被攻击的敌人
+    ---@type Actor.Entity
+    self.hitEnemyOfPlayer = nil
+
     -- post init
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
         local articleInfo = Common.NewArticleInfo()
@@ -504,6 +508,44 @@ function UiModel:Signal_EnemyAppeared()
     end
 end
 
+---@param attack Actor.Gear.Attack | Core.Gear
+---@param hitEntity Actor.Entity
+function UiModel:Slot_onRecvSignalOfPlayerHitEnemy(attack, hitEntity)
+    if not hitEntity then
+        return
+    end
+    if not hitEntity.identity then
+        return
+    end
+    if hitEntity.attributes.hp <= 0 then
+        return
+    end
+
+    self.hitEnemyOfPlayer = hitEntity
+    self:Signal_PlayerHitEnemy(attack, hitEntity)
+end
+
+---@param attack Actor.Gear.Attack | Core.Gear
+---@param hitEntity Actor.Entity
+function UiModel:Signal_PlayerHitEnemy(attack, hitEntity)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerHitEnemy]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerHitEnemy
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, attack, hitEntity)
+
+        ::continue::
+    end
+end
+
 ---@param player Actor.Entity
 function UiModel:SetPlayer(player)
     if self.player == player then
@@ -733,6 +775,10 @@ function UiModel:SetPlayer(player)
         -- articleInfo.equInfo.mpExtentRate = 0.1
     end
 
+    -- connection
+    self.player.attacker.hitCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
+
+    -- post init
     self:PlayerChanged()
 end
 
@@ -833,15 +879,36 @@ function UiModel:ReleasePlayerKey(key)
     InputSrv.Release(self.player.input, key)
 end
 
+function UiModel:GetBossRoomDirection()
+    return _MAP.GetBossRoomDirection()
+end
+
+function UiModel:GetHitEnemyName()
+    if not self.hitEnemyOfPlayer then
+        return ""
+    end
+    return self.hitEnemyOfPlayer.identity.name or ""
+end
+
+function UiModel:GetHitEnemyHp()
+    if not self.hitEnemyOfPlayer then
+        return 0
+    end
+    return self.hitEnemyOfPlayer.attributes.hp or 0
+end
+
+function UiModel:GetHitEnemyMaxHp()
+    if not self.hitEnemyOfPlayer then
+        return 0
+    end
+    return self.hitEnemyOfPlayer.attributes.maxHp or 0
+end
+
 function UiModel:playChangedArticlePosSound()
     -- 播放物品移动音效
     self.changedArticlePosSoundSource:stop()
     self.changedArticlePosSoundSource:setVolume(_CONFIG.setting.sound)
     self.changedArticlePosSoundSource:play()
-end
-
-function UiModel:GetBossRoomDirection()
-    return _MAP.GetBossRoomDirection()
 end
 
 return UiModel

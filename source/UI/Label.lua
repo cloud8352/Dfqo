@@ -180,6 +180,7 @@ function Label:IsVisible()
     return self.isVisible
 end
 
+---@param text string
 function Label:SetText(text)
     self.text = text
 end
