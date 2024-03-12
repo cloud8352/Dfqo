@@ -6,6 +6,8 @@
 ]] --
 
 local System = require("lib.system")
+local _TABLE = require("lib.table")
+local _SOUND = require("lib.sound")
 
 local Util = {}
 
@@ -25,6 +27,34 @@ end
 function Util.GetWindowWidth()
     local width, height, flags = love.window.getMode()
     return width
+end
+
+---@param soundDataSet table
+---@param gender number @ 1 - male, 2 - female
+function Util.RandomPlaySoundByGender(soundDataSet, gender)
+    ---@type table<number, SoundData>
+    local soundDataList = {}
+    if gender == 1 then
+        soundDataList = soundDataSet.voice
+    else
+        soundDataList = soundDataSet.femaleVoice
+    end
+    local n = math.random(1, _TABLE.Len(soundDataList))
+    _SOUND.Play(soundDataList[n])
+end
+
+---@param soundDataSet table
+---@param index number
+---@param gender number @ 1 - male, 2 - female
+function Util.PlaySoundByGender(soundDataSet, index, gender)
+    ---@type table<number, SoundData>
+    local soundDataList = {}
+    if gender == 1 then
+        soundDataList = soundDataSet.voice
+    else
+        soundDataList = soundDataSet.femaleVoice
+    end
+    _SOUND.Play(soundDataList[index])
 end
 
 return Util

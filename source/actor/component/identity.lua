@@ -44,7 +44,8 @@ function _Identity:Ctor(data, param, type, id)
     self.superior = param.entity
 
     local identity = data.identity or _emptyTable
-    self.name = identity.name
+    self.name = identity.name or ""
+    self.gender = identity.gender or 1 -- 1 - male, 2 - female
     self.canCross = identity.canCross or param.canCross or false
     self.destroyCaller = _Caller.New()
     self.initCaller = _Caller.New()

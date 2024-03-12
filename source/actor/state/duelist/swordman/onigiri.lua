@@ -50,8 +50,10 @@ function _Onigiri:NormalUpdate()
         effect.transform.scale:Set(self._scale, self._scale)
         effect.transform.scaleTick = true
 
-        local n = math.random(1, #self._soundDataSet.voice)
-        _SOUND.Play(self._soundDataSet.voice[n])
+        if self._entity.identity.gender == 1 then
+            local n = math.random(1, #self._soundDataSet.voice)
+            _SOUND.Play(self._soundDataSet.voice[n])
+        end
         _SOUND.Play(self._soundDataSet.effect)
 
         self._attack:Enter(self._attackDataSet, self._skill.attackValues[1], _, _, true)

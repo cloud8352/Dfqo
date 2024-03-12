@@ -103,7 +103,9 @@ function _FlashStep:Enter(laterState, skill)
 
     self:EnterMove()
 
-    _SOUND.Play(self._soundDataSet.voice)
+    if self._entity.identity.gender == 1 then
+        _SOUND.Play(self._soundDataSet.voice)
+    end
     _SOUND.Play(self._soundDataSet.effect)
     _BUFF.AddBuff(self._entity, self._buffDatas)
 

@@ -63,8 +63,14 @@ end
 ---@param path string
 ---@return SoundData
 function _RESOURCE.NewSoundData(path)
-    --print(path)
-    local fileData = _FILE.NewFileData("asset/sound/" .. path .. ".ogg")
+    local sourceFullPath = "asset/sound/" .. path .. ".mp3"
+    if false == _FILE.Exists(sourceFullPath) then
+        sourceFullPath = "asset/sound/" .. path .. ".ogg"
+    end
+    if false == _FILE.Exists(sourceFullPath) then
+        sourceFullPath = "asset/sound/" .. path .. ".wav"
+    end
+    local fileData = _FILE.NewFileData(sourceFullPath)
 
     return love.sound.newSoundData(fileData)
 end
@@ -91,6 +97,9 @@ function _RESOURCE.NewMusic(path)
     local sourceFullPath = "asset/music/" .. path .. ".mp3"
     if false == _FILE.Exists(sourceFullPath) then
         sourceFullPath = "asset/music/" .. path .. ".ogg"
+    end
+    if false == _FILE.Exists(sourceFullPath) then
+        sourceFullPath = "asset/music/" .. path .. ".wav"
     end
     data.source = _RESOURCE.NewSource(sourceFullPath)
     data.path = path

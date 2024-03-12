@@ -3,7 +3,8 @@
 	author: SkyFvcker
 	since: 2018-8-5
 	alter: 2019-8-10
-]]--
+]]
+--
 
 local _SOUND = require("lib.sound")
 local _TABLE = require("lib.table")
@@ -13,7 +14,7 @@ local _STATE = require("actor.service.state")
 local _BATTLE = require("actor.service.battle")
 local _BUFF = require("actor.service.buff")
 
-local _Timer = require( "util.gear.timer")
+local _Timer = require("util.gear.timer")
 local _Attack = require("actor.gear.attack")
 local _Easemove = require("actor.gear.easemove")
 local _Base = require("actor.state.base")
@@ -103,8 +104,10 @@ function _Counterattack:Enter(laterState, skill)
     end
 
     if (self._soundDataSet.voice) then
-        local index = self._falling and 2 or 1
-        _SOUND.Play(self._soundDataSet.voice[index])
+        if self._entity.identity.gender == 1 then
+            local index = self._falling and 2 or 1
+            _SOUND.Play(self._soundDataSet.voice[index])
+        end
     end
 
     if (self._soundDataSet.effect) then
@@ -117,7 +120,7 @@ end
 function _Counterattack:Exit()
     _Base.Exit(self)
 
-    for n=1, #self._effects do
+    for n = 1, #self._effects do
         self._effects[n].identity.destroyProcess = 1
     end
 
@@ -146,4 +149,3 @@ function _Counterattack:AddEffect()
 end
 
 return _Counterattack
-

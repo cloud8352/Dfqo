@@ -91,7 +91,9 @@ function _Jumonji:Enter(laterState, skill)
     self._attack:Exit()
     self._easemove:Exit()
 
-    _SOUND.Play(self._soundDataSet.voice)
+    if self._entity.identity.gender == 1 then
+        _SOUND.Play(self._soundDataSet.voice)
+    end
 end
 
 return _Jumonji

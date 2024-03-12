@@ -1,9 +1,12 @@
 --[[
 	desc: Jump, a state of Swordman.
 	author: keke
-]]--
+]]
+--
 
 local _SOUND = require("lib.sound")
+local Util = require("util.Util")
+
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
 local _INPUT = require("actor.service.input")
@@ -43,7 +46,7 @@ function _Jump:Init(entity, ...)
     self.jumpAttack = _Attack.New(self._entity)
 
     -- 跳跃动作
-    self._jump = GearJump.New(self._entity.transform, self._entity.aspect, function (caller, param)
+    self._jump = GearJump.New(self._entity.transform, self._entity.aspect, function(caller, param)
         -- print("_Jump state jump action func excuted! param: "..param)
         self.jumpStatus = param
 
@@ -77,7 +80,7 @@ function _Jump:NormalUpdate(dt, rate)
     -- 判断是否常按了跳跃键
     if self.startTime + AddJumpPowerTimeS > _TIME.GetTime() and
         _INPUT.IsHold(self._entity.input, "jump")
-        then
+    then
         local jumpParam = self._jumpParam
         self._jump:Enter(jumpParam.power, jumpParam.speed, 0.5)
     end
@@ -86,12 +89,12 @@ function _Jump:NormalUpdate(dt, rate)
         local needEaseMoveX = false
         local easemoveParam = self._easemoveParam
         if _INPUT.IsHold(self._entity.input, "left")
-            then
+        then
             self._entity.transform.direction = -1
             self._entity.transform.scaleTick = 1
             needEaseMoveX = true
         elseif _INPUT.IsHold(self._entity.input, "right")
-            then
+        then
             self._entity.transform.direction = 1
             self._entity.transform.scaleTick = 1
             needEaseMoveX = true
@@ -112,7 +115,7 @@ function _Jump:NormalUpdate(dt, rate)
         if needEaseMoveY then
             yPowerDir = yPowerDir * self._entity.transform.direction
             self._yEasemove:Enter("y", easemoveParam.power * yPowerDir * 0.3,
-             easemoveParam.speed * 0.3, self._entity.transform.direction)
+                easemoveParam.speed * 0.3, self._entity.transform.direction)
         end
     end
 
@@ -145,7 +148,7 @@ function _Jump:Enter(laterState, skill)
     self._jump:Exit()
     self.jumpAttack:Exit()
 
-    _SOUND.Play(self._soundDataSet.voice[1])
+    Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
 end
 
 ---@param nextState Actor.State
@@ -153,7 +156,7 @@ function _Jump:Exit(nextState)
     if (nextState == self) then
         return
     end
-    
+
     _Base.Exit(self, nextState)
 
     self._xEasemove:Exit()
@@ -176,7 +179,7 @@ function _Jump:updateSkyAspectFrameAni()
 end
 
 ---@param currentFrameAni Graphics.Drawable.Frameani
-function _Jump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
+function _Jump:UpdateJumpAttackLogic(currentFrameAni) -- jump attack
     local canJumpAttack = false
     if self.isOnGround == false and self.isJumpAttack == false then
         canJumpAttack = true
@@ -188,7 +191,7 @@ function _Jump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
             self.isJumpAttack = true
             -- print("JumpAttack")
             _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[5])
-            _SOUND.Play(self._soundDataSet.voice[2])
+            Util.PlaySoundByGender(self._soundDataSet, 2, self._entity.identity.gender)
 
             local skillAttackValues = {
                 {

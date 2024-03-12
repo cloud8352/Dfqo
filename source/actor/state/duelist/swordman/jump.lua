@@ -4,6 +4,8 @@
 ]]--
 
 local _SOUND = require("lib.sound")
+local Util = require("util.Util")
+
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
 local _INPUT = require("actor.service.input")
@@ -47,7 +49,11 @@ function SwordmanJump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
             self.isJumpAttack = true
             -- print("JumpAttack")
             _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[5])
-            _SOUND.Play(self._soundDataSet.voice[2])
+
+            if self._entity.identity.gender == 1 then
+                _SOUND.Play(self._soundDataSet.voice[2])
+            end
+            Util.PlaySoundByGender(self._soundDataSet, 2, self._entity.identity.gender)
 
             local skillAttackValues = {
                 {

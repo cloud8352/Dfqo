@@ -5,6 +5,8 @@
 ]]--
 
 local _SOUND = require("lib.sound")
+local Util = require("util.Util")
+
 local _FACTORY = require("actor.factory")
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
@@ -45,8 +47,8 @@ function _HopSmash:Init(entity, ...)
     self._attack = _Attack.New(self._entity)
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     -- 跳跃动作
-    self._jump = _Jump.New(self._entity.transform, self._entity.aspect, function (caller, param)
-        print("_HopSmash state jump action func excuted! param: "..param)
+    self._jump = _Jump.New(self._entity.transform, self._entity.aspect, function(caller, param)
+        print("_HopSmash state jump action func excuted! param: " .. param)
         if _Jump.ProcessEnum.Ground == param then
             print("ground attack")
 
@@ -178,8 +180,7 @@ function _HopSmash:Enter(laterState, skill)
     for n = 1, #frameaniDate.list do
         frameaniDate.list[n].time = self.entityFrameaniOriDelayList[n] * (0.5 + self.enhanceRate)
     end
-
-    _SOUND.Play(self._soundDataSet.voice)
+    Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
 end
 
 function _HopSmash:Exit(nextState)

@@ -6,6 +6,8 @@
 
 local _TABLE = require("lib.table")
 local _SOUND = require("lib.sound")
+local Util = require("util.Util")
+
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
 local _INPUT = require("actor.service.input")
@@ -170,8 +172,7 @@ function BloodFrenzyAttack:SetProcess(process)
         self._aiFrame = 0
     end
 
-    local n = math.random(1, _TABLE.Len(self._soundDataSet.voice))
-    _SOUND.Play(self._soundDataSet.voice[n])
+    Util.RandomPlaySoundByGender(self._soundDataSet, self._entity.identity.gender)
 
     local kind = _EQUIPMENT.GetSubKind(self._entity.equipments, "weapon")
     local soundDatas = self._soundDataSet.swing[kind]

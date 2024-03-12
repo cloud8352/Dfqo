@@ -3,10 +3,13 @@
 	author: SkyFvcker
 	since: 2018-7-30
 	alter: 2019-5-16
-]]--
+]]
+--
 
 local _SOUND = require("lib.sound")
 local _TABLE = require("lib.table")
+local Util = require("util.Util")
+
 local _FACTORY = require("actor.factory")
 local _RESMGR = require("actor.resmgr")
 local _ASPECT = require("actor.service.aspect")
@@ -91,8 +94,8 @@ function _UpperSlash:NormalUpdate(dt, rate)
 
         self._effect = _FACTORY.New(self._actorDataSet[self._process], param)
 
-        if(self._ascend and self._process == 2) then
-            _SOUND.Play(self._soundDataSet.voice[self._process])
+        if (self._ascend and self._process == 2) then
+            Util.PlaySoundByGender(self._soundDataSet, self._process, self._entity.identity.gender)
             _SOUND.Play(self._soundDataSet.effect[self._process])
 
             self._attack:Enter(self._attackDataSet[self._process], self._skill.attackValues[1], _, _, true)
@@ -108,7 +111,7 @@ function _UpperSlash:NormalUpdate(dt, rate)
         end
     end
 
-    if(self._ascend) then
+    if (self._ascend) then
         if (self._process == 1 and tick == self._effectTick + 2) then
             _BUFF.AddBuff(self._entity, self._comboBuffData)
             self._skill:Reset()
@@ -128,7 +131,7 @@ end
 
 function _UpperSlash:Enter(laterState, skill)
     local buff = self._comboBuffData and _BUFF.GetBuff(self._entity.buffs, self._comboBuffData.path)
-    
+
     if (buff) then
         if (laterState ~= self) then
             _Base.Enter(self)
@@ -141,11 +144,11 @@ function _UpperSlash:Enter(laterState, skill)
         buff:Exit()
     elseif (laterState ~= self) then
         _Base.Enter(self)
-        
+
         self._process = 1
         self._easemove:Exit()
         self._skill = skill
-    
+
         if (self._breaking) then
             self._attack:Enter(self._attackDataSet[self._process], self._skill.attackValues[1], _, _Collide)
         else
@@ -154,15 +157,15 @@ function _UpperSlash:Enter(laterState, skill)
 
         local kind = _EQUIPMENT.GetSubKind(self._entity.equipments, "weapon")
         table.insert(self._attack.soundDataSet, self._soundDataSet.hitting[kind])
-    
+
         local hitstop = self._hitstopMap[kind]
         self._attack.hitstop = hitstop[1]
         self._attack.selfstop = hitstop[2]
         self._attack.shake.time = hitstop[1]
-    
-        _SOUND.Play(self._soundDataSet.voice[self._process])
+
+        Util.PlaySoundByGender(self._soundDataSet, self._process, self._entity.identity.gender)
         _SOUND.Play(self._soundDataSet.effect[self._process])
-    
+
         self._buff = _BUFF.AddBuff(self._entity, self._buffDatas)
 
         if (self._comboBuffData) then
@@ -175,7 +178,7 @@ function _UpperSlash:Exit(nextState)
     if (nextState == self) then
         return
     end
-    
+
     _Base.Exit(self, nextState)
 
     if (self._effect) then
@@ -189,4 +192,3 @@ function _UpperSlash:Exit(nextState)
 end
 
 return _UpperSlash
-
