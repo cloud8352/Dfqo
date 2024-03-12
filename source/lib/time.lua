@@ -18,7 +18,7 @@ local _TIME = {} ---@class Lib.TIME
 
 ---@return number
 function _TIME.GetDelta()
-    return _updateTime
+    return _stddt
 end
 
 ---@return number
@@ -60,7 +60,7 @@ function _TIME.Update(dt)
 end
 
 function _TIME.LateUpdate()
-    _updateTime = 0
+    _updateTime = _updateTime - _stddt
 end
 
 function _TIME.FrameUpdate()
