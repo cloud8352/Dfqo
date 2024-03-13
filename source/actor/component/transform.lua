@@ -46,4 +46,11 @@ function _Transform:Ctor(data, param)
     end
 end
 
+---@param param table
+function _Transform:Reborn(param)
+    self.position = _Point3.New(false, param.x, param.y, param.z)
+    self.direction = param.direction or 1
+    self.positionTick = true
+end
+
 return _Transform

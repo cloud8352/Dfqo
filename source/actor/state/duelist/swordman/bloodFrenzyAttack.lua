@@ -57,6 +57,7 @@ function BloodFrenzyAttack:Init(entity)
 
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._attack = _Attack.New(self._entity)
+    self._attack.element = _Attack.AttackElementStruct.Light
     self._judgeAis = {}
     self._aiFrame = 0
 
@@ -208,6 +209,7 @@ function BloodFrenzyAttack:EnterAttack()
     self._attack.hitstop = hitstop[1]
     self._attack.selfstop = hitstop[2]
     self._attack.shake.time = hitstop[1]
+
 
     local soundDatas = self._soundDataSet.hitting[kind]
     self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundDatas

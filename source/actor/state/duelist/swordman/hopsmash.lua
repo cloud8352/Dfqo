@@ -45,6 +45,7 @@ function _HopSmash:Init(entity, ...)
     self.bottomBulletEffectList = {}
 
     self._attack = _Attack.New(self._entity)
+    self._attack.element = _Attack.AttackElementStruct.Water
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     -- 跳跃动作
     self._jump = _Jump.New(self._entity.transform, self._entity.aspect, function(caller, param)

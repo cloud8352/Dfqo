@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-3-20
 	alter: 2019-5-22
-]]--
+]]
+--
 
 local _ASPECT = require("actor.service.aspect")
 
@@ -42,7 +43,7 @@ function _Aspect.HandleData(data)
     if (#layer == 0) then
         _HandleData(layer)
     else
-        for n=1, #layer do
+        for n = 1, #layer do
             _HandleData(layer[n])
         end
     end
@@ -52,7 +53,8 @@ function _Aspect:Ctor(data)
     self.layer = _Layer.New()
     self.isPaused = false
     self.rate = 1
-    self.color = data.color and _Color.New(data.color.red, data.color.green, data.color.blue, data.color.alpha) or _Color.New()
+    self.color = data.color and _Color.New(data.color.red, data.color.green, data.color.blue, data.color.alpha) or
+        _Color.New()
     self.height = data.height
     self.pureColor = _Color.New(_, _, _, 0)
     self.pureBlendmode = "add"
@@ -76,7 +78,7 @@ function _Aspect:Ctor(data)
         local name = layer.name or "body"
         self.layer:Add(name, _, layer.objClass.NewWithConfig, layer)
     else
-        for n=1, length do
+        for n = 1, length do
             self.layer:Add(layer[n].name, _, layer[n].objClass.NewWithConfig, layer[n])
         end
     end

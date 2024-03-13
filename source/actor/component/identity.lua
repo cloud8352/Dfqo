@@ -51,4 +51,9 @@ function _Identity:Ctor(data, param, type, id)
     self.initCaller = _Caller.New()
 end
 
+---@param param table
+function _Identity:Reborn(param)
+    self.destroyProcess = 0
+end
+
 return _Identity

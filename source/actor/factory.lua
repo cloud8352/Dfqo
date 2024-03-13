@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-3-20
 	alter: 2019-1-9
-]]--
+]]
+--
 
 local _TABLE = require("lib.table")
 local _RESMGR = require("actor.resmgr")
@@ -23,7 +24,7 @@ local _count = 0
 local _emptyTable = {}
 
 local _pool = {} ---@type table<string, Actor.Entity>
-setmetatable(_pool, {__mode = 'v'})
+setmetatable(_pool, { __mode = 'v' })
 
 local _newFuncGroup = {
     duelist = function(entity, data, param)
@@ -49,10 +50,10 @@ function _FACTORY.New(data, param)
     if (type(data) == "string") then
         data = _RESMGR.GetInstanceData(data)
     end
-    
+
     local path = data.path
     local pos = string.find(path, "/")
-    local _type = string.sub(path, 1, pos-1)
+    local _type = string.sub(path, 1, pos - 1)
     _count = _count + 1
 
     ---@class Actor.Entity
@@ -120,7 +121,7 @@ end
 function _FACTORY.NewWithPool(data, param, pool)
     local entity ---@type Actor.Entity
 
-    for n=1, #pool do
+    for n = 1, #pool do
         if (pool[n].identity.destroyProcess == 2) then
             entity = pool[n]
             break

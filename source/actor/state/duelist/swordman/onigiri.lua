@@ -6,6 +6,8 @@
 ]]--
 
 local _SOUND = require("lib.sound")
+local Util = require("util.Util")
+
 local _FACTORY = require("actor.factory")
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
@@ -50,10 +52,7 @@ function _Onigiri:NormalUpdate()
         effect.transform.scale:Set(self._scale, self._scale)
         effect.transform.scaleTick = true
 
-        if self._entity.identity.gender == 1 then
-            local n = math.random(1, #self._soundDataSet.voice)
-            _SOUND.Play(self._soundDataSet.voice[n])
-        end
+        Util.RandomPlaySoundByGender(self._soundDataSet, self._entity.identity.gender)
         _SOUND.Play(self._soundDataSet.effect)
 
         self._attack:Enter(self._attackDataSet, self._skill.attackValues[1], _, _, true)

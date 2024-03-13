@@ -74,6 +74,7 @@ function _UpperSlash:Init(entity)
 
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._attack = _Attack.New(self._entity)
+    self._attack.element = _Attack.AttackElementStruct.Light
 end
 
 function _UpperSlash:NormalUpdate(dt, rate)

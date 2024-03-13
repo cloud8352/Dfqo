@@ -31,6 +31,7 @@ function _Jumonji:Init(entity, ...)
     _Base.Init(self, entity, ...)
 
     self._attack = _Attack.New(self._entity)
+    self._attack.element = _Attack.AttackElementStruct.Fire
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
 
     ---@param effect Actor.Entity

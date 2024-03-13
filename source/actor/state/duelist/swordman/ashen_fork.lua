@@ -70,6 +70,7 @@ function AshenFork:Init(entity)
     self.isOnGround = false
 
     self.attack = _Attack.New(self._entity)
+    self.attack.element = _Attack.AttackElementStruct.Fire
     self.xEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self.zEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self.zWaitEasemove = _Easemove.New(self._entity.transform, self._entity.aspect)

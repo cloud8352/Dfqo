@@ -3,7 +3,8 @@
 	author: Musoucrow
 	since: 2018-12-24
 	alter: 2019-9-5
-]]--
+]]
+--
 
 local _CONFIG = require("config")
 local _TIME = require("lib.time")
@@ -66,7 +67,16 @@ local _Gear = require("core.gear")
 local _Attack = require("core.class")(_Gear)
 _Attack.enable = true
 
-local _defaultCollision = {body = "attack"}
+---@class Attack.AttackElementStruct
+local attackElementStruct = {
+    Fire = "fire",
+    Water = "water",
+    Light = "light",
+    Dark = "dark"
+}
+_Attack.AttackElementStruct = attackElementStruct
+
+local _defaultCollision = { body = "attack" }
 local _criticalSoundData = _RESMGR.GetSoundData("dead")
 local _list = _ECSMGR.NewComboList({
     transform = true,
@@ -83,10 +93,10 @@ local _elementEffectGroup = {
 }
 
 local _elementColorGroup = {
-    none = _Color.New(),
+    none = _Color.New(0, 0, 0),
     fire = _Color.New(255, 120, 0),
     water = _Color.New(0, 150, 255),
-    light = _Color.New(0, 255, 255),
+    light = _Color.New(100, 100, 100),
     dark = _Color.New(230, 0, 255)
 }
 
@@ -99,7 +109,7 @@ local _elementSoundGroup = {
 
 local _effectPool = {}
 local _counterEffectData = _RESMGR.GetInstanceData("effect/hitting/counter")
-local _meta = {__mode = 'k'}
+local _meta = { __mode = 'k' }
 
 ---@param entity Actor.Entity
 ---@return boolean
@@ -145,7 +155,7 @@ function _Attack.DefaultCollide(attack, enemy)
                 local attack = collider:GetList(v)
                 isdone, x, y, z = _SolidRect.CollideWithList(beaten, attack)
             else
-                for n=1, #v do
+                for n = 1, #v do
                     local attack = collider:GetList(v[n])
                     isdone, x, y, z = _SolidRect.CollideWithList(beaten, attack)
 
@@ -209,7 +219,7 @@ function _Attack:Update(dt)
 
     for k, v in pairs(self.collision) do
         local collider = k:GetCollider()
-        
+
         if (collider) then
             noCollider = false
             break
@@ -222,7 +232,7 @@ function _Attack:Update(dt)
 
     local isPlayer = _IsPlayer(self._entity)
 
-    for n=1, _list:GetLength() do
+    for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
         local camp = self.camp == 0 or self.camp ~= e.battle.camp
 
@@ -245,7 +255,7 @@ function _Attack:Update(dt)
                 if (isTurn and e ~= _CONFIG.user.player) then
                     isCritical = true
                 end
-                
+
                 local hitDirection = -e.transform.direction
 
                 if (self.hitstop) then
@@ -284,7 +294,7 @@ function _Attack:Update(dt)
                         local oz = pos.z + overturn.z
 
                         hasOverturn = _BATTLE.Overturn(e.battle, e.states, ox, oy, oz, overturn.movingTime,
-                                overturn.delayTime, overturn.easing, overturn.flight, overturn.flags, overturn.Func)
+                            overturn.delayTime, overturn.easing, overturn.flight, overturn.flags, overturn.Func)
                     end
 
                     if (not hasOverturn and self.flight.power_z) then
@@ -292,8 +302,9 @@ function _Attack:Update(dt)
                         local flightDirection = flight.direction and flight.direction * hitDirection or hitDirection
 
                         if (not flight.inFlight or (flight.inFlight and _STATE.HasTag(e.states, "flight"))) then
-                            hasFlight = _BATTLE.Flight(e.battle, e.states, flight.power_z, flight.speed_up, flight.speed_down,
-                                    flight.power_x, flight.speed_x, flightDirection, flight.flags, flight.Func)
+                            hasFlight = _BATTLE.Flight(e.battle, e.states, flight.power_z, flight.speed_up,
+                                flight.speed_down,
+                                flight.power_x, flight.speed_x, flightDirection, flight.flags, flight.Func)
                         end
                     end
 
@@ -303,12 +314,13 @@ function _Attack:Update(dt)
                         else
                             local stun = self.stun
                             local stunDirection = stun.direction and stun.direction * hitDirection or hitDirection
-    
-                            _BATTLE.Stun(e.battle, e.states, stun.time, stun.power, stun.speed, stunDirection, stun.flags, stun.Func)
+
+                            _BATTLE.Stun(e.battle, e.states, stun.time, stun.power, stun.speed, stunDirection, stun
+                                .flags, stun.Func)
                         end
                     end
                 end
-                
+
                 local param = {
                     x = x,
                     y = e.transform.position.y,
@@ -317,7 +329,7 @@ function _Attack:Update(dt)
                     entity = e
                 }
 
-                for n=1, #self.effectSet do
+                for n = 1, #self.effectSet do
                     if (#self.effectSet[n] > 0) then
                         local m = math.random(1, #self.effectSet[n])
                         _NewEffect(self.effectSet[n][m], param)
@@ -330,8 +342,8 @@ function _Attack:Update(dt)
                     _NewEffect(_elementEffectGroup[self.element], param)
                     _SOUND.Play(_elementSoundGroup[self.element])
                 end
-                
-                for n=1, #self.soundDataSet do
+
+                for n = 1, #self.soundDataSet do
                     if (type(self.soundDataSet[n]) == "table") then
                         local m = math.random(1, #self.soundDataSet[n])
                         _SOUND.Play(self.soundDataSet[n][m])
@@ -344,20 +356,20 @@ function _Attack:Update(dt)
                     _SOUND.RandomPlay(e.battle.dmgSoundDatas)
                 end
 
-                for n=1, #self.buffDataSet do
+                for n = 1, #self.buffDataSet do
                     _BUFF.AddBuff(e, self.buffDataSet[n])
                 end
-                
+
                 local damageRate = 1
 
                 if (e.attributes and not self.noDef) then
                     local def = self.isPhysical and e.attributes.phyDef or e.attributes.magDef
                     damageRate = math.abs(1 - (def * 0.001))
                 end
-                
+
                 local damage = math.floor(self.damage * damageRate)
                 damage = isCritical and math.floor(damage * 1.5) or damage
-                
+
                 local beatenConfig = e.battle.beatenConfig
                 beatenConfig.position:Set(x, y, z)
                 beatenConfig.damage = damage
@@ -378,7 +390,7 @@ function _Attack:Update(dt)
                         self._entity.identity.superior.attacker.hitCaller:Call(self, e, true)
                     end
                 end
-                
+
                 if (isCritical) then
                     _NewEffect(_counterEffectData, param)
                     _SOUND.Play(_criticalSoundData)
@@ -387,7 +399,7 @@ function _Attack:Update(dt)
                 if (self.Hit) then
                     self:Hit(e)
                 end
-                
+
                 do
                     local type
 
@@ -407,7 +419,7 @@ function _Attack:Update(dt)
                             type = "other"
                         end
                     end
-                    
+
                     if (damage > 0) then
                         _WORLD.AddDamageTip(damage, type, x, y + z, isCritical)
                     end
@@ -474,7 +486,7 @@ function _Attack:Enter(data, attackValue, Hit, Collide, noCollision)
         local rate = self.isPhysical and self._attributes.phyAtkRate or self._attributes.magAtkRate
         self.damage = math.floor(self.damage * rate) + math.random(0, 1)
     end
-    
+
     self.camp = data.camp
 
     if (self.camp == nil) then
@@ -490,7 +502,7 @@ function _Attack:Enter(data, attackValue, Hit, Collide, noCollision)
     self.noFlash = data.noFlash or false
     self.noSound = data.noSound or false
     self.direction = data.direction
-    self.element = data.element
+    self.element = data.element or self.element -- 技能数据没有属性，则使用之前的属性
     self.isView = data.isView or false
     self.isOnce = data.isOnce or false
     self.disableAttack = data.disableAttack or false
@@ -543,7 +555,7 @@ function _Attack:Enter(data, attackValue, Hit, Collide, noCollision)
 
     if (data.effectSet) then
         if (#data.effectSet > 0) then
-            for n=1, #data.effectSet do
+            for n = 1, #data.effectSet do
                 self.effectSet[n] = data.effectSet[n]
             end
         else
@@ -557,7 +569,7 @@ function _Attack:Enter(data, attackValue, Hit, Collide, noCollision)
 
     if (data.soundDataSet) then
         if (type(data.soundDataSet) == "table") then
-            for n=1, #data.soundDataSet do
+            for n = 1, #data.soundDataSet do
                 self.soundDataSet[n] = data.soundDataSet[n]
             end
         else
@@ -571,7 +583,7 @@ function _Attack:Enter(data, attackValue, Hit, Collide, noCollision)
 
     if (data.buff) then
         if (#data.buff > 0) then
-            for n=1, #data.buff do
+            for n = 1, #data.buff do
                 self.buffDataSet[n] = data.buff[n]
             end
         else
