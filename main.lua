@@ -38,6 +38,9 @@ local function _Update()
 end
 
 function love.load()
+    -- 禁用文本输入
+    love.keyboard.setTextInput(false)
+
     _SYSTEM.Init()
     math.randomseed(os.time())
 
