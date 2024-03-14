@@ -30,6 +30,7 @@ function UiModel:Ctor()
 
     ---@type Actor.Entity
     self.player = nil
+    self.partnerList = _CONFIG.user:GetPartnerList()
 
     --- 携带的物品列表
     ---@type table<number, ArticleInfo>
@@ -69,6 +70,9 @@ function UiModel:Ctor()
     _DUELIST.AddListener("appeared", _, function ()
         self:Signal_EnemyAppeared()
     end)
+
+    -- player
+    self:SetPlayer(_CONFIG.user.player)
 end
 
 --- 获取携带的物品列表
@@ -806,60 +810,14 @@ function UiModel:SelectGameMap(mapID)
     end
 end
 
----@return integer maxHp
-function UiModel:GetMaxHp()
-    if self.player == nil then
-        print("UiModel:GetMaxHp()", "player is nil")
-        return -1
-    end
-
-    return self.player.attributes.maxHp
-end
-
----@return integer hp
-function UiModel:GetHp()
-    if self.player == nil then
-        print("UiModel:GetHp()", "player is nil")
-        return -1
-    end
-
-    return self.player.attributes.hp
-end
-
 ---@param type ActorAttributeType
-function UiModel:GetActorAttribute(type)
+function UiModel:GetPlayerAttribute(type)
     if self.player == nil then
-        print("UiModel:GetActorAttribute(type)", "player is nil")
+        print("UiModel:GetPlayerAttribute(type)", "player is nil")
         return 0
     end
 
-    if type == Common.ActorAttributeType.Hp then
-        return self.player.attributes.hp
-    elseif type == Common.ActorAttributeType.MaxHp then
-        return self.player.attributes.maxHp
-    elseif type == Common.ActorAttributeType.HpRecovery then
-        return self.player.attributes.hpRecovery
-    elseif type == Common.ActorAttributeType.Mp then
-        return self.player.attributes.mp
-    elseif type == Common.ActorAttributeType.MaxMp then
-        return self.player.attributes.maxMp
-    elseif type == Common.ActorAttributeType.PhyAtk then
-        return self.player.attributes.phyAtk
-    elseif type == Common.ActorAttributeType.MagAtk then
-        return self.player.attributes.magAtk
-    elseif type == Common.ActorAttributeType.PhyDef then
-        return self.player.attributes.phyDef
-    elseif type == Common.ActorAttributeType.MagDef then
-        return self.player.attributes.magDef
-    elseif type == Common.ActorAttributeType.MoveSpeed then
-        return self.player.attributes.moveRate
-    elseif type == Common.ActorAttributeType.AttackSpeed then
-        return self.player.attributes.attackRate
-    elseif type == Common.ActorAttributeType.PhyAtkRate then
-        return self.player.attributes.phyAtkRate
-    elseif type == Common.ActorAttributeType.MagAtkRate then
-        return self.player.attributes.magAtkRate
-    end
+    return self:getActorAttribute(self.player, type)
 end
 
 ---@param key string
@@ -904,11 +862,61 @@ function UiModel:GetHitEnemyMaxHp()
     return self.hitEnemyOfPlayer.attributes.maxHp or 0
 end
 
+function UiModel:GetPartnerCount()
+    return #self.partnerList
+end
+
+---@param index number
+---@param type ActorAttributeType
+function UiModel:GetOnePartnerAttribute(index, type)
+    local entity = self.partnerList[index]
+    if not entity then
+        print("UiModel:GetOnePartnerAttribute(index, type)", "entity is nil")
+        return 0
+    end
+
+    return self:getActorAttribute(entity, type)
+end
+
+--========== private function ============
+
 function UiModel:playChangedArticlePosSound()
     -- 播放物品移动音效
     self.changedArticlePosSoundSource:stop()
     self.changedArticlePosSoundSource:setVolume(_CONFIG.setting.sound)
     self.changedArticlePosSoundSource:play()
+end
+
+---@param entity Actor.Entity
+---@param type ActorAttributeType
+function UiModel:getActorAttribute(entity, type)
+    if type == Common.ActorAttributeType.Hp then
+        return entity.attributes.hp
+    elseif type == Common.ActorAttributeType.MaxHp then
+        return entity.attributes.maxHp
+    elseif type == Common.ActorAttributeType.HpRecovery then
+        return entity.attributes.hpRecovery
+    elseif type == Common.ActorAttributeType.Mp then
+        return entity.attributes.mp
+    elseif type == Common.ActorAttributeType.MaxMp then
+        return entity.attributes.maxMp
+    elseif type == Common.ActorAttributeType.PhyAtk then
+        return entity.attributes.phyAtk
+    elseif type == Common.ActorAttributeType.MagAtk then
+        return entity.attributes.magAtk
+    elseif type == Common.ActorAttributeType.PhyDef then
+        return entity.attributes.phyDef
+    elseif type == Common.ActorAttributeType.MagDef then
+        return entity.attributes.magDef
+    elseif type == Common.ActorAttributeType.MoveSpeed then
+        return entity.attributes.moveRate
+    elseif type == Common.ActorAttributeType.AttackSpeed then
+        return entity.attributes.attackRate
+    elseif type == Common.ActorAttributeType.PhyAtkRate then
+        return entity.attributes.phyAtkRate
+    elseif type == Common.ActorAttributeType.MagAtkRate then
+        return entity.attributes.magAtkRate
+    end
 end
 
 return UiModel

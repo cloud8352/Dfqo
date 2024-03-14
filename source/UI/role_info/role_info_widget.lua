@@ -207,29 +207,29 @@ function RoleInfoWidget:updateData()
 end
 
 function RoleInfoWidget:updateActorAttributes()
-    local hp = self.model:GetActorAttribute(Common.ActorAttributeType.Hp)
-    local maxHp = self.model:GetActorAttribute(Common.ActorAttributeType.MaxHp)
-    local hpRecovery = self.model:GetActorAttribute(Common.ActorAttributeType.HpRecovery)
+    local hp = self.model:GetPlayerAttribute(Common.ActorAttributeType.Hp)
+    local maxHp = self.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp)
+    local hpRecovery = self.model:GetPlayerAttribute(Common.ActorAttributeType.HpRecovery)
     self.hpLabel:SetText("生命：" .. tostring(hp) .. "/" ..
         tostring(maxHp) .. "（+" .. tostring(hpRecovery) .. "/秒）")
 
-    local phyAtk = self.model:GetActorAttribute(Common.ActorAttributeType.PhyAtk)
+    local phyAtk = self.model:GetPlayerAttribute(Common.ActorAttributeType.PhyAtk)
     self.physicalAttackLabel:SetText("物攻：" .. tostring(phyAtk))
 
-    local phyDef = self.model:GetActorAttribute(Common.ActorAttributeType.PhyDef)
+    local phyDef = self.model:GetPlayerAttribute(Common.ActorAttributeType.PhyDef)
     self.physicalDefenseLabel:SetText("物防：" .. tostring(phyDef))
 
-    local attackSpeed = self.model:GetActorAttribute(Common.ActorAttributeType.AttackSpeed)
+    local attackSpeed = self.model:GetPlayerAttribute(Common.ActorAttributeType.AttackSpeed)
     self.attackSpeedLabel:SetText("攻速：" .. tostring(attackSpeed))
 
 
-    local magAtk = self.model:GetActorAttribute(Common.ActorAttributeType.MagAtk)
+    local magAtk = self.model:GetPlayerAttribute(Common.ActorAttributeType.MagAtk)
     self.magicalAttackLabel:SetText("魔攻：" .. tostring(magAtk))
 
-    local magDef = self.model:GetActorAttribute(Common.ActorAttributeType.MagDef)
+    local magDef = self.model:GetPlayerAttribute(Common.ActorAttributeType.MagDef)
     self.magicalDefenseLabel:SetText("魔防：" .. tostring(magDef))
 
-    local moveSpeed = self.model:GetActorAttribute(Common.ActorAttributeType.MoveSpeed)
+    local moveSpeed = self.model:GetPlayerAttribute(Common.ActorAttributeType.MoveSpeed)
     self.moveSpeedLabel:SetText("移速：" .. tostring(moveSpeed))
 end
 

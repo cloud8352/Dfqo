@@ -173,6 +173,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
 
     -- post init
     self:UpdatePosition()
+    self:reloadSkillBtnsIcon()
 end
 
 function ItemKeyGroup:Update(dt)
@@ -272,8 +273,7 @@ function ItemKeyGroup:SetVisible(visible)
     self.isVisible = visible
 end
 
----@param player Actor.Entity
-function ItemKeyGroup:SetPlayer(player)
+function ItemKeyGroup:reloadSkillBtnsIcon()
     local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
     for k, v in pairs(mapOfTagToSkillObj) do
         -- k 为 tag，即配置中的键

@@ -359,7 +359,7 @@ function ListView:AppendItem(text)
     self:InsertItem(#self.itemList + 1, text)
 end
 
----@return itemList table<int, StandardItem>
+---@return table<int, StandardItem> itemList 
 function ListView:GetItemList()
     return self.itemList
 end

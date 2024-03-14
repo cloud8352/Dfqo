@@ -156,6 +156,26 @@ function UI.Init()
     UI.appendWindowWidget(bottomWindow, UI.hitEnemyHpRectBar)
     UI.hitEnemyHpRectBar:SetVisible(false)
 
+    -- partner hp bar
+    ---@type table<number, HpRectBar>
+    UI.partnerHpRectBarList = {}
+    local partnerHpRectBarHeight = 15 * Util.GetWindowSizeScale()
+    local partnerHpRectBarSpace = 8 * Util.GetWindowSizeScale()
+    local partnerHpRectBarYPos = 200 * Util.GetWindowSizeScale()
+    for i = 1, UI.model:GetPartnerCount() do
+        local hpRectBar = HpRectBar.New(bottomWindow)
+        hpRectBar:SetRightLabelVisible(false)
+        hpRectBar:SetSize(150 * Util.GetWindowSizeScale(), partnerHpRectBarHeight)
+        hpRectBar:SetPosition(15 * Util.GetWindowSizeScale(),
+            partnerHpRectBarYPos + (i - 1) * (partnerHpRectBarHeight + partnerHpRectBarSpace))
+        hpRectBar:SetText("伙伴" .. tostring(i))
+        hpRectBar:SetMaxHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.MaxHp))
+
+        UI.appendWindowWidget(bottomWindow, hpRectBar)
+
+        UI.partnerHpRectBarList[i] = hpRectBar
+    end
+
     -- comboBox test
     UI.mapSelectComboBox = ComboBox.New(bottomWindow)
     UI.mapSelectComboBox:SetSize(200, 45)
@@ -165,6 +185,7 @@ function UI.Init()
 
     UI.mapSelectComboBox:AppendItem("格兰")
     UI.mapSelectComboBox:AppendItem("极昼")
+    UI.mapSelectComboBox:SetCurrentIndex(2)
 
     -- skill dock
     UI.skillDockViewFrame = SkillDockViewFrame.New(bottomWindow, UI.model)
@@ -234,6 +255,8 @@ function UI.Init()
         UI.dirKeyGroupWidget:SetVisible(false)
         UI.itemKeyGroup:SetVisible(false)
     end
+
+    UI.hpRectBar:SetMaxHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp))
 end
 
 function UI.Update(dt)
@@ -249,7 +272,7 @@ function UI.Update(dt)
         UI.fpsLabel:SetText("fps: " .. tostring(_TIME.GetFPS()))
     end
 
-    UI.hpRectBar:SetHp(UI.model:GetHp())
+    UI.hpRectBar:SetHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.Hp))
     UI.hpRectBar:Update(dt)
 
     local hitEnemyHp = UI.model:GetHitEnemyHp()
@@ -259,6 +282,12 @@ function UI.Update(dt)
         UI.hitEnemyHpRectBar:SetVisible(false)
     end
     UI.hitEnemyHpRectBar:Update(dt)
+
+    -- partner
+    for i, rectBar in pairs(UI.partnerHpRectBarList) do
+        rectBar:SetHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.Hp))
+        rectBar:Update(dt)
+    end
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
@@ -317,16 +346,6 @@ function UI.OnSelectedItemChanged(my, sender, item)
         print("OnSelectedItemChanged", item:GetIndex(), item:GetText())
         UI.model:SelectGameMap(item:GetIndex())
     end
-end
-
----@param player Actor.Entity
-function UI.SetPlayer(player)
-    UI.model:SetPlayer(player)
-
-    UI.hpRectBar:SetMaxHp(UI.model:GetMaxHp())
-    UI.skillDockViewFrame:ReloadSkillsViewData()
-
-    UI.itemKeyGroup:SetPlayer(player)
 end
 
 --- 当请求去设置物品栏某一显示项的信息

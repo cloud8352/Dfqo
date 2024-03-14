@@ -18,8 +18,6 @@ local _DIRECTOR = { rate = 1 } ---@class DIRECTOR
 ---@type Graphics.Curtain
 local _curtain = nil
 local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
----@type Actor.Entity
-local player = nil
 
 function _DIRECTOR.Init()
     ---@type Graphics.Curtain
@@ -28,14 +26,10 @@ function _DIRECTOR.Init()
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
 
-    -- ui
-    UI.Init()
-
     _DIRECTOR.StartGame()
 
-    -- local skill = SkillSrv.GetSkillWithPath(player.skills, "swordman/onigiri")
-
-    UI.SetPlayer(player)
+    -- ui
+    UI.Init()
 end
 
 function _DIRECTOR.Update(dt)
@@ -51,6 +45,19 @@ function _DIRECTOR.Update(dt)
 
     -- ui
     UI.Update(dt)
+end
+
+function _DIRECTOR.firstUpdate()
+    local dt = 0
+    _MAP.LoadTick()
+    
+    _speedTweener:Update(dt)
+
+    _curtain:Update(dt)
+
+    dt = dt * _DIRECTOR.rate
+    _WORLD.Update(dt, _DIRECTOR.rate)
+    _MAP.Update(dt)
 end
 
 function _DIRECTOR.Draw()
@@ -86,7 +93,7 @@ function _DIRECTOR.IsTweening()
 end
 
 function _DIRECTOR.StartGame()
-    player = _FACTORY.New("duelist/swordman", {
+    local player = _FACTORY.New("duelist/swordman", {
         x = 700,
         y = 500,
         direction = 1,
@@ -105,9 +112,9 @@ function _DIRECTOR.StartGame()
             isEnemy = false
         }
     })
-    partner.identity.canCross = true -- 设置伙伴可以过地图，否则到达下一个地图就会被销毁，原理见 source\actor\system\life.lua 的 OnClean 函数
+    _CONFIG.user:AddPartner(partner)
 
-    _DIRECTOR.Update(0) -- Flush player.
+    _DIRECTOR.firstUpdate() -- Flush player.
 
     -- 刷新距离boss的房间数
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()

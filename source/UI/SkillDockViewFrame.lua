@@ -168,7 +168,7 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
     self.lastIsShowHoveringItemTip = false
 
     --- post init
-    -- self:ReloadSkillsViewData()
+    self:ReloadSkillsViewData()
     self:updateData()
 end
 

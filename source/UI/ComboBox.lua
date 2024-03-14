@@ -75,7 +75,7 @@ function ComboBox:Ctor(parentWindow)
 
     ---@type StandardItem
     self.currentItem = nil
-    self.iscurrentItemUpdated = true
+    self.isCurrentItemUpdated = true
 
     -- signals
     -- 选中项信号的接收者
@@ -98,7 +98,7 @@ function ComboBox:Update(dt)
     self.dropDownListView:Update(dt)
 
     -- 检查是否需要更新当前显示项
-    if self.iscurrentItemUpdated then
+    if self.isCurrentItemUpdated then
         local currentText = ""
         if nil == self.currentItem then
             local itemList = self.dropDownListView:GetItemList()
@@ -112,7 +112,7 @@ function ComboBox:Update(dt)
         self.textLabel:SetText(currentText)
     end
 
-    self.iscurrentItemUpdated = false
+    self.isCurrentItemUpdated = false
 end
 
 function ComboBox:Draw()
@@ -239,12 +239,7 @@ end
 
 ---@param selectedItem StandardItem
 function ComboBox:OnSelectedItemChanged(selectedItem)
-    self.dropDownListView:SetVisible(false)
-    self.currentItem = selectedItem
-    self.iscurrentItemUpdated = true
-
-    -- 执行选择项改变回调函数
-    self:judgeAndExecSelectedItemChanged(selectedItem)
+    self:SetCurrentItem(selectedItem)
 end
 
 function ComboBox:InsertItem(i, text)
@@ -253,6 +248,21 @@ end
 
 function ComboBox:AppendItem(text)
     self.dropDownListView:AppendItem(text)
+end
+
+function ComboBox:SetCurrentIndex(index)
+    local item = self.dropDownListView:GetItemList()[index]
+    self:SetCurrentItem(item)
+end
+
+---@param item StandardItem
+function ComboBox:SetCurrentItem(item)
+    self.dropDownListView:SetVisible(false)
+    self.currentItem = item
+    self.isCurrentItemUpdated = true
+
+    -- 执行选择项改变回调函数
+    self:judgeAndExecSelectedItemChanged(item)
 end
 
 return ComboBox
