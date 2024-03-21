@@ -13,7 +13,7 @@ packageInfo:
   renameManifestPackage: null
 versionInfo:
   versionCode: 22
-  versionName: 0.10.2
+  versionName: 0.1.4
 resourcesAreCompressed: false
 sharedLibrary: false
 sparseResources: false
