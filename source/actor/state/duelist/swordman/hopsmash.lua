@@ -35,7 +35,6 @@ end
 function _HopSmash:Init(entity, ...)
     _Base.Init(self, entity, ...)
 
-    self.entityFrameaniOriDelayList = {} -- 实体动作原始延时列表
     self.enhanceRate = 0.0
 
     self.endBulletEntity = nil  -- 技能结束时段子弹动作
@@ -151,12 +150,6 @@ function _HopSmash:Enter(laterState, skill)
     self._easemove:Exit()
     self._jump:Exit()
 
-    local main = _ASPECT.GetPart(self._entity.aspect) ---@type Graphics.Drawable.Frameani
-    local frameaniDate = main:GetFrameaniData()
-    for n = 1, #frameaniDate.list do
-        self.entityFrameaniOriDelayList[n] = frameaniDate.list[n].time
-    end
-
     -- 获取技能准备的时间（注意：单位不是ms）
     local skillPrepareTime = self._skill:GetPrepareTime()
     if (60 > skillPrepareTime) then
@@ -177,10 +170,6 @@ function _HopSmash:Enter(laterState, skill)
     local jumpParam = self._jumpParam
     self._jump:Enter(jumpParam.power * (1 + self.enhanceRate), jumpParam.speed, jumpParam.speed * 0.3)
 
-    -- 增加动画播放时间
-    for n = 1, #frameaniDate.list do
-        frameaniDate.list[n].time = self.entityFrameaniOriDelayList[n] * (0.5 + self.enhanceRate)
-    end
     Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
 end
 
@@ -206,13 +195,6 @@ function _HopSmash:Exit(nextState)
 
     if (self._buff) then
         self._buff:Exit()
-    end
-
-    -- 还原动画延时
-    local main = _ASPECT.GetPart(self._entity.aspect) ---@type Graphics.Drawable.Frameani
-    local frameaniData = main:GetFrameaniData()
-    for n = 1, #frameaniData.list do
-        frameaniData.list[n].time = self.entityFrameaniOriDelayList[n]
     end
 
     if (self.endBulletEntity) then

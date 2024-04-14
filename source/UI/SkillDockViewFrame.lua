@@ -35,7 +35,7 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 
     self.model = model
 
-    local defaultItemWidth = 65 * Util.GetWindowSizeScale()
+    local defaultItemWidth = 45 * Util.GetWindowSizeScale()
     defaultItemWidth = _MATH.Round(defaultItemWidth)
     self.width = defaultItemWidth * 6 + ItemSpace * 5
     self.lastWidth = 0

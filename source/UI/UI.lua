@@ -76,7 +76,7 @@ function UI.Init()
     UI.bottomWindow = bottomWindow
     bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
     UI.characterTopBtn = PushButton.New(bottomWindow)
-    UI.characterTopBtn:SetSize(80 * Util.GetWindowSizeScale(), 80 * Util.GetWindowSizeScale())
+    UI.characterTopBtn:SetSize(60 * Util.GetWindowSizeScale(), 60 * Util.GetWindowSizeScale())
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
     UI.characterTopBtn:SetPosition(10, 10)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
