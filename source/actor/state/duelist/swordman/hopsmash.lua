@@ -6,6 +6,7 @@
 
 local _SOUND = require("lib.sound")
 local Util = require("util.Util")
+local Timer = require("util.gear.timer")
 
 local _FACTORY = require("actor.factory")
 local _ASPECT = require("actor.service.aspect")
@@ -24,12 +25,19 @@ local _Base = require("actor.state.base")
 ---@field protected _effect Actor.Entity
 local _HopSmash = require("core.class")(_Base)
 
+local AttackIntervalMs = 500
+
 function _HopSmash:Ctor(data, ...)
     _Base.Ctor(self, data, ...)
 
     self._ticks = data.ticks
     self._easemoveParam = data.easemove
     self._jumpParam = data.jump
+
+    self.attackTimer = Timer.New()
+    self.currentAttackData = nil
+    self.currentAttackValue = nil
+    self.currentAttackFrameAni = nil
 end
 
 function _HopSmash:Init(entity, ...)
@@ -69,8 +77,10 @@ function _HopSmash:Init(entity, ...)
 
             -- 武器刚接触地面子弹实例
             local endOnGroundBulletEntity = _FACTORY.New(self._actorDataSet[2], param)
-            self._attack:Enter(self._attackDataSet[2], self._skill.attackValues[2], _, _, true)
-            self._attack.collision[_ASPECT.GetPart(endOnGroundBulletEntity.aspect)] = "attack"
+            -- 攻击
+            self:setAttackInfo(self._attackDataSet[2], self._skill.attackValues[2]
+            , _ASPECT.GetPart(endOnGroundBulletEntity.aspect))
+            self:startAttack()
 
             -- 先销毁原来的地面血气波动攻击子弹实例
             if (self.bottomBulletEntity) then
@@ -104,10 +114,16 @@ function _HopSmash:NormalUpdate(dt, rate)
     self._attack:Update()
     self._easemove:Update(rate)
     self._jump:Update(rate)
+    self.attackTimer:Update(dt)
 
     if (tick == self._ticks[1]) then
         -- buff
         self._buff = _BUFF.AddBuff(self._entity, self._buffDatas)
+
+        -- 攻击
+        -- self:setAttackInfo(self._attackDataSet[1], self._skill.attackValues[1]
+        -- , main)
+        -- self:startAttack()
     elseif (tick == self._ticks[2]) then
         local param = {
             x = self._entity.transform.position.x,
@@ -124,18 +140,39 @@ function _HopSmash:NormalUpdate(dt, rate)
         self.endBulletEntity = _FACTORY.New(self._actorDataSet[1], param)
 
         -- 攻击
-        self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1], _, _, true)
-        self._attack.collision[_ASPECT.GetPart(self.endBulletEntity.aspect)] = "attack"
+        self:setAttackInfo(self._attackDataSet[1], self._skill.attackValues[1]
+        , _ASPECT.GetPart(self.endBulletEntity.aspect))
+        self:startAttack(false)
     elseif (tick == self._ticks[3]) then
     end
 
     -- 第三段攻击
     if (self.bottomBulletEntity) then
-        local bulletFrameani = _ASPECT.GetPart(self.bottomBulletEntity.aspect) ---@type Graphics.Drawable.Frameani
-        local bulletTick = bulletFrameani:GetTick()
-        if (3 == bulletTick) then
-            self._attack:Enter(self._attackDataSet[2], self._skill.attackValues[2], _, _, true)
-            self._attack.collision[bulletFrameani] = "attack"
+        local bulletFrameAni = _ASPECT.GetPart(self.bottomBulletEntity.aspect) ---@type Graphics.Drawable.Frameani
+        local bulletTick = bulletFrameAni:GetTick()
+        if (2 == bulletTick
+                and self.currentAttackFrameAni ~= bulletFrameAni
+            ) then
+            -- 攻击
+            self:setAttackInfo(self._attackDataSet[2], self._skill.attackValues[2]
+            , bulletFrameAni)
+            self:startAttack(true)
+        end
+    end
+
+    if not self.attackTimer.isRunning
+        and self.currentAttackData and self.currentAttackValue and self.currentAttackFrameAni
+    then
+        self.attackTimer:Enter(AttackIntervalMs)
+
+        self:startAttack(false)
+    end
+
+    -- 地面血气波动播放完后，结束攻击
+    if self.bottomBulletEntity then
+        if self.bottomBulletEntity.identity.destroyProcess == 1 then
+            self:setAttackInfo(nil, nil, nil)
+            self.attackTimer:Exit()
         end
     end
 
@@ -150,6 +187,8 @@ function _HopSmash:Enter(laterState, skill)
     self._easemove:Exit()
     self._jump:Exit()
 
+    self:setAttackInfo(nil, nil, nil)
+
     -- 获取技能准备的时间（注意：单位不是ms）
     local skillPrepareTime = self._skill:GetPrepareTime()
     if (60 > skillPrepareTime) then
@@ -161,7 +200,7 @@ function _HopSmash:Enter(laterState, skill)
     if 1 < self.enhanceRate then
         self.enhanceRate = 1 -- 跳跃和移动最大增幅
     end
-    local enhanceBaseRate = 0.7 -- 基准增幅率（用来确保增幅率始终不超过此值）
+    local enhanceBaseRate = 0.5 -- 基准增幅率（用来确保增幅率始终不超过此值）
     self.enhanceRate = self.enhanceRate * enhanceBaseRate
 
     local easemoveParam = self._easemoveParam
@@ -181,14 +220,14 @@ function _HopSmash:Exit(nextState)
     _Base.Exit(self, nextState)
 
     if (self.bottomBulletEntity) then
-        self.bottomBulletEntity.identity.destroyProcess = 1
+        -- self.bottomBulletEntity.identity.destroyProcess = 1
         self.bottomBulletEntity = nil
     end
 
     -- 销毁地面血气波动特效
     for i, entity in pairs(self.bottomBulletEffectList) do
         if (entity) then
-            entity.identity.destroyProcess = 1
+            -- entity.identity.destroyProcess = 1
         end
     end
     self.bottomBulletEffectList = {}
@@ -202,6 +241,26 @@ function _HopSmash:Exit(nextState)
         self.endBulletEntity = nil
     end
 
+end
+
+---@param attackData table
+---@param attackValue Actor.Gear.Attack.AttackValue
+---@param attackFrameAni Graphics.Drawable.Frameani
+function _HopSmash:setAttackInfo(attackData, attackValue, attackFrameAni)
+    self.currentAttackData = attackData
+    self.currentAttackValue = attackValue
+    self.currentAttackFrameAni = attackFrameAni
+end
+
+---@param force boolean
+function _HopSmash:startAttack(force)
+    if not force and self._attack.isRunning then
+        return
+    end
+
+    self._attack:Exit()
+    self._attack:Enter(self.currentAttackData, self.currentAttackValue, _, _, true)
+    self._attack.collision[self.currentAttackFrameAni] = "attack"
 end
 
 return _HopSmash

@@ -8,6 +8,7 @@
 local _MATH = require("lib.math")
 local _MAP = require("map.init")
 local _MOTION = require("actor.service.motion")
+local AspectSrv = require("actor.service.aspect")
 
 local _Tweener = require("util.gear.tweener")
 local _Point3 = require("graphics.drawunit.point3")
@@ -85,7 +86,7 @@ function _Bullet:Update(dt)
         return
     end
 
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
 
         if (not e.identity.isPaused) then
@@ -105,6 +106,19 @@ function _Bullet:Update(dt)
 
             if (e.transform.position.z > 0 and bullet.endDestroy) then
                 e.identity.destroyProcess = 1
+            end
+
+            -- 获取实例的 动作显示组件
+            local drawableObj = AspectSrv.GetPart(e.aspect)
+            if (drawableObj:GetType() == "frameani" and bullet.WhetherDestroyWhenFrameAniPlayToEnd) then
+                -- 因为 drawableObj 的类型为 frameani， 因此 drawableObj 的实际类名为 Actor.Drawable.Frameani
+                -- 而继承方向：Actor.Drawable.Frameani 继承于 Actor.Drawable 和 Graphics.Drawable.Frameani
+                -- 因此 drawableObj 可以强转换为 Graphics.Drawable.Frameani 类
+                ---@type Graphics.Drawable.Frameani
+                local bodyGraphicsFrameAniObj = drawableObj
+                if (bodyGraphicsFrameAniObj:TickEnd()) then
+                    e.identity.destroyProcess = 1
+                end
             end
 
             if (bullet.rotateSpeed) then

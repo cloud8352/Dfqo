@@ -18,6 +18,7 @@ local _RESMGR = require("actor.resmgr")
 ---@field obstacleType string @nil, "normal", "destroy"
 ---@field isCross boolean
 ---@field endDestroy boolean
+---@field WhetherDestroyWhenFrameAniPlayToEnd boolean @是否当动画播放结束时销毁
 ---@field angleY number
 ---@field angleZ number
 ---@field OnHit function
@@ -37,6 +38,7 @@ function _Bullet:Ctor(data, param)
     self.easing = data.easing
     self.obstacleType = data.obstacleType
     self.endDestroy = data.endDestroy or false
+    self.WhetherDestroyWhenFrameAniPlayToEnd = data.WhetherDestroyWhenFrameAniPlayToEnd or false
     self.isCross = data.isCross or false
     self.attackValue = data.attackValue or param.attackValue
     self.OnHit = param.OnHit
