@@ -1,8 +1,7 @@
 --[[
-	desc: SkillDockViewFrame class. 技能托盘显示框架
+	desc: ArticleDockFrame class. 物品托盘显示框架
 	author: keke <243768648@qq.com>
-	since: 2023-4-15
-	alter: 2023-4-15
+	alter: 2024-4-28
 ]] --
 
 local _CONFIG = require("config")
@@ -21,8 +20,8 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
----@class ArticleTableWidget
-local ArticleTableWidget = require("core.class")(Widget)
+---@class ArticleDockFrame
+local ArticleDockFrame = require("core.class")(Widget)
 
 
 local ItemWidth = Common.ArticleItemWidth
@@ -30,12 +29,11 @@ ItemWidth = _MATH.Round(ItemWidth)
 local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
-local ColCount = Common.ArticleTableColCount
-local RowCount = Common.ArticleTableRowCount
+local ColCount = Common.ArticleDockColCount
 
 ---@param parentWindow Window
 ---@param model UiModel
-function ArticleTableWidget:Ctor(parentWindow, model)
+function ArticleDockFrame:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
     ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
     ItemWidth = math.floor(ItemWidth)
@@ -46,7 +44,7 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     self.model = model
 
     self.baseWidget.width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
-    self.baseWidget.height = ItemWidth * ColCount + ItemSpace * (RowCount - 1)
+    self.baseWidget.height = ItemWidth
 
     --- item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
@@ -56,7 +54,7 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     local itemImgPath = ""
     ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
-    for i = 1, ColCount*RowCount do
+    for i = 1, ColCount do
         local bgLabel = Label.New(parentWindow)
         bgLabel:SetIconSpriteDataPath(itemBgImgPath)
         self.viewItemBgList[i] = bgLabel
@@ -98,7 +96,7 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     self:updateData()
 end
 
-function ArticleTableWidget:Update(dt)
+function ArticleDockFrame:Update(dt)
     self:MouseEvent()
 
     if (self.baseWidget:IsSizeChanged()
@@ -147,7 +145,7 @@ function ArticleTableWidget:Update(dt)
     self.lastIsShowHoveringItemTip = self.isShowHoveringItemTip
 end
 
-function ArticleTableWidget:Draw()
+function ArticleDockFrame:Draw()
     for i, label in pairs(self.viewItemBgList) do
         -- item background
         label:Draw()
@@ -160,7 +158,7 @@ function ArticleTableWidget:Draw()
     self.hoveringItemFrameLabel:Draw()
 end
 
-function ArticleTableWidget:MouseEvent()
+function ArticleDockFrame:MouseEvent()
     -- 判断鼠标
     while true do
         -- 检查是否有上层窗口遮挡
@@ -168,7 +166,7 @@ function ArticleTableWidget:MouseEvent()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
             or self.baseWidget.parentWindow:IsInMoving() then
             self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
+            self.model:SetArticleDockHoveringItemIndex(-1)
             self.hoveringItemInfo = nil
             self.itemHoveringTimer:Exit()
             break
@@ -187,7 +185,7 @@ function ArticleTableWidget:MouseEvent()
         -- 是否点击了鼠标右键
         if _Mouse.IsPressed(2) then
             if (hoveringItemIndex ~= -1) then
-                self.model:OnRightKeyClickedArticleTableItem(hoveringItemIndex)
+                self.model:OnRightKeyClickedArticleDockItem(hoveringItemIndex)
             end
         end
 
@@ -197,13 +195,13 @@ function ArticleTableWidget:MouseEvent()
 
         if -1 == hoveringItemIndex then
             self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
+            self.model:SetArticleDockHoveringItemIndex(-1)
             self.hoveringItemInfo = nil
             self.itemHoveringTimer:Exit()
         else
             self.hoveringItemIndex = hoveringItemIndex
-            self.model:SetArticleTableHoveringItemIndex(hoveringItemIndex)
-            self.hoveringItemInfo = self.model:GetArticleInfoList()[hoveringItemIndex]
+            self.model:SetArticleDockHoveringItemIndex(hoveringItemIndex)
+            self.hoveringItemInfo = self.model:GetArticleDockInfoList()[hoveringItemIndex]
 
             -- 开启计时鼠标悬浮时间
             self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
@@ -215,7 +213,7 @@ function ArticleTableWidget:MouseEvent()
     self:judgeAndExecRequestDragItem()
 end
 
-function ArticleTableWidget:SetPosition(x, y)
+function ArticleDockFrame:SetPosition(x, y)
     self.baseWidget:SetPosition(x, y)
 
     for i, label in pairs(self.viewItemBgList) do
@@ -234,18 +232,18 @@ function ArticleTableWidget:SetPosition(x, y)
 end
 
 ---@return number, number w, h
-function ArticleTableWidget:GetSize()
+function ArticleDockFrame:GetSize()
     return self.baseWidget:GetSize()
 end
 
-function ArticleTableWidget:SetEnable(enable)
+function ArticleDockFrame:SetEnable(enable)
     self.baseWidget:SetEnable(enable)
 end
 
 --- 设置某一显示项的信息
 ---@param index number
 ---@param itemInfo ArticleInfo
-function ArticleTableWidget:SetIndexItemInfo(index, itemInfo)
+function ArticleDockFrame:SetIndexItemInfo(index, itemInfo)
     local item = self.viewItemList[index]
     assert(item, "ArticleTableWidget:SetIndexItemInfo(index, itemInfo), not exit item")
     local iconPath = itemInfo.iconPath
@@ -258,18 +256,18 @@ end
 
 --- 当玩家改变后
 ---@param sender Object
-function ArticleTableWidget:OnPlayerChanged(sender)
+function ArticleDockFrame:OnPlayerChanged(sender)
     -- print("ArticleTableWidget:OnPlayerChanged(sender)")
     self:initArticleData()
 end
 
-function ArticleTableWidget:initArticleData()
-    for i, info in pairs(self.model:GetArticleInfoList()) do
+function ArticleDockFrame:initArticleData()
+    for i, info in pairs(self.model:GetArticleDockInfoList()) do
         self:SetIndexItemInfo(i, info)
     end
 end
 
-function ArticleTableWidget:updateData()
+function ArticleDockFrame:updateData()
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
         local itemXpos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
@@ -289,7 +287,7 @@ function ArticleTableWidget:updateData()
     self:updateHoveringItemFrameData()
 end
 
-function ArticleTableWidget:updateHoveringItemFrameData()
+function ArticleDockFrame:updateHoveringItemFrameData()
     -- hovering item frame label
     local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
     if nil == skillItemBgLabel then
@@ -307,7 +305,7 @@ function ArticleTableWidget:updateHoveringItemFrameData()
     self.hoveringItemFrameLabel:SetVisible(true)
 end
 
-function ArticleTableWidget:updateHoveringItemTipWindowData()
+function ArticleDockFrame:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringArticleItemTipWindowVisibility(self.isShowHoveringItemTip)
 
     local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
@@ -326,7 +324,7 @@ function ArticleTableWidget:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringArticleItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, self.hoveringItemInfo)
 end
 
-function ArticleTableWidget:judgeAndExecRequestDragItem()
+function ArticleDockFrame:judgeAndExecRequestDragItem()
     local currentMouseXPos = 0
     local currentMouseYPos = 0
     -- 判断鼠标
@@ -334,9 +332,9 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
         -- 是否处于按压中
         if false == _Mouse.IsHold(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
             if self.isReqDragItem == true then
-                self.model:DropArticleItem()
+                self.model:DropArticleDockItem()
                 self.hoveringItemIndex = -1
-                self.model:SetArticleTableHoveringItemIndex(-1)
+                self.model:SetArticleDockHoveringItemIndex(-1)
             end
             
             self.isReqDragItem = false
@@ -367,7 +365,7 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
         self.originYPosWhenDragItem = currentMouseYPos - ItemWidth / 2
 
         -- 设置拖拽中的物品索引
-        self.model:DragArticleItem(self.hoveringItemIndex)
+        self.model:DragArticleDockItem(self.hoveringItemIndex)
         break
     end
 
@@ -384,4 +382,4 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
     end
 end
 
-return ArticleTableWidget
+return ArticleDockFrame

@@ -99,8 +99,7 @@ local EquInfo = {
     mpExtentRate = 0.0,
 }
 
---- 物品项信息
----@class ArticleInfo
+---@class ArticleInfo 物品项信息
 ---@field id number
 ---@field type ArticleType
 ---@field name string
@@ -125,15 +124,32 @@ local ArticleInfo = {
 }
 
 --- 创建新的物品信息
----@return ArticleInfo
+---@return ArticleInfo 创建新的物品信息
 function UiCommon.NewArticleInfo()
     return _TABLE.DeepClone(ArticleInfo)
+end
+
+---@class ArticleInfoItemIndex 物品信息项检索
+---@field Index number
+---@field Info ArticleInfo
+local ArticleInfoItemIndex = {
+    Index = -1,
+    Info = UiCommon.NewArticleInfo()
+}
+
+--- 创建新的物品信息项检索
+---@return ArticleInfoItemIndex
+function UiCommon.NewArticleInfoItemIndex()
+    return _TABLE.DeepClone(ArticleInfoItemIndex)
 end
 
 UiCommon.ArticleItemWidth = 45
 
 UiCommon.ArticleTableColCount = 8
 UiCommon.ArticleTableRowCount = 12
+
+-- 物品托盘表格列数
+UiCommon.ArticleDockColCount = 6
 
 UiCommon.EquTableColCount = 5
 UiCommon.EquTableRowCount = 2

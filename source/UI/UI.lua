@@ -25,6 +25,7 @@ local WindowManager = require("UI.WindowManager")
 local HpRectBar = require("UI.hp_rect_bar")
 local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
+local ArticleDockFrame = require("UI.ArticleDockFrame")
 
 local Map = require("map.init")
 
@@ -187,10 +188,18 @@ function UI.Init()
     UI.mapSelectComboBox:AppendItem("极昼")
     UI.mapSelectComboBox:SetCurrentIndex(2)
 
+    -- article dock
+    UI.articleDockFrame = ArticleDockFrame.New(bottomWindow, UI.model)
+    local articleDockFrameWidth, articleDockFrameHeight = UI.articleDockFrame:GetSize()
+    UI.articleDockFrame:SetPosition(Util.GetWindowWidth() / 2 - 20 - articleDockFrameWidth,
+        Util.GetWindowHeight() - articleDockFrameHeight - 10)
+    -- 将组件添加到窗口组件列表
+    UI.appendWindowWidget(bottomWindow, UI.articleDockFrame)
+
     -- skill dock
     UI.skillDockViewFrame = SkillDockViewFrame.New(bottomWindow, UI.model)
     local _, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
-    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 100,
+    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 20,
         Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.skillDockViewFrame)
@@ -234,6 +243,7 @@ function UI.Init()
     UI.mapSelectComboBox:SetReceiverOfSelectedItemChanged(UI)
     -- model
     UI.model:MocConnectSignal(UI.model.RequestSetArticleTableItemInfo, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_requestSetArticleDockItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetEquTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetDraggingItemInfo, UI)
@@ -291,6 +301,8 @@ function UI.Update(dt)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox:Update(dt)
+
+    UI.articleDockFrame:Update(dt)
 
     UI.skillDockViewFrame:Update(dt)
 
@@ -357,6 +369,18 @@ function UI.OnRequestSetArticleTableItemInfo(my, sender, index, itemInfo)
     if sender == UI.model then
         print("UI.OnRequestSetArticleTableItemInfo(my, sender, index, itemInfo)", index, itemInfo.name)
         UI.roleInfoWidget:SetArticleTableItemInfo(index, itemInfo)
+    end
+end
+
+--- 当请求去设置物品托盘某一显示项的信息
+---@param my Object
+---@param sender Object
+---@param index number
+---@param itemInfo ArticleInfo
+function UI.Slot_requestSetArticleDockItemInfo(my, sender, index, itemInfo)
+    if sender == UI.model then
+        print("UI.Slot_requestSetArticleDockItemInfo(my, sender, index, itemInfo)", index, itemInfo.name)
+        UI.articleDockFrame:SetIndexItemInfo(index, itemInfo)
     end
 end
 

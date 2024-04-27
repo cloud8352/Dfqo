@@ -19,6 +19,7 @@ local ResMgr = require("actor.resmgr")
 local EquSrv = require("actor.service.equipment")
 local AspectSrv = require("actor.service.aspect")
 local InputSrv = require("actor.service.input")
+local AttributeSrv = require("actor.service.attribute")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -35,13 +36,21 @@ function UiModel:Ctor()
     --- 携带的物品列表
     ---@type table<number, ArticleInfo>
     self.articleInfoList = {}
+    
+    self.articleTableHoveringItemIndex = -1
+    self.articleTableDraggingItemIndex = -1
+
+    --- 物品托盘的物品列表
+    ---@type table<number, ArticleInfo>
+    self.articleDockInfoList = {}
+    
+    self.articleDockHoveringItemIndex = -1
+    self.articleDockDraggingItemIndex = -1
 
     --- 已装配的装备列表
     ---@type table<number, ArticleInfo>
     self.mountedEquInfoList = {}
 
-    self.articleTableHoveringItemIndex = -1
-    self.articleTableDraggingItemIndex = -1
 
     -- 被攻击的敌人
     ---@type Actor.Entity
@@ -51,6 +60,11 @@ function UiModel:Ctor()
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
         local articleInfo = Common.NewArticleInfo()
         self.articleInfoList[i] = articleInfo
+    end
+
+    for i = 1, Common.ArticleDockColCount do
+        local articleInfo = Common.NewArticleInfo()
+        self.articleDockInfoList[i] = articleInfo
     end
 
     -- equ
@@ -81,6 +95,12 @@ function UiModel:GetArticleInfoList()
     return self.articleInfoList
 end
 
+--- 获取物品托盘的物品列表
+---@return table<number, ArticleInfo>
+function UiModel:GetArticleDockInfoList()
+    return self.articleDockInfoList
+end
+
 --- 获取已装配的装备列表
 ---@return table<number, ArticleInfo>
 function UiModel:GetMountedEquInfoList()
@@ -99,6 +119,28 @@ function UiModel:OnRightKeyClickedArticleTableItem(index)
         self:useConsumable(index, clickedItemInfo)
     elseif clickedItemInfo.type == Common.ArticleType.Equipment then
         self:mountEquipment(index, clickedItemInfo)
+    end
+end
+
+---@param index number
+function UiModel:OnRightKeyClickedArticleDockItem(index)
+    local clickedItemInfo = self.articleDockInfoList[index]
+    if clickedItemInfo == nil then
+        print("UiModel:OnRightKeyClickedArticleDockItem(index)", "err: can not find itemInfo")
+        return
+    end
+
+    local articleTableIndex = self:findInArticleInfoList(clickedItemInfo)
+    if (articleTableIndex.Index == -1) then
+        print("UiModel:OnRightKeyClickedArticleDockItem(index)", 
+            "err: can not find itemInfo in article table")
+        return
+    end
+
+    if clickedItemInfo.type == Common.ArticleType.Consumable then
+        self:useConsumable(articleTableIndex.Index, clickedItemInfo)
+    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:mountEquipment(articleTableIndex.Index, clickedItemInfo)
     end
 end
 
@@ -152,6 +194,29 @@ function UiModel:RequestSetArticleTableItemInfo(index, itemInfo)
     end
 end
 
+--- 请求去设置物品托盘某一显示项的信息
+---@param index number
+---@param itemInfo ArticleInfo
+function UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)
+    print("UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)", index, itemInfo.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_requestSetArticleDockItemInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_requestSetArticleDockItemInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, index, itemInfo)
+
+        ::continue::
+    end
+end
+
 --- 请求去设置装备栏某一显示项的信息
 ---@param index number
 ---@param itemInfo ArticleInfo
@@ -179,12 +244,25 @@ function UiModel:SetArticleTableHoveringItemIndex(index)
     self.articleTableHoveringItemIndex = index
 end
 
+function UiModel:SetArticleDockHoveringItemIndex(index)
+    self.articleDockHoveringItemIndex = index
+end
+
 --- 拖拽物品项
 ---@param index number 物品项检索
 function UiModel:DragArticleItem(index)
     self.articleTableDraggingItemIndex = index
     self:RequestSetDraggingItemVisibility(true)
     local info = self.articleInfoList[index]
+    self:RequestSetDraggingItemInfo(info)
+end
+
+--- 拖拽物品托盘物品项
+---@param index number 物品项检索
+function UiModel:DragArticleDockItem(index)
+    self.articleDockDraggingItemIndex = index
+    self:RequestSetDraggingItemVisibility(true)
+    local info = self.articleDockInfoList[index]
     self:RequestSetDraggingItemInfo(info)
 end
 
@@ -211,6 +289,29 @@ function UiModel:DropArticleItem()
     self:RequestSetDraggingItemVisibility(false)
 end
 
+--- 放下物品托盘物品项
+function UiModel:DropArticleDockItem()
+    -- 拖拽项放到了何处
+    if self.articleDockHoveringItemIndex ~= -1 then
+        local hoveringArticleInfo = self.articleDockInfoList[self.articleDockHoveringItemIndex]
+
+        -- 移动拖拽项到当前悬停处
+        local draggingArticleInfo = self.articleDockInfoList[self.articleDockDraggingItemIndex]
+        self.articleDockInfoList[self.articleDockHoveringItemIndex] = draggingArticleInfo
+        self:Signal_requestSetArticleDockItemInfo(self.articleDockHoveringItemIndex, draggingArticleInfo)
+
+        -- 移动原先悬停处的物品到拖拽之前的位置
+        self.articleDockInfoList[self.articleDockDraggingItemIndex] = hoveringArticleInfo
+        self:Signal_requestSetArticleDockItemInfo(self.articleDockDraggingItemIndex, hoveringArticleInfo)
+
+        -- 播放物品移动音效
+        self:playChangedArticlePosSound()
+    end
+
+    -- 请求界面设置拖拽项为不可见
+    self:RequestSetDraggingItemVisibility(false)
+end
+
 ---
 ---@param xPos number
 ---@param yPos number
@@ -223,12 +324,26 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:useConsumable(index, itemInfo)
     print("UiModel:useConsumable(index, itemInfo)", index, itemInfo.name)
+
+    local hpRecovery = itemInfo.consumableInfo.hpRecovery
+    local playerCurrentHp = self:GetPlayerAttribute(Common.ActorAttributeType.Hp)
+    hpRecovery = hpRecovery + playerCurrentHp * itemInfo.consumableInfo.hpRecoveryRate
+    if (hpRecovery > 0) then
+        self:AddHpWithEffect(self.player, hpRecovery)
+    end
+
     itemInfo.count = itemInfo.count - 1
     if itemInfo.count <= 0 then
         itemInfo.count = 0
         itemInfo.type = Common.ArticleType.Empty
     end
     self:RequestSetArticleTableItemInfo(index, itemInfo)
+
+    -- 更新物品托盘
+    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
+    if (articleDockIndex.Index > 0) then
+        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, itemInfo)
+    end
 end
 
 --- 装载装备
@@ -241,6 +356,14 @@ function UiModel:mountEquipment(articleTableIndex, itemInfo)
     -- 在ui上卸载原有装备到物品栏
     self.articleInfoList[articleTableIndex] = lastEquItemInfo
     self:RequestSetArticleTableItemInfo(articleTableIndex, lastEquItemInfo)
+
+    -- 待装备的物品是否存在于物品托盘，如存在，则更新物品托盘
+    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
+    if (articleDockIndex.Index > 0) then
+        self.articleDockInfoList[articleDockIndex.Index] = lastEquItemInfo
+        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, lastEquItemInfo)
+    end
+
     -- 在服务上装载新装备
     local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
     EquSrv.Equip(self.player, keyTag, itemInfo.equInfo.resMgrEquData)
@@ -563,7 +686,7 @@ function UiModel:SetPlayer(player)
     articleInfo.type = Common.ArticleType.Consumable
     articleInfo.name = "消耗1"
     articleInfo.desc = "desc 消耗1"
-    articleInfo.iconPath = "ui/CharacterPortraits/Swordsman/Normal"
+    articleInfo.iconPath = "icon/Consumption/64"
     articleInfo.count = 10
     articleInfo.consumableInfo.hpRecovery = 100
     articleInfo.consumableInfo.hpRecoveryRate = 0.1
@@ -591,11 +714,11 @@ function UiModel:SetPlayer(player)
     articleInfo.type = Common.ArticleType.Consumable
     articleInfo.name = "消耗3"
     articleInfo.desc = "desc 消耗3"
-    articleInfo.iconPath = "ui/DropDownBtn/Disabled"
+    articleInfo.iconPath = "icon/Consumption/58"
     articleInfo.count = 15
     articleInfo.consumableInfo.hpRecovery = 50
 
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
         {}, {}, nil)
     articleInfo = self.articleInfoList[4]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
@@ -619,7 +742,7 @@ function UiModel:SetPlayer(player)
     articleInfo.equInfo.type = Common.EquType.Weapon
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
+    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
         {}, {}, nil)
     articleInfo = self.articleInfoList[6]
     articleInfo.equInfo.resMgrEquData = resMgrEquData
@@ -779,11 +902,22 @@ function UiModel:SetPlayer(player)
         -- articleInfo.equInfo.mpExtentRate = 0.1
     end
 
+    -- aricle dock
+    self.articleDockInfoList[1] = self.articleInfoList[1]
+    self.articleDockInfoList[2] = self.articleInfoList[2]
+    self.articleDockInfoList[3] = self.articleInfoList[3]
+    self.articleDockInfoList[4] = self.articleInfoList[4]
+    self.articleDockInfoList[5] = self.articleInfoList[5]
+
     -- connection
     self.player.attacker.hitCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
 
     -- post init
     self:PlayerChanged()
+end
+
+function UiModel:GetPlayer()
+    return self.player
 end
 
 ---@return Actor.Skill
@@ -878,6 +1012,12 @@ function UiModel:GetOnePartnerAttribute(index, type)
     return self:getActorAttribute(entity, type)
 end
 
+---@param entity Actor.Entity
+---@param value int
+function UiModel:AddHpWithEffect(entity, value)
+    AttributeSrv.AddHpWithEffect(entity, value)
+end
+
 --========== private function ============
 
 function UiModel:playChangedArticlePosSound()
@@ -917,6 +1057,36 @@ function UiModel:getActorAttribute(entity, type)
     elseif type == Common.ActorAttributeType.MagAtkRate then
         return entity.attributes.magAtkRate
     end
+end
+
+--- 在物品列表里查找
+---@param findingInfo ArticleInfo
+function UiModel:findInArticleInfoList(findingInfo)
+    local index = Common.NewArticleInfoItemIndex()
+    for i, info in pairs(self.articleInfoList) do
+        if (info == findingInfo) then
+            index.Index = i
+            index.Info = info
+            break
+        end
+    end
+
+    return index
+end
+
+--- 在物品托盘的物品列表里查找
+---@param findingInfo ArticleInfo
+function UiModel:findInArticleDockInfoList(findingInfo)
+    local index = Common.NewArticleInfoItemIndex()
+    for i, info in pairs(self.articleDockInfoList) do
+        if (info == findingInfo) then
+            index.Index = i
+            index.Info = info
+            break
+        end
+    end
+
+    return index
 end
 
 return UiModel
