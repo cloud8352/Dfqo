@@ -36,6 +36,7 @@ local _TABLE = require("lib.table")
 local Util = require("util.Util")
 local _TIME = require("lib.time")
 local System = require("lib.system")
+local Keyboard = require("lib.keyboard")
 
 local IsShowFps = true
 
@@ -270,6 +271,8 @@ function UI.Init()
 end
 
 function UI.Update(dt)
+    UI.keyboardEvent()
+
     UI.characterTopBtn:Update(dt)
 
     -- characterInfoWindow
@@ -550,6 +553,37 @@ function UI.mergeTotalSprite()
     
     -- 还原绘图数据
     _Graphics.RestoreCanvas()
+end
+
+function UI.keyboardEvent()
+    --- esc
+    if (Keyboard.IsPressed("escape")) then
+        UI.characterInfoWindow:SetVisible(false)
+    end
+
+    --- 判断物品托盘快捷键
+    local rightKeyClickedArticleDockIndex = -1
+    if (Keyboard.IsPressed("1")) then
+        rightKeyClickedArticleDockIndex = 1
+    end
+    if (Keyboard.IsPressed("2")) then
+        rightKeyClickedArticleDockIndex = 2
+    end
+    if (Keyboard.IsPressed("3")) then
+        rightKeyClickedArticleDockIndex = 3
+    end
+    if (Keyboard.IsPressed("4")) then
+        rightKeyClickedArticleDockIndex = 4
+    end
+    if (Keyboard.IsPressed("5")) then
+        rightKeyClickedArticleDockIndex = 5
+    end
+    if (Keyboard.IsPressed("6")) then
+        rightKeyClickedArticleDockIndex = 6
+    end
+    if (-1 ~= rightKeyClickedArticleDockIndex) then
+        UI.model:OnRightKeyClickedArticleDockItem(rightKeyClickedArticleDockIndex)
+    end
 end
 
 return UI
