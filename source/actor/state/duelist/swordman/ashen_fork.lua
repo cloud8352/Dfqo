@@ -124,9 +124,6 @@ function AshenFork:NormalUpdate(dt, rate)
         }
 
         local endOnGroundBulletEntity = _FACTORY.New(self._actorDataSet[2], param)
-        self.attack:Enter(self._attackDataSet[2], skillAttackValues[1], _, _, true)
-        self.attack.collision[_ASPECT.GetPart(endOnGroundBulletEntity.aspect)] = "attack"
-
         _SOUND.Play(self._soundDataSet.effect)
     end
 
