@@ -262,6 +262,7 @@ function UI.Init()
     -- post init
     if (System.IsMobile()) then
         UI.skillDockViewFrame:SetVisible(false)
+        UI.articleDockFrame:SetVisible(false)
     else
         UI.dirKeyGroupWidget:SetVisible(false)
         UI.itemKeyGroup:SetVisible(false)

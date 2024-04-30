@@ -116,15 +116,7 @@ function AshenFork:NormalUpdate(dt, rate)
             entity = self._entity
         }
 
-        local skillAttackValues = {
-            {
-                damageRate = 0.5,
-                isPhysical = true
-            }
-        }
-
         local endOnGroundBulletEntity = _FACTORY.New(self._actorDataSet[2], param)
-        _SOUND.Play(self._soundDataSet.effect)
     end
 
     -- 每隔 AttackJudgeIntervalS 时间 攻击一次
@@ -226,9 +218,6 @@ function AshenFork:EnterAttack()
     self.attack.hitstop = hitstop[1]
     self.attack.selfstop = hitstop[2]
     self.attack.shake.time = hitstop[1]
-
-    -- local soundDatas = self._soundDataSet.hitting[kind]
-    -- self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundDatas
 end
 
 return AshenFork

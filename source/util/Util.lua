@@ -54,7 +54,9 @@ function Util.PlaySoundByGender(soundDataSet, index, gender)
     else
         soundDataList = soundDataSet.femaleVoice
     end
-    _SOUND.Play(soundDataList[index])
+    if (soundDataList and #soundDataList > 0) then
+        _SOUND.Play(soundDataList[index])
+    end
 end
 
 return Util
