@@ -1,7 +1,7 @@
 #!/bin/sh
 
 pkgName=dfqo
-pkgVer=0.1.4
+pkgVer=0.1.5
 buildDirPath=buildDir
 buildBranch=origin/diy
 
@@ -14,6 +14,7 @@ git push $buildDirPath $buildBranch
 
 cd $buildDirPath
 git checkout $buildBranch
+git log -n 1
 rm -rf .git
 
 fileName=${pkgName}_${pkgVer}.zip
