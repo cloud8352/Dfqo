@@ -103,16 +103,16 @@ function _DIRECTOR.StartGame()
     _CONFIG.user:SetPlayer(player)
 
     -- 创建伙伴
-    local partner = _FACTORY.New("duelist/atswordman", {
-        x = 400,
-        y = 400,
-        direction = 1,
-        camp = 1,
-        dulist = {
-            isEnemy = false
-        }
-    })
-    _CONFIG.user:AddPartner(partner)
+    -- local partner = _FACTORY.New("duelist/atswordman", {
+    --     x = 400,
+    --     y = 400,
+    --     direction = 1,
+    --     camp = 1,
+    --     dulist = {
+    --         isEnemy = false
+    --     }
+    -- })
+    -- _CONFIG.user:AddPartner(partner)
 
     _DIRECTOR.firstUpdate() -- Flush player.
 

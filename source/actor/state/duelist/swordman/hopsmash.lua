@@ -111,8 +111,13 @@ function _HopSmash:NormalUpdate(dt, rate)
 
         -- 攻击
         self:startAttack(self._attackDataSet[1], self._skill.attackValues[1]
-        , _ASPECT.GetPart(self.endBulletEntity.aspect))
+        , main)
     elseif (tick == self._ticks[3]) then
+    end
+
+    -- 持续播放空中攻击效果
+    if (self.endBulletEntity and self.endBulletEntity.identity.destroyProcess == 1) then
+        self.endBulletEntity.identity.destroyProcess = 0
     end
 
     _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
@@ -134,7 +139,7 @@ function _HopSmash:Enter(laterState, skill)
     if (60 > skillPrepareTime) then
         enhanceRate = 0
     else
-        enhanceRate = skillPrepareTime / 300
+        enhanceRate = skillPrepareTime / 330
     end
     
     if 0.5 < enhanceRate then
@@ -145,7 +150,7 @@ function _HopSmash:Enter(laterState, skill)
     self._easemove:Enter("x", easemoveParam.power * (1 + enhanceRate), easemoveParam.speed, self._entity.transform.direction)
 
     local jumpParam = self._jumpParam
-    self._jump:Enter(jumpParam.power * (1 + enhanceRate), jumpParam.speed, jumpParam.speed * 0.3)
+    self._jump:Enter(jumpParam.power * (1 + enhanceRate * 0.4), jumpParam.speed, 0.7)
 
     Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
 end
