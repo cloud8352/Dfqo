@@ -234,6 +234,18 @@ function UI.Init()
     -- itemKeyGroup
     UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI, UI.model)
 
+    -- 玩家角色复活对话框
+    UI.playerRebornDialog = Window.New()
+    UI.playerRebornDialog:SetSize(350, 200)
+    UI.playerRebornDialog:SetIsTipToolWindow(true)
+    UI.playerRebornDialog:SetTitleBarVisible(false)
+    UI.playerRebornDialog:SetPosition(Util.GetWindowWidth() / 2 - 175, Util.GetWindowHeight() / 2 - 100)
+    UI.playerRebornDialog:SetVisible(false)
+
+    UI.playerRebornDialogContent = Label.New(UI.playerRebornDialog)
+    UI.playerRebornDialog:SetContentWidget(UI.playerRebornDialogContent)
+    UI.appendWindowWidget(UI.playerRebornDialog, UI.playerRebornDialog)
+
     ---- connect
     -- characterTopBtn
     UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_Clicked, UI)
@@ -258,6 +270,9 @@ function UI.Init()
     -- model - hoveringSkillItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringSkillItemTipWindowPosAndInfo, UI)
+    
+    UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
 
     -- post init
     if (System.IsMobile()) then
@@ -320,6 +335,8 @@ function UI.Update(dt)
     UI.hoveringArticleItemTipWindow:Update(dt)
 
     UI.draggingArticleItem:Update(dt)
+
+    UI.playerRebornDialog:Update(dt)
 
     if WindowManager.WhetherNeedUpdateUiWindowWidgetList() then
         table.sort(UI.windowWidgetList, windowWidgetListSortFuc)
@@ -526,6 +543,29 @@ function UI.Slot_PlayerHitEnemy(my, sender, attack, hitEntity)
     UI.hitEnemyHpRectBar:SetVisible(true)
 end
 
+---@param my obj
+---@param sender obj
+function UI.Slot_PlayerDestroyed(my, sender)
+    if sender ~= UI.model then
+        return
+    end
+
+    local rebornCoinCount = UI.model:GetPlayerRebornCoinCount()
+    local rebornCoinCountStr = tostring(rebornCoinCount)
+    UI.playerRebornDialogContent:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键]复活角色")
+    UI.playerRebornDialog:SetVisible(true)
+end
+
+---@param my obj
+---@param sender obj
+function UI.Slot_PlayerReborn(my, sender)
+    if sender ~= UI.model then
+        return
+    end
+
+    UI.playerRebornDialog:SetVisible(false)
+end
+
 ---
 ---@param window Window
 ---@param widget Widget
@@ -584,6 +624,13 @@ function UI.keyboardEvent()
     end
     if (-1 ~= rightKeyClickedArticleDockIndex) then
         UI.model:OnRightKeyClickedArticleDockItem(rightKeyClickedArticleDockIndex)
+    end
+
+    -- 复活
+    if (not UI.model:IsPlayerAlive() and
+            UI.model:IsPressedPlayerKey(Common.InputKeyValueStruct.NormalAttack)
+        ) then
+        UI.model:RebornPlayer()
     end
 end
 

@@ -209,4 +209,38 @@ UiCommon.ActorAttributeType = {
     MagAtkRate = 13
 }
 
+
+--- 输入键值结构体
+---@class ItemKeyGroup.InputKeyValueStruct
+---@field Up string
+---@field Down string
+---@field Left string
+---@field Right string
+---@field NormalAttack string
+---@field CounterAttack string
+---@field Skill1 string
+---@field Skill2 string
+---@field Skill3 string
+---@field Skill4 string
+---@field Skill5 string
+---@field Skill6 string
+---@field Skill7 string
+local InputKeyValueStruct = {
+    Up = "up",
+    Down = "down",
+    Left = "left",
+    Right = "right",
+    NormalAttack = "normalAttack",
+    Jump = "jump",
+    CounterAttack = "counterAttack",
+    Skill1 = "skill1",
+    Skill2 = "skill2",
+    Skill3 = "skill3",
+    Skill4 = "skill4",
+    Skill5 = "skill5",
+    Skill6 = "skill6",
+    Skill7 = "skill7"
+}
+UiCommon.InputKeyValueStruct = InputKeyValueStruct
+
 return UiCommon

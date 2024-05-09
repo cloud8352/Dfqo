@@ -30,19 +30,6 @@ local HoveringImgPath = "ui/PushButton/Rectangle/Hovering"
 local NormalImgPath = "ui/PushButton/Rectangle/Normal"
 local PressingImgPath = "ui/PushButton/Rectangle/Pressing"
 
---- 输入键值结构体
----@class InputKeyValueStruct
----@field Up string
----@field Down string
----@field Left string
----@field Right string
-local InputKeyValueStruct = {
-    Up = "up",
-    Down = "down",
-    Left = "left",
-    Right = "right"
-}
-
 ---@param btn PushButton
 local function initBtnImgPaths(btn)
     btn:SetDisabledSpriteDataPath(DisabledImgPath)
@@ -287,7 +274,7 @@ function DirKeyGroupWidget:Slot_BtnClicked(btn)
                 self.leftUpKeyBtn == btn
             )
         ) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Up)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Up)
     end
 
     -- down
@@ -305,7 +292,7 @@ function DirKeyGroupWidget:Slot_BtnClicked(btn)
                 self.downLeftKeyBtn == btn
             )
         ) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Down)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Down)
     end
 
     -- left
@@ -323,7 +310,7 @@ function DirKeyGroupWidget:Slot_BtnClicked(btn)
                 self.leftUpKeyBtn == btn
             )
         ) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Left)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Left)
     end
 
     -- right
@@ -341,7 +328,7 @@ function DirKeyGroupWidget:Slot_BtnClicked(btn)
                 self.rightDownKeyBtn == btn
             )
         ) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Right)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Right)
     end
 end
 
@@ -351,28 +338,28 @@ function DirKeyGroupWidget:updateMoveLogic()
             self.upRightKeyBtn:IsPressing() or
             self.leftUpKeyBtn:IsPressing()
         ) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Up)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Up)
     end
 
     if (self.rightDownKeyBtn:IsPressing() or
             self.downKeyBtn:IsPressing() or
             self.downLeftKeyBtn:IsPressing()
         ) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Down)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Down)
     end
 
     if (self.downLeftKeyBtn:IsPressing() or
             self.leftKeyBtn:IsPressing() or
             self.leftUpKeyBtn:IsPressing()
         ) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Left)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Left)
     end
 
     if (self.upRightKeyBtn:IsPressing() or
             self.rightKeyBtn:IsPressing() or
             self.rightDownKeyBtn:IsPressing()
         ) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Right)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Right)
     end
 end
 

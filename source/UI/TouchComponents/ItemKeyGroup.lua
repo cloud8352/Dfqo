@@ -30,30 +30,6 @@ local HoveringImgPath = "ui/PushButton/Rectangle/Hovering"
 local NormalImgPath = "ui/PushButton/Rectangle/Normal"
 local PressingImgPath = "ui/PushButton/Rectangle/Pressing"
 
---- 输入键值结构体
----@class ItemKeyGroup.InputKeyValueStruct
----@field NormalAttack string
----@field CounterAttack string
----@field Skill1 string
----@field Skill2 string
----@field Skill3 string
----@field Skill4 string
----@field Skill5 string
----@field Skill6 string
----@field Skill7 string
-local InputKeyValueStruct = {
-    NormalAttack = "normalAttack",
-    Jump = "jump",
-    CounterAttack = "counterAttack",
-    Skill1 = "skill1",
-    Skill2 = "skill2",
-    Skill3 = "skill3",
-    Skill4 = "skill4",
-    Skill5 = "skill5",
-    Skill6 = "skill6",
-    Skill7 = "skill7"
-}
-
 ---@param btn PushButton
 local function initBtnImgPaths(btn)
     btn:SetDisabledSpriteDataPath(DisabledImgPath)
@@ -85,7 +61,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.normalAttackBtn:EnableClickedSound(false)
     self.normalAttackBtn:SetSize(LargeBtnWidth, LargeBtnWidth)
     ui.appendWindowWidget(parentWindow, self.normalAttackBtn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.NormalAttack] = self.normalAttackBtn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.NormalAttack] = self.normalAttackBtn
 
     -- jump
     self.jumpBtn = PushButton.New(parentWindow)
@@ -93,7 +69,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.jumpBtn:EnableClickedSound(false)
     self.jumpBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.jumpBtn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Jump] = self.jumpBtn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Jump] = self.jumpBtn
 
     -- counter Attack
     self.counterAttackBtn = PushButton.New(parentWindow)
@@ -101,7 +77,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.counterAttackBtn:EnableClickedSound(false)
     self.counterAttackBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.counterAttackBtn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.CounterAttack] = self.counterAttackBtn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.CounterAttack] = self.counterAttackBtn
 
     -- skill1
     self.skill1Btn = PushButton.New(parentWindow)
@@ -109,7 +85,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill1Btn:EnableClickedSound(false)
     self.skill1Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill1Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill1] = self.skill1Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill1] = self.skill1Btn
 
     -- skill2
     self.skill2Btn = PushButton.New(parentWindow)
@@ -117,7 +93,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill2Btn:EnableClickedSound(false)
     self.skill2Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill2Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill2] = self.skill2Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill2] = self.skill2Btn
 
     -- skill3
     self.skill3Btn = PushButton.New(parentWindow)
@@ -125,7 +101,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill3Btn:EnableClickedSound(false)
     self.skill3Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill3Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill3] = self.skill3Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill3] = self.skill3Btn
 
     -- skill4
     self.skill4Btn = PushButton.New(parentWindow)
@@ -133,7 +109,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill4Btn:EnableClickedSound(false)
     self.skill4Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill4Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill4] = self.skill4Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill4] = self.skill4Btn
 
     -- skill5
     self.skill5Btn = PushButton.New(parentWindow)
@@ -141,7 +117,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill5Btn:EnableClickedSound(false)
     self.skill5Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill5Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill5] = self.skill5Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill5] = self.skill5Btn
 
     -- skill6
     self.skill6Btn = PushButton.New(parentWindow)
@@ -149,7 +125,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill6Btn:EnableClickedSound(false)
     self.skill6Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill6Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill6] = self.skill6Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill6] = self.skill6Btn
 
     -- skill7
     self.skill7Btn = PushButton.New(parentWindow)
@@ -157,7 +133,7 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     self.skill7Btn:EnableClickedSound(false)
     self.skill7Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     ui.appendWindowWidget(parentWindow, self.skill7Btn)
-    self.mapOfTagToSkillBtn[InputKeyValueStruct.Skill7] = self.skill7Btn
+    self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill7] = self.skill7Btn
 
     -- connect
     self.normalAttackBtn:MocConnectSignal(self.normalAttackBtn.Signal_Clicked, self)
@@ -342,52 +318,52 @@ function ItemKeyGroup:Slot_BtnClicked(btn)
     print("ItemKeyGroup:Slot_BtnClicked", btn)
     -- normal attack
     if (btn == self.normalAttackBtn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.NormalAttack)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.NormalAttack)
     end
 
     -- jump
     if (btn == self.jumpBtn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Jump)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Jump)
     end
 
     -- counter Attack
     if (btn == self.counterAttackBtn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.CounterAttack)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.CounterAttack)
     end
 
     -- skill1
     if (btn == self.skill1Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill1)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill1)
     end
 
     -- skill2
     if (btn == self.skill2Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill2)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill2)
     end
 
     -- skill3
     if (btn == self.skill3Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill3)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill3)
     end
 
     -- skill4
     if (btn == self.skill4Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill4)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill4)
     end
 
     -- skill5
     if (btn == self.skill5Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill5)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill5)
     end
 
     -- skill6
     if (btn == self.skill6Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill6)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill6)
     end
 
     -- skill7
     if (btn == self.skill7Btn) then
-        self.model:ReleasePlayerKey(InputKeyValueStruct.Skill7)
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill7)
     end
 end
 
@@ -395,52 +371,52 @@ end
 function ItemKeyGroup:updateUseLogic()
     -- normal attack
     if (self.normalAttackBtn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.NormalAttack)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.NormalAttack)
     end
 
     -- jump
     if (self.jumpBtn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Jump)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Jump)
     end
 
     -- counter Attack
     if (self.counterAttackBtn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.CounterAttack)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.CounterAttack)
     end
 
     -- skill1
     if (self.skill1Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill1)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill1)
     end
 
     -- skill2
     if (self.skill2Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill2)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill2)
     end
 
     -- skill3
     if (self.skill3Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill3)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill3)
     end
 
     -- skill4
     if (self.skill4Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill4)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill4)
     end
 
     -- skill5
     if (self.skill5Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill5)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill5)
     end
 
     -- skill6
     if (self.skill6Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill6)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill6)
     end
 
     -- skill7
     if (self.skill7Btn:IsPressing()) then
-        self.model:PressPlayerKey(InputKeyValueStruct.Skill7)
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.Skill7)
     end
 end
 

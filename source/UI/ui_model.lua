@@ -20,9 +20,14 @@ local EquSrv = require("actor.service.equipment")
 local AspectSrv = require("actor.service.aspect")
 local InputSrv = require("actor.service.input")
 local AttributeSrv = require("actor.service.attribute")
+local Factory = require("actor.factory")
 
 ---@class UiModel
 local UiModel = require("core.class")()
+
+local RebornEffectInstanceData = ResMgr.GetInstanceData("effect/death/normal")
+local CounterattackEffectInstanceData = ResMgr.GetInstanceData("effect/battle/counterattack2")
+local DotAreaBulletInstanceData = ResMgr.GetInstanceData("bullet/swordman/dotarea")
 
 function UiModel:Ctor()
     --- 信号到接收者的映射表
@@ -31,6 +36,7 @@ function UiModel:Ctor()
 
     ---@type Actor.Entity
     self.player = nil
+    self.playerRebornCoinCount = 3
     self.partnerList = _CONFIG.user:GetPartnerList()
 
     --- 携带的物品列表
@@ -56,7 +62,16 @@ function UiModel:Ctor()
     ---@type Actor.Entity
     self.hitEnemyOfPlayer = nil
 
-    -- post init
+    -- connect signals
+    local _DUELIST = require("actor.service.duelist")
+    _DUELIST.AddListener("clear", _, function()
+        self:Signal_EnemyCleared()
+    end)
+    _DUELIST.AddListener("appeared", _, function()
+        self:Signal_EnemyAppeared()
+    end)
+
+    --- post init
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
         local articleInfo = Common.NewArticleInfo()
         self.articleInfoList[i] = articleInfo
@@ -75,15 +90,8 @@ function UiModel:Ctor()
 
     -- sound of changing article position
     self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
-
-    -- send signals
-    local _DUELIST = require("actor.service.duelist")
-    _DUELIST.AddListener("clear", _, function ()
-        self:Signal_EnemyCleared()
-    end)
-    _DUELIST.AddListener("appeared", _, function ()
-        self:Signal_EnemyAppeared()
-    end)
+    -- 复活音效
+    self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
 
     -- player
     self:SetPlayer(_CONFIG.user.player)
@@ -673,6 +681,48 @@ function UiModel:Signal_PlayerHitEnemy(attack, hitEntity)
     end
 end
 
+function UiModel:Slot_onRecvSignalOfPlayerDestroyed()
+    self:Signal_PlayerDestroyed()
+end
+
+function UiModel:Signal_PlayerDestroyed()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerDestroyed]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerDestroyed
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_PlayerReborn()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerReborn]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerReborn
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
 ---@param player Actor.Entity
 function UiModel:SetPlayer(player)
     if self.player == player then
@@ -911,6 +961,7 @@ function UiModel:SetPlayer(player)
 
     -- connection
     self.player.attacker.hitCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
+    self.player.identity.destroyCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerDestroyed)
 
     -- post init
     self:PlayerChanged()
@@ -961,6 +1012,14 @@ function UiModel:PressPlayerKey(key)
     end
 
     InputSrv.Press(self.player.input, key)
+end
+
+function UiModel:IsPressedPlayerKey(key)
+    if (not self.player) then
+        return
+    end
+
+    return InputSrv.IsPressed(self.player.input, key)
 end
 
 ---@param key string
@@ -1016,6 +1075,58 @@ end
 ---@param value int
 function UiModel:AddHpWithEffect(entity, value)
     AttributeSrv.AddHpWithEffect(entity, value)
+end
+
+function UiModel:IsPlayerAlive()
+    return self.player.identity.destroyProcess == 0
+end
+
+function UiModel:RebornPlayer()
+    if (self:IsPlayerAlive()) then
+        print("UiModel:RebornPlayer()", "player is alive, no need reborn!")
+        return
+    end
+
+    if (self.playerRebornCoinCount < 1) then
+        print("UiModel:RebornPlayer()", "player have not enough reborn coins!")
+        return
+    end
+
+    local pos = self.player.transform.position
+    local direction = self.player.transform.direction
+    local player = Factory.New("duelist/swordman", {
+        x = pos.x,
+        y = pos.y,
+        direction = direction,
+        camp = 1
+    })
+
+    local param = {
+        x = pos.x,
+        y = pos.y,
+        z = pos.z,
+        direction = direction,
+        entity = player
+    }
+    Factory.New(RebornEffectInstanceData, param)
+
+    -- 产生震动波
+    Factory.New(CounterattackEffectInstanceData, param)
+    Factory.New(DotAreaBulletInstanceData, param)
+
+    _CONFIG.user:SetPlayer(player)
+    self:SetPlayer(player)
+    self.playerRebornCoinCount = self.playerRebornCoinCount - 1
+
+    -- 播放复活音效
+    self:playPlayerRebornSound()
+    
+    -- emit signal
+    self:Signal_PlayerReborn()
+end
+
+function UiModel:GetPlayerRebornCoinCount()
+    return self.playerRebornCoinCount
 end
 
 --========== private function ============
@@ -1087,6 +1198,12 @@ function UiModel:findInArticleDockInfoList(findingInfo)
     end
 
     return index
+end
+
+function UiModel:playPlayerRebornSound()
+    self.playerRebornSoundSource:stop()
+    self.playerRebornSoundSource:setVolume(_CONFIG.setting.sound)
+    self.playerRebornSoundSource:play()
 end
 
 return UiModel
