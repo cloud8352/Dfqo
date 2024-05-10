@@ -1116,6 +1116,9 @@ function UiModel:RebornPlayer()
 
     _CONFIG.user:SetPlayer(player)
     self:SetPlayer(player)
+    -- hp恢复
+    AttributeSrv.AddHp(self.player.attributes, self.player.attributes.maxHp)
+    -- 减少复活次数
     self.playerRebornCoinCount = self.playerRebornCoinCount - 1
 
     -- 播放复活音效
