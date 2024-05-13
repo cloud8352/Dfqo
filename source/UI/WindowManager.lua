@@ -9,10 +9,18 @@ local _Mouse = require("lib.mouse")
 local Touch = require("lib.touch")
 
 local WindowManager = {}
+-- 默认窗口
+---@type Window
+WindowManager.DefaultWindow = nil
 
 ---@type table<number, Window>
 WindowManager.windowList = {}
 local whetherNeedUpdateUiWindowWidgetList = false
+
+function WindowManager.Init()
+    local Window = require("UI.Window")
+    WindowManager.DefaultWindow = Window.New()
+end
 
 ---@param obj Window
 function WindowManager.AppendToWindowList(obj)

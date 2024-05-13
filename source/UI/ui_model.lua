@@ -57,6 +57,9 @@ function UiModel:Ctor()
     ---@type table<number, ArticleInfo>
     self.mountedEquInfoList = {}
 
+    -- 技能资源数据列表
+    ---@type table<int, Actor.RESMGR.SkillData>
+    self.skillResMgrDataList = {}
 
     -- 被攻击的敌人
     ---@type Actor.Entity
@@ -959,6 +962,20 @@ function UiModel:SetPlayer(player)
     self.articleDockInfoList[4] = self.articleInfoList[4]
     self.articleDockInfoList[5] = self.articleInfoList[5]
 
+    -- 技能资源数据列表
+    self.skillResMgrDataList[1] = ResMgr.GetSkillData("swordman/upperSlash")
+    self.skillResMgrDataList[2] = ResMgr.GetSkillData("swordman/onigiri")
+    self.skillResMgrDataList[3] = ResMgr.GetSkillData("counterattack")
+    self.skillResMgrDataList[4] = ResMgr.GetSkillData("flashStep")
+    self.skillResMgrDataList[5] = ResMgr.GetSkillData("swordman/jumonji")
+    self.skillResMgrDataList[6] = ResMgr.GetSkillData("swordman/bloodFrenzyAttack")
+    self.skillResMgrDataList[7] = ResMgr.GetSkillData("swordman/hopsmash")
+    self.skillResMgrDataList[8] = ResMgr.GetSkillData("swordman/ashen_fork")
+    -- test
+    for i = 1, 15 do
+        table.insert(self.skillResMgrDataList, ResMgr.GetSkillData("swordman/ashen_fork"))
+    end
+
     -- connection
     self.player.attacker.hitCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
     self.player.identity.destroyCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerDestroyed)
@@ -978,6 +995,10 @@ function UiModel:GetMapOfTagToSkillObj()
         return {}
     end
     return SkillSrv.GetMap(self.player.skills)
+end
+
+function UiModel:GetSkillResMgrDataList()
+    return self.skillResMgrDataList
 end
 
 ---@param tag string

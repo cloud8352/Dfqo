@@ -41,7 +41,7 @@ Label.AlignmentFlag = {
     AlignHCenter = localAlignHCenter,
     AlignJustify = localAlignJustify,
     AlignAbsolute = localAlignAbsolute,
-    AlignHorizontal_Mask =  localAlignHorizontal_Mask,
+    AlignHorizontal_Mask = localAlignHorizontal_Mask,
 
     AlignTop = localAlignTop,
     AlignBottom = localAlignBottom,
@@ -237,6 +237,13 @@ function Label:GetViewContentSize()
     else
         return 0, 0
     end
+end
+
+function Label:AdjustHeightByContent()
+    local lineStrList = _String.WarpStr(self.text, _Graphics.GetFont(), self.width)
+    local lineCount = #lineStrList
+    local fontHeight = _Graphics.GetFontHeight()
+    self:SetSize(self.width, lineCount * fontHeight)
 end
 
 function Label:updateSprite()

@@ -6,6 +6,7 @@
 ]]
 --
 
+local WindowManager = require("UI.WindowManager")
 local PushButton = require("UI.PushButton")
 local Window = require("UI.Window")
 local ScrollBar = require("UI.ScrollBar")
@@ -16,12 +17,12 @@ local ComboBox = require("UI.ComboBox")
 local SkillDockViewFrame = require("UI.SkillDockViewFrame")
 local HoveringSkillItemTipWidget = require("UI.hovering_skill_item_tip_widget")
 local RoleInfoWidget = require("UI.role_info.role_info_widget")
+local SkillManagementWidget = require("UI.SkillManagement.SkillManagementWidget")
 local Widget = require("UI.Widget")
 local ArticleViewItem = require("UI.role_info.article_view_item")
 local HoveringArticleItemTipWidget = require("UI.role_info.hovering_article_item_tip_widget")
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
-local WindowManager = require("UI.WindowManager")
 local HpRectBar = require("UI.hp_rect_bar")
 local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
@@ -60,6 +61,8 @@ end
 local UI = {}
 
 function UI.Init()
+    WindowManager.Init()
+
     -- 统一显示对象
     UI.totalSprite = _Sprite.New()
     UI.totalSpriteCanvas = _Graphics.NewCanvas(Util.GetWindowWidth(), Util.GetWindowHeight())
@@ -89,13 +92,43 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.characterTopBtn)
 
+    --- 右下角 按钮区
+    local rightDownBtnAreaSpace = 5 * Util.GetWindowSizeScale()
+    local rightDownBtnAreaBtnWidth = 25 * Util.GetWindowSizeScale()
+    -- 设置窗口按钮
+    UI.settingsBtn = PushButton.New(bottomWindow)
+    UI.settingsBtn:SetSize(rightDownBtnAreaBtnWidth, rightDownBtnAreaBtnWidth)
+    UI.settingsBtn:SetPosition(Util.GetWindowWidth() - 10 * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth,
+        Util.GetWindowHeight() - 10 * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth)
+    UI.settingsBtn:SetNormalSpriteDataPath("ui/PushButton/Settings/Normal")
+    UI.settingsBtn:SetHoveringSpriteDataPath("ui/PushButton/Settings/Hovering")
+    UI.settingsBtn:SetPressingSpriteDataPath("ui/PushButton/Settings/Pressing")
+    UI.settingsBtn:SetDisabledSpriteDataPath("ui/PushButton/Settings/Disabled")
+    -- 将组件添加到窗口组件列表
+    UI.appendWindowWidget(bottomWindow, UI.settingsBtn)
+
+    -- 技能管理窗口按钮
+    UI.skillManagementBtn = PushButton.New(bottomWindow)
+    UI.skillManagementBtn:SetSize(rightDownBtnAreaBtnWidth, rightDownBtnAreaBtnWidth)
+    local settingsBtnXPos, settingsBtnYPos = UI.settingsBtn:GetPosition()
+    UI.skillManagementBtn:SetPosition(settingsBtnXPos - rightDownBtnAreaSpace * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth,
+        settingsBtnYPos)
+    UI.skillManagementBtn:SetNormalSpriteDataPath("ui/PushButton/SkillManagement/Normal")
+    UI.skillManagementBtn:SetHoveringSpriteDataPath("ui/PushButton/SkillManagement/Hovering")
+    UI.skillManagementBtn:SetPressingSpriteDataPath("ui/PushButton/SkillManagement/Pressing")
+    UI.skillManagementBtn:SetDisabledSpriteDataPath("ui/PushButton/SkillManagement/Disabled")
+    -- 将组件添加到窗口组件列表
+    UI.appendWindowWidget(bottomWindow, UI.skillManagementBtn)
+
+
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
     UI.characterInfoWindow:SetSize(977 * Util.GetWindowSizeScale(),
         622 * Util.GetWindowSizeScale())
-    local characterInfoWindowWidth, _ = UI.characterInfoWindow:GetSize()
+    local characterInfoWindowWidth, characterInfoWindowHeight = UI.characterInfoWindow:GetSize()
     local characterInfoWindowOriginXPos = (Util.GetWindowWidth() - characterInfoWindowWidth) / 2
-    UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, 40)
+    local characterInfoWindowOriginYPos = (Util.GetWindowHeight() - characterInfoWindowHeight) / 2
+    UI.characterInfoWindow:SetPosition(characterInfoWindowOriginXPos, characterInfoWindowOriginYPos)
     UI.characterInfoWindow:SetVisible(false)
 
     UI.roleInfoWidget = RoleInfoWidget.New(UI.characterInfoWindow, UI.model)
@@ -103,18 +136,17 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(UI.characterInfoWindow, UI.characterInfoWindow)
 
-    --==== test
-    -- skillManagerWindow
-    -- UI.skillManagerWindow = Window.New()
-    -- UI.skillManagerWindow:SetSize(1040, 670)
-    -- UI.skillManagerWindow:SetPosition(200, 60)
-    -- UI.skillManagerWindow:SetVisible(true)
+    -- skillManagementWindow
+    UI.skillManagementWindow = Window.New()
+    UI.skillManagementWindow:SetSize(977 * Util.GetWindowSizeScale(),
+        622 * Util.GetWindowSizeScale())
+    UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos, characterInfoWindowOriginYPos)
+    UI.skillManagementWindow:SetVisible(true)
 
-    -- UI.skillManagerWidget = Widget.New(UI.skillManagerWindow, UI.model)
-    -- UI.skillManagerWindow:SetContentWidget(UI.skillManagerWidget)
+    UI.skillManagementWidget = SkillManagementWidget.New(UI.skillManagementWindow, UI.model)
+    UI.skillManagementWindow:SetContentWidget(UI.skillManagementWidget)
     -- 将组件添加到窗口组件列表
-    -- UI.appendWindowWidget(UI.skillManagerWindow, UI.skillManagerWindow)
-    --=== end - test
+    UI.appendWindowWidget(UI.skillManagementWindow, UI.skillManagementWindow)
 
     -- 悬停处的物品栏提示窗口
     UI.hoveringArticleItemTipWindow = Window.New()
@@ -185,8 +217,8 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.mapSelectComboBox)
 
-    UI.mapSelectComboBox:AppendItem("格兰")
-    UI.mapSelectComboBox:AppendItem("极昼")
+    UI.mapSelectComboBox:AppendItemWithText("格兰")
+    UI.mapSelectComboBox:AppendItemWithText("极昼")
     UI.mapSelectComboBox:SetCurrentIndex(2)
 
     -- article dock
@@ -249,11 +281,16 @@ function UI.Init()
     ---- connect
     -- characterTopBtn
     UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_Clicked, UI)
+    -- skillManagementBtn
+    UI.skillManagementBtn:MocConnectSignal(UI.skillManagementBtn.Signal_Clicked, UI)
     -- characterInfoWindow
     UI.characterInfoWindow:SetReceiverOfRequestMoveWindow(UI)
     UI.characterInfoWindow:SetReceiverOfRequestCloseWindow(UI)
+    -- skillManagementWindow
+    UI.skillManagementWindow:SetReceiverOfRequestMoveWindow(UI)
+    UI.skillManagementWindow:SetReceiverOfRequestCloseWindow(UI)
     -- mapSelectComboBox
-    UI.mapSelectComboBox:SetReceiverOfSelectedItemChanged(UI)
+    UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
     -- model
     UI.model:MocConnectSignal(UI.model.RequestSetArticleTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.Signal_requestSetArticleDockItemInfo, UI)
@@ -290,11 +327,13 @@ function UI.Update(dt)
     UI.keyboardEvent()
 
     UI.characterTopBtn:Update(dt)
+    UI.settingsBtn:Update(dt)
+    UI.skillManagementBtn:Update(dt)
 
     -- characterInfoWindow
     UI.characterInfoWindow:Update(dt)
 
-    -- UI.skillManagerWindow:Update(dt)
+    UI.skillManagementWindow:Update(dt)
 
     if IsShowFps then
         UI.fpsLabel:Update(dt)
@@ -357,11 +396,20 @@ function UI.Slot_BtnClicked(my, sender)
         UI.characterInfoWindow:SetVisible(not isVisible)
         WindowManager.SetWindowToTopLayer(UI.characterInfoWindow)
     end
+    if (UI.skillManagementBtn == sender) then
+        local isVisible = UI.skillManagementWindow:IsVisible()
+        UI.skillManagementWindow:SetVisible(not isVisible)
+        WindowManager.SetWindowToTopLayer(UI.skillManagementWindow)
+    end
 end
 
 function UI.OnRequestMoveWindow(sender, x, y)
     if UI.characterInfoWindow == sender then
         UI.characterInfoWindow:SetPosition(x, y)
+    end
+
+    if (UI.skillManagementWindow == sender) then
+        UI.skillManagementWindow:SetPosition(x, y)
     end
 end
 
@@ -369,14 +417,17 @@ function UI.OnRequestCloseWindow(sender)
     if UI.characterInfoWindow == sender then
         UI.characterInfoWindow:SetVisible(false)
     end
+    if (UI.skillManagementWindow == sender) then
+        UI.skillManagementWindow:SetVisible(false)
+    end
 end
 
 ---@param my Obj 对象自身，这里指UI自身
 ---@param sender Obj 调用者
 ---@param item StandardItem
-function UI.OnSelectedItemChanged(my, sender, item)
+function UI.Slot_SelectedItemChanged(my, sender, item)
     if UI.mapSelectComboBox == sender then
-        print("OnSelectedItemChanged", item:GetIndex(), item:GetText())
+        print("UI.Slot_SelectedItemChanged()", item:GetIndex(), item:GetText())
         UI.model:SelectGameMap(item:GetIndex())
     end
 end
@@ -552,7 +603,7 @@ function UI.Slot_PlayerDestroyed(my, sender)
 
     local rebornCoinCount = UI.model:GetPlayerRebornCoinCount()
     local rebornCoinCountStr = tostring(rebornCoinCount)
-    UI.playerRebornDialogContent:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键]复活角色")
+    UI.playerRebornDialogContent:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键】复活角色")
     UI.playerRebornDialog:SetVisible(true)
 end
 
@@ -600,6 +651,7 @@ function UI.keyboardEvent()
     --- esc
     if (Keyboard.IsPressed("escape")) then
         UI.characterInfoWindow:SetVisible(false)
+        UI.skillManagementWindow:SetVisible(false)
     end
 
     --- 判断物品托盘快捷键

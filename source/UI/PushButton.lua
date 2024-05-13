@@ -265,9 +265,16 @@ function PushButton:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
 
+    self.textLabel:SetPosition(x, y)
+
     self.bgSprite:SetAttri("position", self.xPos, self.yPos)
     self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
     self.maskSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+---@return int, int 横坐标， 纵坐标
+function PushButton:GetPosition()
+    return self.xPos, self.yPos
 end
 
 ---@return int, int @宽，高

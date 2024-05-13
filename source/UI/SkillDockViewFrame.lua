@@ -449,26 +449,7 @@ function SkillDockViewFrame:updateHoveringItemTipWindowData()
     -- 更新技能信息
     if nil ~= skill then
         local skillData = skill:GetData()
-        if skillData.name then
-            skillInfo.name = skillData.name
-        end
-        if skillData.special then
-            skillInfo.desc = skillData.special
-        end
-        if skillData.icon then
-            skillInfo.iconPath = skillData.icon
-        end
-        if skillData.time then
-            skillInfo.cdTime = skillData.time / 1000
-        end
-        if skillData.mp then
-            skillInfo.mp = skillData.mp
-        end
-        if skillData.attackValues.isPhysical then
-            skillInfo.physicalDamageEnhanceRate = 0 or skillData.attackValues.damageRate
-        else
-            skillInfo.magicDamageEnhanceRate = 0 or skillData.attackValues.damageRate
-        end
+        Common.UpdateSkillInfoFromData(skillInfo, skillData)
     end
 
     self.model:RequestSetHoveringSkillItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, skillInfo)

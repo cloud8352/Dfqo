@@ -11,23 +11,15 @@ local _Mouse = require("lib.mouse")
 
 local WindowManager = require("UI.WindowManager")
 
+local Widget = require("UI.Widget")
+
 ---@class ScrollBar
-local ScrollBar = require("core.class")()
+local ScrollBar = require("core.class")(Widget)
 
 ---@param parentWindow Window
 function ScrollBar:Ctor(parentWindow)
-    assert(parentWindow, "must assign parent window")
-    ---@type Window
-    self.parentWindow = parentWindow
-
-    self.width = 20
-    self.posX = 0
-    self.posY = 0
-    self.enable = true
-    self.isVisible = true
-    -- 请求移动显示内容信号的接收者
-    ---@type ScrollArea
-    self.receiverOfRequestMoveContent = nil
+    Widget.Ctor(self, parentWindow)
+    
     self.isMovingSlider = false -- 是否请求移动滑动条
     self.originMouseYPosWhenReqMvSlider = 0 -- 当请求移动滑动条时原始鼠标位置，用于计算滑动条移动偏差
     self.originYPosWhenReqMvSlider = 0 -- 当请求移动滑动条时原始自身位置，用于计算滑动条移动偏差
@@ -55,6 +47,7 @@ function ScrollBar:Ctor(parentWindow)
     self.bottomMargin = 0
 
     -- post init
+    self:SetSize(18, 5)
 end
 
 function ScrollBar:Update(dt)
@@ -63,10 +56,14 @@ function ScrollBar:Update(dt)
     end
 
     self:MouseEvent()
+
+    Widget.Update(self, dt)
 end
 
 function ScrollBar:Draw()
-    if false == self.isVisible then
+    Widget.Draw(self)
+
+    if false == Widget.IsVisible(self) then
         return
     end
     
@@ -81,25 +78,63 @@ function ScrollBar:MouseEvent()
         return
     end
 
-    self:judgeAndExecRequestMoveContent()
+    self:judgeAndEmitSignalOfRequestMoveContent()
 end
 
--- 设置请求移动窗口位置时执行的函数
----@param receiver ScrollArea
-function ScrollBar:SetReceiverOfRequestMoveContent(receiver)
-    self.receiverOfRequestMoveContent = receiver
+--- 连接信号
+---@param signal function
+---@param obj Object
+function ScrollBar:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function ScrollBar:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function ScrollBar:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function ScrollBar:GetObjectName()
+    return Widget.GetObjectName(self)
 end
 
 function ScrollBar:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
+
     self.slideSprite:SetAttri("position", x, y)
     self.sliderSprite:SetAttri("position", x, y + self.sliderMovedDistance)
-    self.posX = x
-    self.posY = y
+end
+
+function ScrollBar:GetPosition()
+    return Widget.GetPosition(self)
+end
+
+---@param w int
+---@param h int
+function ScrollBar:SetSize(w, h)
+    Widget.SetSize(self, w, h)
+end
+
+function ScrollBar:GetSize()
+    return Widget.GetSize(self)
+end
+
+---@return int
+function ScrollBar:GetWidth()
+    local w, _ = self:GetSize()
+    return w
 end
 
 ---@param length int
 function ScrollBar:SetSlideLength(length)
     self.slideLength = length
+    if (self.slideLength == 0) then
+        return
+    end
 
     _Graphics.SaveCanvas()
     -- 创建背景画布
@@ -135,20 +170,48 @@ function ScrollBar:SetCtrlledContentLength(length)
     self:SetSlideLength(self.slideLength)
 end
 
+function ScrollBar:GetCtrlledContentLength()
+    return self.ctrlledContentLength
+end
+
 function ScrollBar:SetEnable(enable)
-    self.enable = enable
+    Widget.SetEnable(self, enable)
 end
 
 --- 设置是否可见
 ---@param visible boolean
 function ScrollBar:SetVisible(visible)
-    self.isVisible = visible
+    Widget.SetVisible(self, visible)
 end
 
----@return int
-function ScrollBar:GetWidth()
-    return self.width
+---===================
+--- signals
+---===================
+
+--- 信号 - 请求移动滑动区域内容
+function ScrollBar:Signal_RequestMoveContent(xOffset, yOffset)
+    print("ScrollBar:Signal_RequestMoveContent(xOffset, yOffset)")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_RequestMoveContent)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_RequestMoveContent
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, xOffset, yOffset)
+
+        ::continue::
+    end
 end
+
+---===================
+--- private function
+---===================
 
 function ScrollBar:createSliderCanvasBySize(width, height)
     _Graphics.SaveCanvas()
@@ -164,16 +227,12 @@ function ScrollBar:createSliderCanvasBySize(width, height)
     return canvas
 end
 
-function ScrollBar:judgeAndExecRequestMoveContent()
-    if nil == self.receiverOfRequestMoveContent then
+function ScrollBar:judgeAndEmitSignalOfRequestMoveContent()
+    if nil == self:GetReceiverListOfSignal(self.Signal_RequestMoveContent) then
         return
     end
 
-    if nil == self.receiverOfRequestMoveContent.OnRequestMoveContent then
-        print("ScrollBar:judgeAndExecRequestMoveContent()", "receiver has not slot")
-        return
-    end
-
+    local xPos, yPos = self:GetPosition()
     local currentMouseXPos = 0
     local currentMouseYPos = 0
     -- 判断鼠标
@@ -199,32 +258,32 @@ function ScrollBar:judgeAndExecRequestMoveContent()
         -- 请求移动窗口
         self.isMovingSlider = true
         self.originMouseYPosWhenReqMvSlider = currentMouseYPos
-        self.originYPosWhenReqMvSlider = self.posY + self.sliderMovedDistance
+        self.originYPosWhenReqMvSlider = yPos + self.sliderMovedDistance
         break
     end
 
     if self.isMovingSlider then
         local destYPos = self.originYPosWhenReqMvSlider + currentMouseYPos - self.originMouseYPosWhenReqMvSlider
         -- 滑动条不能移出滑道
-        if self.posY > destYPos then
-            destYPos = self.posY
+        if yPos > destYPos then
+            destYPos = yPos
         end
-        if (self.posY + self.slideLength - self.sliderLength) < destYPos then
-            destYPos = self.posY + self.slideLength - self.sliderLength
+        if (yPos + self.slideLength - self.sliderLength) < destYPos then
+            destYPos = yPos + self.slideLength - self.sliderLength
         end
-        self.sliderSprite:SetAttri("position", self.posX, destYPos)
-        self.sliderMovedDistance = destYPos - self.posY
+        self.sliderSprite:SetAttri("position", xPos, destYPos)
+        self.sliderMovedDistance = destYPos - yPos
 
         -- 滑动条移动距离 换算成 显示内容移动距离 比率
         ---@type int
         local sliderMoveDistanceToContentMoveDistanceRate = 1
         if 0 ~= (self.slideLength - self.sliderLength) then
             sliderMoveDistanceToContentMoveDistanceRate = (self.ctrlledContentLength - self.slideLength) /
-            (self.slideLength - self.sliderLength)
+                (self.slideLength - self.sliderLength)
         end
         ---@type int
         local yDistanceContentNeedMove = -sliderMoveDistanceToContentMoveDistanceRate * self.sliderMovedDistance
-        self.receiverOfRequestMoveContent:OnRequestMoveContent(0, yDistanceContentNeedMove)
+        self:Signal_RequestMoveContent(0, yDistanceContentNeedMove)
     end
 end
 

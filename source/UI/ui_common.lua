@@ -11,6 +11,20 @@ local _TABLE = require("lib.table")
 ---@generic UiCommon
 local UiCommon = {}
 
+--- 信号
+---@class SlotInfo
+---@field public Obj Obj
+---@field public Func function
+local SlotInfo = {
+    ---@type Obj
+    Obj = nil,
+    ---@type function
+    Func = nil,
+}
+function UiCommon.NewSlotInfo()
+    _TABLE.DeepClone(SlotInfo)
+end
+
 ---@enum ArticleType
 UiCommon.ArticleType = {
     Empty = 0x0001,
@@ -189,6 +203,41 @@ local SkillInfo = {
 ---@return SkillInfo
 function UiCommon.NewSkillInfo()
     return _TABLE.DeepClone(SkillInfo)
+end
+
+
+---@param skillInfo SkillInfo
+---@param data table
+function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
+    if data.name then
+        skillInfo.name = data.name
+    end
+    if data.special then
+        skillInfo.desc = data.special
+    end
+    if data.icon then
+        skillInfo.iconPath = data.icon
+    end
+    if data.time then
+        skillInfo.cdTime = data.time / 1000
+    end
+    if data.mp then
+        skillInfo.mp = data.mp
+    end
+    if data.attackValues.isPhysical then
+        skillInfo.physicalDamageEnhanceRate = 0 or data.attackValues.damageRate
+    else
+        skillInfo.magicDamageEnhanceRate = 0 or data.attackValues.damageRate
+    end
+end
+
+---@param data table
+---@return SkillInfo
+function UiCommon.NewSkillInfoFromData(data)
+    local skillInfo = UiCommon.NewSkillInfo()
+    skillInfo.id = 1
+    UiCommon.UpdateSkillInfoFromData(skillInfo, data)
+    return skillInfo
 end
 
 --- 角色属性类型

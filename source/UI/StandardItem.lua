@@ -44,6 +44,9 @@ function StandardItem:Ctor()
     self.currentImgCanvas = nil
 
     self.index = 1 -- 显示项检索值
+
+    ---@type table<string, obj>
+    self.mapOfKeyToValue = {}
 end
 
 function StandardItem:Update(dt)
@@ -89,14 +92,25 @@ function StandardItem:SetPosition(x, y)
     self.yPos = y
 end
 
+function StandardItem:GetPosition()
+    return self.xPos, self.yPos
+end
+
 function StandardItem:SetSize(w, h)
-    self.width = w
-    self.height = h
+    self.width = w or 0
+    self.height = h or 0
+    if (self.width == 0 or self.height == 0) then
+        return
+    end
 
     self.normalImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Normal)
     self.hoveringImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Hovering)
     self.selectedImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Selected)
     self.disableImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Disable)
+end
+
+function StandardItem:GetSize()
+    return self.width, self.height
 end
 
 ---@param text string
@@ -143,13 +157,13 @@ function StandardItem:createDisplayStateCanvas(state)
         r = 255; g = 255; b = 255; a = 0
         txtR = 255; txtG = 255; txtB = 255; txtA = 255
     elseif StandardItem.DisplayState.Hovering == state then
-        r = 160; g = 160; b = 160; a = 160
+        r = 160; g = 160; b = 160; a = 180
         txtR = 255; txtG = 255; txtB = 255; txtA = 255
     elseif StandardItem.DisplayState.Selected == state then
-        r = 30; g = 144; b = 255; a = 255
+        r = 200; g = 200; b = 200; a = 180
         txtR = 255; txtG = 255; txtB = 255; txtA = 255
     elseif StandardItem.DisplayState.Disable == state then
-        r = 100; g = 100; b = 100; a = 255
+        r = 100; g = 100; b = 100; a = 200
         txtR = 180; txtG = 180; txtB = 180; txtA = 180
     end
     _Graphics.SetColor(r, g, b, a)
@@ -177,9 +191,22 @@ end
 function StandardItem:GetIndex()
     return self.index
 end
+
 ---@param index int
 function StandardItem:SetIndex(index)
     self.index = index
+end
+
+---@param key string
+---@param value obj
+function StandardItem:SetValue(key, value)
+    self.mapOfKeyToValue[key] = value
+end
+
+---@param key string
+---@return obj
+function StandardItem:GetValue(key)
+    return self.mapOfKeyToValue[key]
 end
 
 return StandardItem

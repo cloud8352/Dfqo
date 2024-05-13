@@ -12,13 +12,15 @@ local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
 
 local WindowManager = require("UI.WindowManager")
+
+local Widget = require("UI.Widget")
 local PushButton = require("UI.PushButton")
 local Window = require("UI.Window")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
 
 ---@class ComboBox
-local ComboBox = require("core.class")()
+local ComboBox = require("core.class")(Widget)
 
 local DisplayState = {
     Unknown = 0,
@@ -30,22 +32,14 @@ local DisplayState = {
 
 ---@param parentWindow Window
 function ComboBox:Ctor(parentWindow)
-    assert(parentWindow, "must assign parent window")
-    ---@type Window
-    self.parentWindow = parentWindow
+    Widget.Ctor(self, parentWindow)
 
     -- clicked sound
     self.clickedSoundSource = _RESOURCE.NewSource("asset/sound/ui/btn_clicked.wav")
 
     self.text = ""
-    self.width = 30
-    self.height = 10
-    self.posX = 0
-    self.posY = 0
     self.lastDisplayState = DisplayState.Unknown
     self.displayState = DisplayState.Normal
-    self.enable = true
-    self.isVisible = true
 
     -- 背景图片数据
     self.frameSprite = _Sprite.New()
@@ -77,12 +71,8 @@ function ComboBox:Ctor(parentWindow)
     self.currentItem = nil
     self.isCurrentItemUpdated = true
 
-    -- signals
-    -- 选中项信号的接收者
-    self.receiverOfSelectedItemChanged = nil
-
     -- connect
-    self.dropDownListView:SetReceiverOfSelectedItemChanged(self)
+    self.dropDownListView:MocConnectSignal(self.dropDownListView.Signal_SelectedItemChanged, self)
 end
 
 function ComboBox:Update(dt)
@@ -113,10 +103,13 @@ function ComboBox:Update(dt)
     end
 
     self.isCurrentItemUpdated = false
+
+    Widget.Update(self, dt)
 end
 
 function ComboBox:Draw()
-    if false == self.isVisible then
+    Widget.Draw(self)
+    if false == Widget.IsVisible(self) then
         return
     end
     self.frameSprite:Draw()
@@ -148,19 +141,41 @@ function ComboBox:MouseEvent()
     end
 end
 
+--- 连接信号
+---@param signal function
+---@param obj Object
+function ComboBox:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function ComboBox:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function ComboBox:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function ComboBox:GetObjectName()
+    return Widget.GetObjectName(self)
+end
+
 function ComboBox:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
+
     self.frameSprite:SetAttri("position", x, y)
     self.textLabel:SetPosition(x + 15, y)
     self.dropDownBtn:SetPosition(x + self.width - self.dropDownBtnRightMargin - self.dropDownBtn:GetWidth(),
         y + self.dropDownBtnTopMargin)
     self.dropDownListView:SetPosition(x, y + self.height - 5)
-    self.posX = x
-    self.posY = y
 end
 
+---@param width int
+---@param height int
 function ComboBox:SetSize(width, height)
-    self.width = width
-    self.height = height
+    Widget.SetSize(self, width, height)
 
     local frameCanvas = self:createFrameCanvasBySize(self.width, self.height)
     self.frameSprite:SetImage(frameCanvas)
@@ -176,17 +191,74 @@ function ComboBox:SetSize(width, height)
 end
 
 function ComboBox:SetEnable(enable)
-    self.enable = enable
+    Widget.SetEnable(self, enable)
 
     self.textLabel:SetEnable(enable)
     self.dropDownBtn:SetEnable(enable)
 end
 
 function ComboBox:SetVisible(isVisible)
-    self.isVisible = isVisible
+    Widget.SetVisible(self, isVisible)
+
     self.dropDownBtn:SetVisible(isVisible)
     self.dropDownListView:SetVisible(isVisible)
 end
+
+function ComboBox:InsertItemWithText(i, text)
+    self.dropDownListView:InsertItemWithText(i, text)
+end
+
+function ComboBox:AppendItemWithText(text)
+    self.dropDownListView:AppendItemWithText(text)
+end
+
+function ComboBox:SetCurrentIndex(index)
+    local item = self.dropDownListView:GetItemList()[index]
+    self:SetCurrentItem(item)
+end
+
+---@param item StandardItem
+function ComboBox:SetCurrentItem(item)
+    self.dropDownListView:SetVisible(false)
+    self.currentItem = item
+    self.isCurrentItemUpdated = true
+
+    -- 执行选择项改变回调函数
+    self:Signal_SelectedItemChanged(item)
+end
+
+--- signals
+
+---@param selectedItem StandardItem
+function ComboBox:Signal_SelectedItemChanged(selectedItem)
+    print("ComboBox:Signal_SelectedItemChanged()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_SelectedItemChanged)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_SelectedItemChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, selectedItem)
+
+        ::continue::
+    end
+end
+
+--- slots
+
+---@param sender Obj
+---@param selectedItem StandardItem
+function ComboBox:Slot_SelectedItemChanged(sender, selectedItem)
+    self:SetCurrentItem(selectedItem)
+end
+
+--- private function
 
 function ComboBox:createFrameCanvasBySize(width, height)
     _Graphics.SaveCanvas()
@@ -218,51 +290,6 @@ function ComboBox:createFrameCanvasBySize(width, height)
 
     _Graphics.RestoreCanvas()
     return canvas
-end
-
-function ComboBox:SetReceiverOfSelectedItemChanged(obj)
-    self.receiverOfSelectedItemChanged = obj
-end
-
----@param selectedItem StandardItem
-function ComboBox:judgeAndExecSelectedItemChanged(selectedItem)
-    if nil == self.receiverOfSelectedItemChanged then
-        return
-    end
-
-    if nil == self.receiverOfSelectedItemChanged.OnSelectedItemChanged then
-        return
-    end
-
-    self.receiverOfSelectedItemChanged.OnSelectedItemChanged(self.receiverOfSelectedItemChanged, self, selectedItem)
-end
-
----@param selectedItem StandardItem
-function ComboBox:OnSelectedItemChanged(selectedItem)
-    self:SetCurrentItem(selectedItem)
-end
-
-function ComboBox:InsertItem(i, text)
-    self.dropDownListView:InsertItem(i, text)
-end
-
-function ComboBox:AppendItem(text)
-    self.dropDownListView:AppendItem(text)
-end
-
-function ComboBox:SetCurrentIndex(index)
-    local item = self.dropDownListView:GetItemList()[index]
-    self:SetCurrentItem(item)
-end
-
----@param item StandardItem
-function ComboBox:SetCurrentItem(item)
-    self.dropDownListView:SetVisible(false)
-    self.currentItem = item
-    self.isCurrentItemUpdated = true
-
-    -- 执行选择项改变回调函数
-    self:judgeAndExecSelectedItemChanged(item)
 end
 
 return ComboBox

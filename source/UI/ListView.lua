@@ -16,6 +16,7 @@ local WindowManager = require("UI.WindowManager")
 local StandardItem = require("UI.StandardItem")
 local ScrollArea = require("UI.ScrollArea")
 local ScrollBar = require("UI.ScrollBar")
+local Widget = require("UI.Widget")
 
 ---@class ListView
 ---@type ScrollArea
@@ -23,57 +24,21 @@ local ListView = require("core.class")(ScrollArea)
 
 ---@param parentWindow Window
 function ListView:Ctor(parentWindow)
-    ScrollArea.Ctor(self)
+    ScrollArea.Ctor(self, parentWindow)
     assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
 
-    self.bgSprite = _Sprite.New()
-    self.bgSprite:SwitchRect(true) -- 使用矩形
-    self.width = 30
-    self.height = 10
-    self.posX = 0
-    self.posY = 0
-    self.enable = true
-    self.isVisible = true
+    -- 列表项内容控件（相当于全图，但滑动区域只显示列表项内容控件的部分区域）
+    self.itemListContentWidget = Widget.New(parentWindow)
+    -- 绑定到滑动区域
+    ScrollArea.SetContentWidget(self, self.itemListContentWidget)
 
-    -- 背景图片数据
-    self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
-    self.topBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/TopBg")
-    self.rightTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightTopBg")
-    self.leftBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftBg")
-    self.centerBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/CenterBg")
-    self.rightBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightBg")
-    self.leftBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftBottomBg")
-    self.bottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/BottomBg")
-    self.rightBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightBottomBg")
-
-    -- 列表项
-    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
-    self.itemListContentSprite = _Sprite.New()
-    self.itemListContentSprite:SwitchRect(true)
-    self.itemListContentYOffset = 0
     self.itemHeight = 40
     ---@type table<int, StandardItem>
     self.itemList = {}
 
-    -- 滑动条
-    self.scrollBar = ScrollBar.New(self.parentWindow)
-    self.scrollBar:SetReceiverOfRequestMoveContent(self)
-    self.scrollBar:SetSlideLength(self.height)
-    self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList)
-
-    self.needUpdateItemListContentSprite = true
-
-    -- content margins
-    self.leftMargin = 5
-    self.topMargin = 5
-    self.rightMargin = 5
-    self.bottomMargin = 5
-
-    -- signals
-    -- 选中项信号的接收者
-    self.receiverOfSelectedItemChanged = nil
+    self.needUpdateItemListContentWidgetSprite = false
 end
 
 function ListView:Update(dt)
@@ -82,50 +47,27 @@ function ListView:Update(dt)
     end
     self:MouseEvent()
 
+    self.itemListContentWidget:Update(dt)
+
     -- item
     for _, item in pairs(self.itemList) do
         item:Update(dt)
     end
 
-    if self.needUpdateItemListContentSprite then
-        _Graphics.SaveCanvas()
-        -- 创建背景画布
-        local canvas = _Graphics.NewCanvas(self.width - self.leftMargin - self.rightMargin,
-            self.height - self.topMargin - self.bottomMargin)
-        _Graphics.SetCanvas(canvas)
-
-        -- 注意：不可用深度克隆方法，因为StandardItem中的sprite成员初始化时绑定了信号槽，克隆后也会继承之前的信号槽，导致调用SetAttri后使被克隆对象属性改变
-        -- 创建临时绘图精灵
-        local painterSprite = _Sprite.New()
-
-        -- 更新内容显示板中显示精灵
-        for i, item in pairs(self.itemList) do
-            painterSprite:SetImage(item:GetCurrentImgCanvas())
-            painterSprite:SetAttri("position", 0, self.itemListContentYOffset + self.itemHeight * (i - 1))
-            painterSprite:Draw()
-        end
-        _Graphics.RestoreCanvas()
-
-        self.itemListContentSprite:SetImage(canvas)
-        self.itemListContentSprite:AdjustDimensions()
-        self.itemListContentSprite:SetAttri("position", self.posX + self.leftMargin,
-            self.posY + self.topMargin)
-        self.needUpdateItemListContentSprite = false
+    if self.needUpdateItemListContentWidgetSprite then
+        self:updateItemListContentWidgetSprite()
+        ScrollArea.SetNeedUpdateContentSprite(self, true)
+        self.needUpdateItemListContentWidgetSprite = false
     end
 
-    self.scrollBar:Update(dt)
+    ScrollArea.Update(self, dt)
 end
 
 function ListView:Draw()
+    ScrollArea.Draw(self)
     if false == self.isVisible then
         return
     end
-    self.bgSprite:Draw()
-
-    -- item list content sprite
-    self.itemListContentSprite:Draw()
-
-    self.scrollBar:Draw()
 end
 
 function ListView:MouseEvent()
@@ -152,7 +94,7 @@ function ListView:MouseEvent()
 
         -- 如果鼠标不在显示项列区域中
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
-        if false == self.itemListContentSprite:CheckPoint(mousePosX, mousePosY) then
+        if false == self:CheckPoint(mousePosX, mousePosY) then
             for _, item in pairs(self.itemList) do
                 if StandardItem.DisplayState.Hovering == item:GetCurrentDisplayState() then
                     item:SetDisplayState(StandardItem.DisplayState.Normal)
@@ -179,12 +121,7 @@ function ListView:MouseEvent()
 
         -- 是否点击
         if _Mouse.IsPressed(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
-            for _, item in pairs(self.itemList) do
-                item:SetDisplayState(StandardItem.DisplayState.Normal)
-            end
-            hoveringItem:SetDisplayState(StandardItem.DisplayState.Selected)
-            -- -- 判断和执行选中项改变事件
-            self:judgeAndExecSelectedItemChanged(hoveringItem)
+            self:SetCurrentItem(hoveringItem)
             break
         end
 
@@ -198,170 +135,231 @@ function ListView:MouseEvent()
     -- 判断显示内容是否改变
     for _, item in pairs(self.itemList) do
         if item:IsDisplayStateChanged() then
-            self.needUpdateItemListContentSprite = true
+            self.needUpdateItemListContentWidgetSprite = true
             break
         end
     end
 end
 
+--- 连接信号
+---@param signal function
+---@param obj Object
+function ListView:MocConnectSignal(signal, receiver)
+    ScrollArea.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function ListView:GetReceiverListOfSignal(signal)
+    return ScrollArea.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function ListView:SetObjectName(name)
+    ScrollArea.SetObjectName(self, name)
+end
+
+function ListView:GetObjectName()
+    return ScrollArea.GetObjectName(self)
+end
+
 function ListView:SetPosition(x, y)
-    self.bgSprite:SetAttri("position", x, y)
-    self.posX = x
-    self.posY = y
+    ScrollArea.SetPosition(self, x, y)
 
     -- item
-    for i, item in pairs(self.itemList) do
-        item:SetPosition(self.posX + self.leftMargin, self.posY + self.topMargin + self.itemHeight * (i - 1))
-    end
-
-    self.scrollBar:SetPosition(self.posX + self.width - self.scrollBar:GetWidth() - self.rightMargin,
-        self.posY + self.topMargin)
+    self:updateAllItemsPosition()
 end
 
 function ListView:SetSize(width, height)
-    self.width = width
-    self.height = height
+    ScrollArea.SetSize(self, width, height)
 
-    _Graphics.SaveCanvas()
-    -- 创建背景画布
-    local canvas = _Graphics.NewCanvas(self.width, self.height)
-    _Graphics.SetCanvas(canvas)
-
-    -- 创建临时绘图精灵
-    local painterSprite = _Sprite.New()
-    -- 画左上角背景
-    painterSprite:SetData(self.leftTopBgImgDate)
-    painterSprite:SetAttri("position", 0, 0)
-    painterSprite:Draw()
-    -- 画上中段背景
-    painterSprite:SetData(self.topBgImgDate)
-    painterSprite:SetAttri("position", self.leftTopBgImgDate.w, 0)
-    local topCenterBgXScale = (self.width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.topBgImgDate.w
-    painterSprite:SetAttri("scale", topCenterBgXScale, 1)
-    painterSprite:Draw()
-
-    -- 画右上角背景
-    painterSprite:SetData(self.rightTopBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightTopBgImgDate.w, 0)
-    painterSprite:Draw()
-
-    -- 画左中段背景
-    painterSprite:SetData(self.leftBgImgDate)
-    painterSprite:SetAttri("position", 0, self.leftTopBgImgDate.h)
-    local centerBgYScale = (self.height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.leftBgImgDate.h
-    painterSprite:SetAttri("scale", 1, centerBgYScale)
-    painterSprite:Draw()
-    -- 画中间部分的背景
-    painterSprite:SetData(self.centerBgImgDate)
-    painterSprite:SetAttri("position", self.leftBgImgDate.w, self.leftTopBgImgDate.h)
-    painterSprite:SetAttri("scale", topCenterBgXScale, centerBgYScale)
-    painterSprite:Draw()
-    -- 画右中段背景
-    painterSprite:SetData(self.rightBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBgImgDate.w, self.leftTopBgImgDate.h)
-    painterSprite:SetAttri("scale", 1, centerBgYScale)
-    painterSprite:Draw()
-
-    -- 画左下角背景
-    painterSprite:SetData(self.leftBottomBgImgDate)
-    painterSprite:SetAttri("position", 0, self.height - self.leftBottomBgImgDate.h)
-    painterSprite:Draw()
-    -- 画下中段背景
-    painterSprite:SetData(self.bottomBgImgDate)
-    painterSprite:SetAttri("position", self.leftBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
-    painterSprite:SetAttri("scale", topCenterBgXScale, 1)
-    painterSprite:Draw()
-    -- 画右下角背景
-    painterSprite:SetData(self.rightBottomBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
-    painterSprite:Draw()
-
-    _Graphics.RestoreCanvas()
-    self.bgSprite:SetImage(canvas)
-    self.bgSprite:AdjustDimensions()
+    local displayContentWidth = ScrollArea.GetDisplayContentWidth(self)
 
     -- item
     for i, item in pairs(self.itemList) do
-        item:SetSize(self.width - self.scrollBar:GetWidth() - self.leftMargin - self.rightMargin, self.itemHeight)
+        item:SetSize(displayContentWidth, self.itemHeight)
     end
 
-    -- scroll bar
-    self.scrollBar:SetSlideLength(self.height - self.topMargin - self.bottomMargin)
-    self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList - self.topMargin - self.bottomMargin)
+    -- 设置 列表项内容控件 尺寸
+    local itemListContentWidgetHeight = self.itemHeight * #self.itemList
+    self.itemListContentWidget:SetSize(displayContentWidth, itemListContentWidgetHeight)
 end
 
 function ListView:SetEnable(enable)
-    self.enable = enable
+    ScrollArea.SetEnable(self, enable)
+
+    self.itemListContentWidget:SetEnable(enable)
 end
 
 function ListView:IsVisible()
-    return self.isVisible
+    return ScrollArea.IsVisible(self)
 end
 
 ---@param isVisible bool
 function ListView:SetVisible(isVisible)
-    self.isVisible = isVisible
+    ScrollArea.SetVisible(self, isVisible)
+
+    self.itemListContentWidget:SetVisible(isVisible)
 end
 
-function ListView:OnRequestMoveContent(xOffset, yOffset)
-    print("ListView:OnRequestMoveContent()", xOffset, yOffset)
-    self.itemListContentYOffset = yOffset
-    self.needUpdateItemListContentSprite = true
+---@param x int
+---@param y int
+function ListView:CheckPoint(x, y)
+    return ScrollArea.CheckPoint(self, x, y)
+end
+
+--- signals
+---
+---@param selectedItem StandardItem
+function ListView:Signal_SelectedItemChanged(selectedItem)
+    print("ListView:Signal_SelectedItemChanged()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_SelectedItemChanged)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_SelectedItemChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, selectedItem)
+
+        ::continue::
+    end
+end
+
+--- slot
+---
+---@param sender Obj
+---@param xOffset int
+---@param yOffset int
+function ListView:Slot_RequestMoveContent(sender, xOffset, yOffset)
+    ScrollArea.Slot_RequestMoveContent(self, sender, xOffset, yOffset)
+    print("ListView:Slot_RequestMoveContent()", sender, xOffset, yOffset)
+    self.needUpdateItemListContentWidgetSprite = true
 
     -- item
-    for i, item in pairs(self.itemList) do
-        item:SetPosition(self.posX + self.leftMargin, self.posY + yOffset + self.topMargin + self.itemHeight * (i - 1))
-    end
+    self:updateAllItemsPosition()
 end
 
-function ListView:SetReceiverOfSelectedItemChanged(obj)
-    self.receiverOfSelectedItemChanged = obj
-end
-
----@param selectedItem StandardItem
-function ListView:judgeAndExecSelectedItemChanged(selectedItem)
-    if nil == self.receiverOfSelectedItemChanged then
-        return
-    end
-
-    if nil == self.receiverOfSelectedItemChanged.OnSelectedItemChanged then
-        return
-    end
-
-    self.receiverOfSelectedItemChanged:OnSelectedItemChanged(selectedItem)
-end
-
-function ListView:InsertItem(i, text)
-    local item = StandardItem.New()
-    item:SetText(text)
+---@param item StandardItem
+function ListView:InsertItem(i, item)
     table.insert(self.itemList, i, item)
 
+    -- 更新index
     for i, item in pairs(self.itemList) do
-        -- 更新尺寸
-        item:SetSize(self.width - self.scrollBar:GetWidth() - self.leftMargin - self.rightMargin, self.itemHeight)
-        -- 更新index
         item:SetIndex(i)
-        -- 更新坐标
-        item:SetPosition(self.posX + self.leftMargin, self.posY + self.topMargin + self.itemHeight * (i - 1))
     end
 
-    -- scroll bar
-    self.scrollBar:SetSlideLength(self.height - self.topMargin - self.bottomMargin)
-    self.scrollBar:SetCtrlledContentLength(self.itemHeight * #self.itemList - self.topMargin - self.bottomMargin)
-    -- scroll bar position
-    self.scrollBar:SetPosition(self.posX + self.width - self.scrollBar:GetWidth() - self.rightMargin,
-        self.posY + self.topMargin)
+    -- 更新尺寸
+    local displayContentWidth = ScrollArea.GetDisplayContentWidth(self)
+    -- item
+    for i, item in pairs(self.itemList) do
+        item:SetSize(displayContentWidth, self.itemHeight)
+    end
 
-    self.needUpdateItemListContentSprite = true
+    -- 更新坐标
+    self:updateAllItemsPosition()
+    
+    -- 设置 列表项内容控件 尺寸
+    local itemListContentWidgetHeight = self.itemHeight * #self.itemList
+    self.itemListContentWidget:SetSize(displayContentWidth, itemListContentWidgetHeight)
+
+    self.needUpdateItemListContentWidgetSprite = true
 end
 
-function ListView:AppendItem(text)
-    self:InsertItem(#self.itemList + 1, text)
+function ListView:InsertItemWithText(i, text)
+    local item = StandardItem.New()
+    item:SetText(text)
+
+    self:InsertItem(i, item)
+end
+
+---@param item StandardItem
+function ListView:AppendItem(item)
+    self:InsertItem(#self.itemList + 1, item)
+end
+
+function ListView:AppendItemWithText(text)
+    self:InsertItemWithText(#self.itemList + 1, text)
 end
 
 ---@return table<int, StandardItem> itemList 
 function ListView:GetItemList()
     return self.itemList
+end
+
+---@param itemHeight int
+function ListView:SetItemHeight(itemHeight)
+    self.itemHeight = itemHeight
+
+    self.needUpdateItemListContentWidgetSprite = true
+end
+
+---@param item StandardItem
+function ListView:SetCurrentItem(item)
+    for _, itemTmp in pairs(self.itemList) do
+        itemTmp:SetDisplayState(StandardItem.DisplayState.Normal)
+    end
+    item:SetDisplayState(StandardItem.DisplayState.Selected)
+    -- -- 判断和执行选中项改变事件
+    self:Signal_SelectedItemChanged(item)
+
+    -- 判断显示内容是否改变
+    for _, item in pairs(self.itemList) do
+        if item:IsDisplayStateChanged() then
+            self.needUpdateItemListContentWidgetSprite = true
+            break
+        end
+    end
+end
+
+---@param index int
+function ListView:SetCurrentIndex(index)
+    local item = self.itemList[index]
+    self:SetCurrentItem(item)
+end
+
+function ListView:updateItemListContentWidgetSprite()
+    local contentWidth, contentHeight = self.itemListContentWidget:GetSize()
+    if contentWidth <= 0 or contentHeight <= 0 then
+        return
+    end
+
+    _Graphics.SaveCanvas()
+    -- 创建背景画布
+    
+    local canvas = _Graphics.NewCanvas(contentWidth, contentHeight)
+    _Graphics.SetCanvas(canvas)
+
+    -- 注意：不可用深度克隆方法，因为StandardItem中的sprite成员初始化时绑定了信号槽，克隆后也会继承之前的信号槽，导致调用SetAttri后使被克隆对象属性改变
+    -- 创建临时绘图精灵
+    local painterSprite = _Sprite.New()
+
+    -- 更新内容显示板中显示精灵
+    for i, item in pairs(self.itemList) do
+        painterSprite:SetImage(item:GetCurrentImgCanvas())
+        painterSprite:SetAttri("position", 0, self.itemHeight * (i - 1))
+        painterSprite:Draw()
+    end
+    _Graphics.RestoreCanvas()
+
+    painterSprite:SetImage(canvas)
+    painterSprite:AdjustDimensions()
+    self.itemListContentWidget:SetBgSprite(painterSprite)
+end
+
+function ListView:updateAllItemsPosition()
+    local leftMargin, topMargin, _, _ = ScrollArea.GetMargins(self)
+    local xPos, yPos = ScrollArea.GetPosition(self)
+    local contentYOffset = ScrollArea.GetContentYOffset(self)
+
+    -- item
+    for i, item in pairs(self.itemList) do
+        item:SetPosition(xPos + leftMargin, yPos + contentYOffset + topMargin + self.itemHeight * (i - 1))
+    end
 end
 
 return ListView
