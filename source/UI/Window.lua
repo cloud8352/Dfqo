@@ -20,12 +20,13 @@ local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
 
 ---@class Window
-local Window = require("core.class")()
+local Window = require("core.class")(Widget)
 
 local MarginSpace = 15
 local TitleBarHeight = 20
 
 function Window:Ctor()
+    Widget.Ctor(self, self)
     MarginSpace = math.floor(5 * _Util.GetWindowSizeScale())
     TitleBarHeight = math.floor(40 * _Util.GetWindowSizeScale())
 
@@ -33,17 +34,11 @@ function Window:Ctor()
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
     WindowManager.AppendToWindowList(self)
 
-    self.objName = ""
     self.bgSprite = _Sprite.New()
     self.bgSprite:SwitchRect(true) -- 使用矩形
     self.spriteXScale, self.spriteYScale = self.bgSprite:GetAttri("scale")
-    self.width = 30
-    self.height = 10
-    self.posX = 0
-    self.posY = 0
-    self.enable = true
-    self.isVisible = true
     self.isTipToolWindow = false
+    self.isWindowStaysOnTopHint = false
     self.isInMoving = false
 
     -- 背景图片数据
@@ -62,29 +57,29 @@ function Window:Ctor()
     -- title bar
     self.titleBar = TitleBar.New(self)
 
-    self.receiverOfRequestMoveWindow = nil
-    self.receiverOfRequestCloseWindow = nil
-
     -- connect
     self.titleBar:SetReceiverOfRequestMoveWindow(self)
     self.titleBar:SetReceiverOfRequestCloseWindow(self)
 end
 
 function Window:Update(dt)
-    if false == self.isVisible then
+    if false == Widget.IsVisible(self) then
         return
     end
+    self:MouseEvent()
+    
     self.titleBar:Update(dt)
 
     self.contentWidget:Update(dt)
+
+    Widget.Update(self, dt)
 end
 
 function Window:Draw()
-    self:MouseEvent()
-
-    if false == self.isVisible then
+    if false == Widget.IsVisible(self) then
         return
     end
+    Widget.Draw(self)
 
     self.bgSprite:Draw()
 
@@ -101,6 +96,11 @@ function Window:MouseEvent()
             break
         end
 
+        local mouseX, mouseY = _Mouse.GetPosition(1, 1)
+        if false == self:CheckPoint(mouseX, mouseY) then
+            break
+        end
+
         -- 鼠标左键是否点击
         if _Mouse.IsPressed(1)
             or _Mouse.IsHold(1)
@@ -113,24 +113,39 @@ function Window:MouseEvent()
     end
 end
 
+--- 连接信号
+---@param signal function
+---@param obj Object
+function Window:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function Window:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
 ---@param name string
-function Window:SetObjName(name)
-    self.objName = name
+function Window:SetObjectName(name)
+    Widget.SetObjectName(self, name)
 end
 
-function Window:GetObjName()
-    return self.objName
+function Window:GetObjectName()
+    return Widget.GetObjectName(self)
 end
 
+function Window:GetParentWindow()
+    return Widget.GetParentWindow(self)
+end
 
 function Window:GetPosition()
-    return self.posX, self.posY
+    return Widget.GetPosition(self)
 end
 
 function Window:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
+
     self.bgSprite:SetAttri("position", x, y)
-    self.posX = x
-    self.posY = y
 
     local realTitleBarHeight = 0
     if self.titleBar:IsVisible() then
@@ -141,13 +156,14 @@ function Window:SetPosition(x, y)
     self.titleBar:SetPosition(x, y)
 end
 
-function Window:SetSize(width, height)
-    self.width = math.floor(width)
-    self.height = math.floor(height)
+function Window:SetSize(w, h)
+    local width = math.floor(w)
+    local height = math.floor(h)
+    Widget.SetSize(self, width, height)
 
     _Graphics.SaveCanvas()
     -- 创建背景画布
-    local canvas = _Graphics.NewCanvas(self.width, self.height)
+    local canvas = _Graphics.NewCanvas(width, height)
     _Graphics.SetCanvas(canvas)
 
     -- 创建临时绘图精灵
@@ -159,19 +175,19 @@ function Window:SetSize(width, height)
     -- 画上中段背景
     painterSprite:SetData(self.topBgImgDate)
     painterSprite:SetAttri("position", self.leftTopBgImgDate.w, 0)
-    local topCenterBgXScale = (self.width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.topBgImgDate.w
+    local topCenterBgXScale = (width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.topBgImgDate.w
     painterSprite:SetAttri("scale", topCenterBgXScale, 1)
     painterSprite:Draw()
 
     -- 画右上角背景
     painterSprite:SetData(self.rightTopBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightTopBgImgDate.w, 0)
+    painterSprite:SetAttri("position", width - self.rightTopBgImgDate.w, 0)
     painterSprite:Draw()
 
     -- 画左中段背景
     painterSprite:SetData(self.leftBgImgDate)
     painterSprite:SetAttri("position", 0, self.leftTopBgImgDate.h)
-    local centerBgYScale = (self.height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.leftBgImgDate.h
+    local centerBgYScale = (height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.leftBgImgDate.h
     painterSprite:SetAttri("scale", 1, centerBgYScale)
     painterSprite:Draw()
     -- 画中间部分的背景
@@ -181,22 +197,22 @@ function Window:SetSize(width, height)
     painterSprite:Draw()
     -- 画右中段背景
     painterSprite:SetData(self.rightBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBgImgDate.w, self.leftTopBgImgDate.h)
+    painterSprite:SetAttri("position", width - self.rightBgImgDate.w, self.leftTopBgImgDate.h)
     painterSprite:SetAttri("scale", 1, centerBgYScale)
     painterSprite:Draw()
 
     -- 画左下角背景
     painterSprite:SetData(self.leftBottomBgImgDate)
-    painterSprite:SetAttri("position", 0, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", 0, height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
     -- 画下中段背景
     painterSprite:SetData(self.bottomBgImgDate)
-    painterSprite:SetAttri("position", self.leftBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", self.leftBottomBgImgDate.w, height - self.leftBottomBgImgDate.h)
     painterSprite:SetAttri("scale", topCenterBgXScale, 1)
     painterSprite:Draw()
     -- 画右下角背景
     painterSprite:SetData(self.rightBottomBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", width - self.rightBottomBgImgDate.w, height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
 
     _Graphics.RestoreCanvas()
@@ -208,32 +224,32 @@ function Window:SetSize(width, height)
     if self.titleBar:IsVisible() then
         realTitleBarHeight = TitleBarHeight
     end
-    self.contentWidget:SetSize(self.width - MarginSpace * 2,
-        self.height - MarginSpace * 2 - realTitleBarHeight)
+    self.contentWidget:SetSize(width - MarginSpace * 2,
+        height - MarginSpace * 2 - realTitleBarHeight)
 
     -- 设置标题栏尺寸
-    self.titleBar:SetSize(self.width, TitleBarHeight)
+    self.titleBar:SetSize(width, TitleBarHeight)
 end
 
 ---@return integer, integer
 function Window:GetSize()
-    return self.width, self.height
+    return Widget.GetSize(self)
 end
 
 function Window:SetEnable(enable)
-    self.enable = enable
+    Widget.SetEnable(self, enable)
 end
 
 --- 是否可见
 ---@return boolean visible
 function Window:IsVisible()
-    return self.isVisible
+    return Widget.IsVisible(self)
 end
 
 --- 设置是否可见
 ---@param visible boolean
 function Window:SetVisible(visible)
-    self.isVisible = visible
+    Widget.SetVisible(self, visible)
 end
 
 --- 设置标题栏是否可见
@@ -256,44 +272,6 @@ function Window:SetIsInMoving(moving)
     self.isInMoving = moving
 end
 
-function Window:OnRequestMoveWindow(x, y)
-    self:judgeAndExecRequestMoveWindow(x, y)
-end
-
-function Window:OnRequestCloseWindow()
-    self:judgeAndExecRequestCloseWindow()
-end
-
-function Window:SetReceiverOfRequestMoveWindow(receiver)
-    self.receiverOfRequestMoveWindow = receiver
-end
-
-function Window:judgeAndExecRequestMoveWindow(x, y)
-    if nil == self.receiverOfRequestMoveWindow then
-        return
-    end
-    if nil == self.receiverOfRequestMoveWindow.OnRequestMoveWindow then
-        return
-    end
-
-    self.receiverOfRequestMoveWindow.OnRequestMoveWindow(self, x, y)
-end
-
-function Window:SetReceiverOfRequestCloseWindow(receiver)
-    self.receiverOfRequestCloseWindow = receiver
-end
-
-function Window:judgeAndExecRequestCloseWindow(x, y)
-    if nil == self.receiverOfRequestCloseWindow then
-        return
-    end
-    if nil == self.receiverOfRequestCloseWindow.OnRequestCloseWindow then
-        return
-    end
-
-    self.receiverOfRequestCloseWindow.OnRequestCloseWindow(self)
-end
-
 --- 获取窗口所处层数。
 --- 由窗管调用
 ---@return number layerIndex
@@ -314,7 +292,9 @@ end
 ---@param y number
 ---@return boolean
 function Window:CheckPoint(x, y)
-    if self.isTipToolWindow then
+    if self.isTipToolWindow and
+        self.isWindowStaysOnTopHint == false
+    then
         return false
     end
 
@@ -334,6 +314,16 @@ function Window:IsTipToolWindow()
     return self.isTipToolWindow
 end
 
+---@param is boolean
+function Window:SetIsWindowStayOnTopHint(is)
+    self.isWindowStaysOnTopHint = is
+end
+
+---@return boolean isWindowStayOnTopHint
+function Window:IsWindowStayOnTopHint()
+    return self.isWindowStaysOnTopHint
+end
+
 ---@param widget Widget
 function Window:SetContentWidget(widget)
     self.contentWidget = widget
@@ -342,9 +332,51 @@ function Window:SetContentWidget(widget)
     if self.titleBar:IsVisible() then
         realTitleBarHeight = TitleBarHeight
     end
-    self.contentWidget:SetSize(self.width - MarginSpace * 2,
-        self.height - MarginSpace * 2 - realTitleBarHeight)
-    self.contentWidget:SetPosition(self.posX + MarginSpace, self.posY + MarginSpace + realTitleBarHeight)
+    local width, height = self:GetSize()
+    self.contentWidget:SetSize(width - MarginSpace * 2,
+        height - MarginSpace * 2 - realTitleBarHeight)
+    local xPos, yPos = self:GetPosition()
+    self.contentWidget:SetPosition(xPos + MarginSpace, yPos + MarginSpace + realTitleBarHeight)
+end
+
+---@param isVisible boolean
+function Window:SetTitleBarIsBackgroundVisible(isVisible)
+    self.titleBar:SetIsBackgroundVisible(isVisible)
+end
+
+--- slots
+
+---@param x int
+---@param y int
+function Window:OnRequestMoveWindow(x, y)
+    self:SetPosition(x, y)
+end
+
+function Window:OnRequestCloseWindow()
+    self:SetVisible(false)
+    self:Signal_WindowClosed()
+end
+
+--- signals
+
+function Window:Signal_WindowClosed()
+    print("Window:Signal_WindowClosed()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_WindowClosed)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_WindowClosed
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
 end
 
 return Window

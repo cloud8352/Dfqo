@@ -34,17 +34,16 @@ local ColCount = Common.ArticleDockColCount
 ---@param parentWindow Window
 ---@param model UiModel
 function ArticleDockFrame:Ctor(parentWindow, model)
-    assert(parentWindow, "must assign parent window")
+    Widget.Ctor(self, parentWindow)
+
     ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
     ItemWidth = math.floor(ItemWidth)
 
-    -- 父类构造函数
-    self.baseWidget = Widget.New(parentWindow)
-
     self.model = model
 
-    self.baseWidget.width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
-    self.baseWidget.height = ItemWidth
+    local width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
+    local height = ItemWidth
+    Widget.SetSize(self, width, height)
 
     --- item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
@@ -97,9 +96,13 @@ function ArticleDockFrame:Ctor(parentWindow, model)
 end
 
 function ArticleDockFrame:Update(dt)
+    if not Widget.IsVisible(self) then
+        return
+    end
+
     self:MouseEvent()
 
-    if (self.baseWidget:IsSizeChanged()
+    if (Widget.IsSizeChanged(self)
         ) then
         self:updateData()
     end
@@ -140,12 +143,17 @@ function ArticleDockFrame:Update(dt)
     self.hoveringItemFrameLabel:Update(dt)
 
     --- 更新上次和当前的所有状态
-    self.baseWidget:Update(dt)
+    Widget.Update(self, dt)
     self.lastHoveringItemIndex = self.hoveringItemIndex
     self.lastIsShowHoveringItemTip = self.isShowHoveringItemTip
 end
 
 function ArticleDockFrame:Draw()
+    if not Widget.IsVisible(self) then
+        return
+    end
+    Widget.Draw(self)
+
     for i, label in pairs(self.viewItemBgList) do
         -- item background
         label:Draw()
@@ -162,9 +170,10 @@ function ArticleDockFrame:MouseEvent()
     -- 判断鼠标
     while true do
         -- 检查是否有上层窗口遮挡
-        local windowLayerIndex = self.baseWidget.parentWindow:GetWindowLayerIndex()
+        local parentWindow = Widget.GetParentWindow(self)
+        local windowLayerIndex = parentWindow:GetWindowLayerIndex()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
-            or self.baseWidget.parentWindow:IsInMoving() then
+            or parentWindow:IsInMoving() then
             self.hoveringItemIndex = -1
             self.model:SetArticleDockHoveringItemIndex(-1)
             self.hoveringItemInfo = nil
@@ -214,30 +223,30 @@ function ArticleDockFrame:MouseEvent()
 end
 
 function ArticleDockFrame:SetPosition(x, y)
-    self.baseWidget:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
 
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
-        local itemXpos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
+        local itemXPos = x + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
-        local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
+        local itemYPos = y + (ItemWidth + ItemSpace) * row
 
         -- item background
-        label:SetPosition(itemXpos, itemYPos)
+        label:SetPosition(itemXPos, itemYPos)
 
         -- item
         local item = self.viewItemList[i]
-        item:SetPosition(itemXpos, itemYPos)
+        item:SetPosition(itemXPos, itemYPos)
     end
 end
 
 ---@return number, number w, h
 function ArticleDockFrame:GetSize()
-    return self.baseWidget:GetSize()
+    return Widget.GetSize(self)
 end
 
 function ArticleDockFrame:SetEnable(enable)
-    self.baseWidget:SetEnable(enable)
+    Widget.SetEnable(self, enable)
 end
 
 --- 设置某一显示项的信息
@@ -268,11 +277,12 @@ function ArticleDockFrame:initArticleData()
 end
 
 function ArticleDockFrame:updateData()
+    local xPos, yPos = Widget.GetPosition(self)
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
-        local itemXpos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
+        local itemXPos = xPos + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
-        local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
+        local itemYPos = yPos + (ItemWidth + ItemSpace) * row
 
         -- item background
         label:SetSize(ItemWidth, ItemWidth)

@@ -11,6 +11,7 @@ local Timer = require("util.gear.timer")
 local _MATH = require("lib.math")
 local _Graphics = require("lib.graphics")
 
+local Widget = require("UI.Widget")
 local WindowManager = require("UI.WindowManager")
 local Label = require("UI.Label")
 local SkillDockViewItem = require("UI.SkillDockViewItem")
@@ -21,7 +22,7 @@ local UiModel = require("UI.ui_model")
 local Util = require("util.Util")
 
 ---@class SkillDockViewFrame
-local SkillDockViewFrame = require("core.class")()
+local SkillDockViewFrame = require("core.class")(Widget)
 
 local ItemSpace = 1
 local TimeOfWaiteToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
@@ -29,24 +30,15 @@ local TimeOfWaiteToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等
 ---@param parentWindow Window
 ---@param model UiModel
 function SkillDockViewFrame:Ctor(parentWindow, model)
-    assert(parentWindow, "must assign parent window")
-    ---@type Window
-    self.parentWindow = parentWindow
+    Widget.Ctor(self, parentWindow)
 
     self.model = model
 
     local defaultItemWidth = 45 * Util.GetWindowSizeScale()
     defaultItemWidth = _MATH.Round(defaultItemWidth)
-    self.width = defaultItemWidth * 6 + ItemSpace * 5
-    self.lastWidth = 0
-    self.height = ItemSpace + defaultItemWidth * 2
-    self.lastHeight = 0
-    self.xPos = 0
-    self.lastXPos = 0
-    self.yPos = 0
-    self.lastYPos = 0
-    self.enable = true
-    self.isVisible = true
+    local width = defaultItemWidth * 6 + ItemSpace * 5
+    local height = ItemSpace + defaultItemWidth * 2
+    self:SetSize(width, height)
 
     ---- skill item background
     local itemBgImgPath = "ui/WindowFrame/CenterBg"
@@ -169,21 +161,20 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 
     --- post init
     self:ReloadSkillsViewData()
-    self:updateData()
+    self:updateAllItemsPosition()
+    self:updateAllItemsSize()
 end
 
 function SkillDockViewFrame:Update(dt)
-    if (not self.isVisible) then
+    if (not self:IsVisible()) then
         return
     end
     self:MouseEvent()
 
-    if (self.lastWidth ~= self.width
-            or self.lastHeight ~= self.height
-            or self.lastHeight ~= self.height
+    if (self:IsSizeChanged()
         )
     then
-        self:updateData()
+        self:updateAllItemsSize()
     end
 
     if (self.lastHoveringItemTag ~= self.hoveringItemTag) then
@@ -236,19 +227,18 @@ function SkillDockViewFrame:Update(dt)
     self.hoveringItemFrameLabel:Update(dt)
 
     --- 更新上次和当前的所有状态
-    self.lastXPos = self.xPos
-    self.lastYPos = self.yPos
-    self.lastWidth = self.width
-    self.lastHeight = self.height
+    Widget.Update(self, dt)
 
     self.lastHoveringItemTag = self.hoveringItemTag
     self.lastIsShowHoveringItemTip = self.isShowHoveringItemTip
 end
 
 function SkillDockViewFrame:Draw()
-    if (not self.isVisible) then
+    if (not self:IsVisible()) then
         return
     end
+    Widget.Draw(self)
+
     -- skill item bg
     for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
         v:Draw()
@@ -265,7 +255,8 @@ function SkillDockViewFrame:MouseEvent()
     -- 判断鼠标
     while true do
         -- 检查是否有上层窗口遮挡
-        local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
+        local parentWindow = self:GetParentWindow()
+        local windowLayerIndex = parentWindow:GetWindowLayerIndex()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex) then
             self.hoveringItemTag = ""
             self.itemHoveringTimer:Exit()
@@ -280,6 +271,11 @@ function SkillDockViewFrame:MouseEvent()
                 hoveringItemTag = tag
                 break
             end
+        end
+
+        -- 判断是否点击某一个技能项
+        if hoveringItemTag ~= "" and _Mouse.IsPressed(1) then
+            self:Signal_ItemClicked(hoveringItemTag)
         end
 
         if hoveringItemTag == self.hoveringItemTag then
@@ -300,27 +296,71 @@ function SkillDockViewFrame:MouseEvent()
     end
 end
 
-function SkillDockViewFrame:SetPosition(x, y)
-    self.xPos = x
-    self.yPos = y
+--- 连接信号
+---@param signal function
+---@param obj Object
+function SkillDockViewFrame:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
 end
 
-function SkillDockViewFrame:GetSize()
-    return self.width, self.height
+---@param signal function
+function SkillDockViewFrame:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function SkillDockViewFrame:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function SkillDockViewFrame:GetObjectName()
+    return Widget.GetObjectName(self)
+end
+
+function SkillDockViewFrame:GetParentWindow()
+    return Widget.GetParentWindow(self)
+end
+
+function SkillDockViewFrame:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
+
+    self:updateAllItemsPosition()
+end
+
+function SkillDockViewFrame:GetPosition()
+    return Widget.GetPosition(self)
 end
 
 function SkillDockViewFrame:SetSize(width, height)
-    self.width = width
-    self.height = height
+    Widget.SetSize(self, width, height)
+end
+
+function SkillDockViewFrame:GetSize()
+    return Widget.GetSize(self)
+end
+
+function SkillDockViewFrame:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
 end
 
 function SkillDockViewFrame:SetEnable(enable)
-    self.enable = enable
+    Widget.SetEnable(self, enable)
 end
 
----@param isVisible boolean
+function SkillDockViewFrame:IsVisible()
+    return Widget.IsVisible(self)
+end
+
+---@param isVisible bool
 function SkillDockViewFrame:SetVisible(isVisible)
-    self.isVisible = isVisible
+    Widget.SetVisible(self, isVisible)
+end
+
+---@param x int
+---@param y int
+---@return boolean
+function SkillDockViewFrame:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
 end
 
 function SkillDockViewFrame:ReloadSkillsViewData()
@@ -343,50 +383,75 @@ function SkillDockViewFrame:ReloadSkillsViewData()
     end
 end
 
-function SkillDockViewFrame:updateData()
-    -- item background
-    local itemWidth = (self.height - ItemSpace) / 2
-    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
-        if "skill1" == k then
-            v:SetPosition(self.xPos, self.yPos + itemWidth + ItemSpace)
-        end
-        if "skill2" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 1, self.yPos + itemWidth + ItemSpace)
-        end
-        if "skill3" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 2, self.yPos + itemWidth + ItemSpace)
-        end
-        if "skill4" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 3, self.yPos + itemWidth + ItemSpace)
-            v:SetSize(self.height, self.height)
-        end
-        if "skill5" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 4, self.yPos + itemWidth + ItemSpace)
-        end
-        if "skill6" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 5, self.yPos + itemWidth + ItemSpace)
-        end
-        if "skill7" == k then
-            v:SetPosition(self.xPos, self.yPos)
-        end
-        if "skill8" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 1, self.yPos)
-        end
-        if "skill9" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 2, self.yPos)
-        end
-        if "skill10" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 3, self.yPos)
-        end
-        if "skill11" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 4, self.yPos)
-        end
-        if "skill12" == k then
-            v:SetPosition(self.xPos + (ItemSpace + itemWidth) * 5, self.yPos)
+--- slots
+
+--- signals
+
+---@param skillTag string
+function SkillDockViewFrame:Signal_ItemClicked(skillTag)
+    print("SkillDockViewFrame:Signal_ItemClicked(skillTag)")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_ItemClicked)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_ItemClicked
+        if func == nil then
+            goto continue
         end
 
-        v:SetSize(itemWidth, itemWidth)
-        v:SetIconSize(itemWidth, itemWidth)
+        func(receiver, self, skillTag)
+
+        ::continue::
+    end
+end
+
+--- private function
+
+function SkillDockViewFrame:updateAllItemsPosition()
+    -- item background
+    local _, height = self:GetSize()
+    local xPos, yPos = self:GetPosition()
+    local itemWidth = (height - ItemSpace) / 2
+    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
+        if "skill1" == k then
+            v:SetPosition(xPos, yPos + itemWidth + ItemSpace)
+        end
+        if "skill2" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos + itemWidth + ItemSpace)
+        end
+        if "skill3" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 2, yPos + itemWidth + ItemSpace)
+        end
+        if "skill4" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 3, yPos + itemWidth + ItemSpace)
+        end
+        if "skill5" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 4, yPos + itemWidth + ItemSpace)
+        end
+        if "skill6" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 5, yPos + itemWidth + ItemSpace)
+        end
+        if "skill7" == k then
+            v:SetPosition(xPos, yPos)
+        end
+        if "skill8" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos)
+        end
+        if "skill9" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 2, yPos)
+        end
+        if "skill10" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 3, yPos)
+        end
+        if "skill11" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 4, yPos)
+        end
+        if "skill12" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 5, yPos)
+        end
     end
 
     -- item
@@ -394,7 +459,21 @@ function SkillDockViewFrame:updateData()
         local skillItemBg = self.mapOfTagToSkillViewItemBg[k]
         local x, y = skillItemBg:GetPosition()
         v:SetPosition(x, y)
+    end
+end
 
+function SkillDockViewFrame:updateAllItemsSize()
+    -- item background
+    local _, height = self:GetSize()
+    local itemWidth = (height - ItemSpace) / 2
+    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
+        v:SetSize(itemWidth, itemWidth)
+        v:SetIconSize(itemWidth, itemWidth)
+    end
+
+    -- item
+    for k, v in pairs(self.mapOfTagToSkillViewItem) do
+        local skillItemBg = self.mapOfTagToSkillViewItemBg[k]
         local w, h = skillItemBg:GetSize()
         v:SetSize(w, h)
     end

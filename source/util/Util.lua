@@ -59,4 +59,12 @@ function Util.PlaySoundByGender(soundDataSet, index, gender)
     end
 end
 
+---@param w Window
+function Util.MoveWindowToCenter(w)
+    local mainWindowWidth = Util.GetWindowWidth()
+    local mainWindowHeight = Util.GetWindowHeight()
+    local width, height = w:GetSize()
+    w:SetPosition((mainWindowWidth - width) / 2, (mainWindowHeight - height) / 2)
+end
+
 return Util

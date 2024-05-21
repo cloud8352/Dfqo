@@ -20,6 +20,7 @@ local SkillManagementItem = require("UI.SkillManagement.SkillManagementItem")
 local Label = require("UI.Label")
 local PushButton = require("UI.PushButton")
 local ScrollArea = require("UI.ScrollArea")
+local SkillMountDialog = require("UI.SkillManagement.SkillMountDailog")
 
 ---@class SkillManagementWidget
 local SkillManagementWidget = require("core.class")(Widget)
@@ -34,6 +35,8 @@ local ItemDataKey = "info"
 function SkillManagementWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    
+    self.model = model
 
     self.leftMargin = 6 * Util.GetWindowSizeScale()
     self.leftMargin = math.floor(self.leftMargin)
@@ -43,8 +46,6 @@ function SkillManagementWidget:Ctor(parentWindow, model)
 
     LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
     EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())
-
-    self.model = model
 
     self.skillItemListView = ListView.New(parentWindow)
     self.skillItemListView:SetItemHeight(50 * Util.GetWindowSizeScale())
@@ -63,9 +64,14 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     
     self.mountBtn = PushButton.New(parentWindow)
     self.mountBtn:SetText("装备到")
+
+    ---@type SkillMountDialog
+    self.skillMountDialog = SkillMountDialog.New(self.model)
+    self.skillMountDialog:SetVisible(false)
     
     -- connection
     self.skillItemListView:MocConnectSignal(self.skillItemListView.Signal_SelectedItemChanged, self)
+    self.mountBtn:MocConnectSignal(self.mountBtn.Signal_Clicked, self)
 
     -- post init
     local skillResMgrDataList = self.model:GetSkillResMgrDataList()
@@ -168,10 +174,24 @@ end
 ---@param sender Obj
 ---@param item StandardItem
 function SkillManagementWidget:Slot_SelectedItemChanged(sender, item)
-    print("SkillManagementWidget:OnSelectedItemChanged(item)", item:GetIndex())
+    print("SkillManagementWidget:Slot_SelectedItemChanged(item)", item:GetIndex())
 
     self.selectedSkillItem = item
 end
+
+---@param sender Obj
+function SkillManagementWidget:Slot_BtnClicked(sender)
+    if sender == self.mountBtn then
+        ---@type SkillInfo
+        local skillInfo = self.selectedSkillItem:GetValue(ItemDataKey)
+        self.skillMountDialog:SetNeedMountingSkillInfo(skillInfo)
+        self.skillMountDialog:SetVisible(true)
+        -- 移到程序窗口中央
+        Util.MoveWindowToCenter(self.skillMountDialog)
+    end
+end
+
+--- private function
 
 --- 更新被选择技能项内容滑动条区域中内容控件数据
 function SkillManagementWidget:updateSelectedSkillContentScrollAreaContentWidget()

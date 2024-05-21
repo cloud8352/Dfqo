@@ -33,29 +33,12 @@ local Map = require("map.init")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 
-local _TABLE = require("lib.table")
 local Util = require("util.Util")
 local _TIME = require("lib.time")
 local System = require("lib.system")
 local Keyboard = require("lib.keyboard")
 
 local IsShowFps = true
-
----@class WindowWidgetStruct
-local WindowWidgetStruct = {
-    ---@type Window
-    window = nil,
-    ---@type Widget
-    widget = nil
-}
-
----
----@param windowWidgetA WindowWidgetStruct
----@param windowWidgetB WindowWidgetStruct
----@return boolean
-local function windowWidgetListSortFuc(windowWidgetA, windowWidgetB)
-    return windowWidgetA.window:GetWindowLayerIndex() < windowWidgetB.window:GetWindowLayerIndex()
-end
 
 ---@class UI
 local UI = {}
@@ -68,9 +51,6 @@ function UI.Init()
     UI.totalSpriteCanvas = _Graphics.NewCanvas(Util.GetWindowWidth(), Util.GetWindowHeight())
     -- model
     UI.model = UiModel.New()
-
-    ---@type table<number, WindowWidgetStruct>
-    UI.windowWidgetList = {}
 
     -- 创建悬浮提示窗口
     local toolTipWindow = Window.New()
@@ -264,7 +244,8 @@ function UI.Init()
     UI.appendWindowWidget(bottomWindow, UI.dirKeyGroupWidget)
 
     -- itemKeyGroup
-    UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI, UI.model)
+    UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI.model)
+    UI.appendWindowWidget(bottomWindow, UI.itemKeyGroup)
 
     -- 玩家角色复活对话框
     UI.playerRebornDialog = Window.New()
@@ -283,12 +264,6 @@ function UI.Init()
     UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_Clicked, UI)
     -- skillManagementBtn
     UI.skillManagementBtn:MocConnectSignal(UI.skillManagementBtn.Signal_Clicked, UI)
-    -- characterInfoWindow
-    UI.characterInfoWindow:SetReceiverOfRequestMoveWindow(UI)
-    UI.characterInfoWindow:SetReceiverOfRequestCloseWindow(UI)
-    -- skillManagementWindow
-    UI.skillManagementWindow:SetReceiverOfRequestMoveWindow(UI)
-    UI.skillManagementWindow:SetReceiverOfRequestCloseWindow(UI)
     -- mapSelectComboBox
     UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
     -- model
@@ -311,7 +286,10 @@ function UI.Init()
     UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
 
-    -- post init
+    --- post init
+    -- 首次显示前，排序所有窗口
+    WindowManager.SortWindowList()
+
     if (System.IsMobile()) then
         UI.skillDockViewFrame:SetVisible(false)
         UI.articleDockFrame:SetVisible(false)
@@ -326,22 +304,11 @@ end
 function UI.Update(dt)
     UI.keyboardEvent()
 
-    UI.characterTopBtn:Update(dt)
-    UI.settingsBtn:Update(dt)
-    UI.skillManagementBtn:Update(dt)
-
-    -- characterInfoWindow
-    UI.characterInfoWindow:Update(dt)
-
-    UI.skillManagementWindow:Update(dt)
-
     if IsShowFps then
-        UI.fpsLabel:Update(dt)
         UI.fpsLabel:SetText("fps: " .. tostring(_TIME.GetFPS()))
     end
 
     UI.hpRectBar:SetHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.Hp))
-    UI.hpRectBar:Update(dt)
 
     local hitEnemyHp = UI.model:GetHitEnemyHp()
     if hitEnemyHp > 0 then
@@ -349,38 +316,18 @@ function UI.Update(dt)
     else
         UI.hitEnemyHpRectBar:SetVisible(false)
     end
-    UI.hitEnemyHpRectBar:Update(dt)
 
     -- partner
     for i, rectBar in pairs(UI.partnerHpRectBarList) do
         rectBar:SetHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.Hp))
-        rectBar:Update(dt)
     end
 
-    -- mapSelectComboBox
-    UI.mapSelectComboBox:Update(dt)
-
-    UI.articleDockFrame:Update(dt)
-
-    UI.skillDockViewFrame:Update(dt)
-
-    UI.bossDirectionTipLabel:Update(dt)
-
-    UI.dirKeyGroupWidget:Update(dt)
-    UI.itemKeyGroup:Update(dt)
-
-    UI.hoveringSkillItemTipWindow:Update(dt)
-
-    UI.hoveringArticleItemTipWindow:Update(dt)
-
-    UI.draggingArticleItem:Update(dt)
-
-    UI.playerRebornDialog:Update(dt)
-
-    if WindowManager.WhetherNeedUpdateUiWindowWidgetList() then
-        table.sort(UI.windowWidgetList, windowWidgetListSortFuc)
-        WindowManager.OnUiWindowWidgetListUpdateFinished()
+    -- 更新所有控件
+    local windowWidgetList = WindowManager.GetWindowWidgetList()
+    for _, windowWidget in pairs(windowWidgetList) do
+        windowWidget.Widget:Update(dt)
     end
+
     UI.mergeTotalSprite()
 end
 
@@ -400,25 +347,6 @@ function UI.Slot_BtnClicked(my, sender)
         local isVisible = UI.skillManagementWindow:IsVisible()
         UI.skillManagementWindow:SetVisible(not isVisible)
         WindowManager.SetWindowToTopLayer(UI.skillManagementWindow)
-    end
-end
-
-function UI.OnRequestMoveWindow(sender, x, y)
-    if UI.characterInfoWindow == sender then
-        UI.characterInfoWindow:SetPosition(x, y)
-    end
-
-    if (UI.skillManagementWindow == sender) then
-        UI.skillManagementWindow:SetPosition(x, y)
-    end
-end
-
-function UI.OnRequestCloseWindow(sender)
-    if UI.characterInfoWindow == sender then
-        UI.characterInfoWindow:SetVisible(false)
-    end
-    if (UI.skillManagementWindow == sender) then
-        UI.skillManagementWindow:SetVisible(false)
     end
 end
 
@@ -622,11 +550,7 @@ end
 ---@param widget Widget
 function UI.appendWindowWidget(window, widget)
     -- 将组件添加到窗口组件列表
-    ---@type WindowWidgetStruct
-    local windowWidget = _TABLE.DeepClone(WindowWidgetStruct)
-    windowWidget.window = window
-    windowWidget.widget = widget
-    table.insert(UI.windowWidgetList, windowWidget)
+    WindowManager.AppendWindowWidget(window, widget)
 end
 
 function UI.mergeTotalSprite()
@@ -638,8 +562,9 @@ function UI.mergeTotalSprite()
     txtR = 255; txtG = 255; txtB = 255; txtA = 255
     _Graphics.SetColor(txtR, txtG, txtB, txtA)
 
-    for _, windowWidget in pairs(UI.windowWidgetList) do
-        windowWidget.widget:Draw()
+    local windowWidgetList = WindowManager.GetWindowWidgetList()
+    for _, windowWidget in pairs(windowWidgetList) do
+        windowWidget.Widget:Draw()
     end
     UI.totalSprite:SetImage(UI.totalSpriteCanvas)
     

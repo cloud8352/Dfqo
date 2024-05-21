@@ -39,9 +39,8 @@ local function initBtnImgPaths(btn)
 end
 
 ---@param parentWindow Window
----@param ui UI
 ---@param model UiModel
-function ItemKeyGroup:Ctor(parentWindow, ui, model)
+function ItemKeyGroup:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
 
     NormalBtnWidth = NormalBtnWidth * Util.GetWindowSizeScale()
@@ -60,7 +59,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.normalAttackBtn)
     self.normalAttackBtn:EnableClickedSound(false)
     self.normalAttackBtn:SetSize(LargeBtnWidth, LargeBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.normalAttackBtn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.NormalAttack] = self.normalAttackBtn
 
     -- jump
@@ -68,7 +66,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.jumpBtn)
     self.jumpBtn:EnableClickedSound(false)
     self.jumpBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.jumpBtn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Jump] = self.jumpBtn
 
     -- counter Attack
@@ -76,7 +73,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.counterAttackBtn)
     self.counterAttackBtn:EnableClickedSound(false)
     self.counterAttackBtn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.counterAttackBtn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.CounterAttack] = self.counterAttackBtn
 
     -- skill1
@@ -84,7 +80,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill1Btn)
     self.skill1Btn:EnableClickedSound(false)
     self.skill1Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill1Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill1] = self.skill1Btn
 
     -- skill2
@@ -92,7 +87,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill2Btn)
     self.skill2Btn:EnableClickedSound(false)
     self.skill2Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill2Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill2] = self.skill2Btn
 
     -- skill3
@@ -100,7 +94,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill3Btn)
     self.skill3Btn:EnableClickedSound(false)
     self.skill3Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill3Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill3] = self.skill3Btn
 
     -- skill4
@@ -108,7 +101,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill4Btn)
     self.skill4Btn:EnableClickedSound(false)
     self.skill4Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill4Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill4] = self.skill4Btn
 
     -- skill5
@@ -116,7 +108,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill5Btn)
     self.skill5Btn:EnableClickedSound(false)
     self.skill5Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill5Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill5] = self.skill5Btn
 
     -- skill6
@@ -124,7 +115,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill6Btn)
     self.skill6Btn:EnableClickedSound(false)
     self.skill6Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill6Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill6] = self.skill6Btn
 
     -- skill7
@@ -132,7 +122,6 @@ function ItemKeyGroup:Ctor(parentWindow, ui, model)
     initBtnImgPaths(self.skill7Btn)
     self.skill7Btn:EnableClickedSound(false)
     self.skill7Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
-    ui.appendWindowWidget(parentWindow, self.skill7Btn)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill7] = self.skill7Btn
 
     -- connect

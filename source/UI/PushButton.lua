@@ -81,9 +81,6 @@ function PushButton:Ctor(parentWindow)
     self.maskSprite = _Sprite.New()
     self.maskPercent = 1.0
     self.isMaskPercentUpdated = true
-
-    -- 按钮点击信号的接收者
-    self.receiverOfBtnClicked = nil
 end
 
 function PushButton:Update(dt)
@@ -354,7 +351,7 @@ end
 
 --- 信号 - 被点击
 function PushButton:Signal_Clicked()
-    print("UiModel:Signal_Clicked()")
+    print("PushButton:Signal_Clicked()")
     local receiverList = self.mapOfSignalToReceiverList[self.Signal_Clicked]
     if receiverList == nil then
         return

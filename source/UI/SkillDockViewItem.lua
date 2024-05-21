@@ -46,11 +46,9 @@ function SkillDockViewItem:Update(dt)
         self:updateSprite()
 
 
-        self.iconLabel:SetPosition(self.xPos, self.yPos)
         self.iconLabel:SetSize(self.width, self.height)
         self.iconLabel:SetIconSize(self.width, self.height)
 
-        self.leftBottomKeyLabel:SetPosition(self.xPos + 2, self.yPos + self.height - 30)
         self.leftBottomKeyLabel:SetSize(self.width - 2, 30)
     end
 
@@ -78,12 +76,14 @@ end
 function SkillDockViewItem:SetPosition(x, y)
     self.xPos = x
     self.yPos = y
+    
+    self.iconLabel:SetPosition(self.xPos, self.yPos)
+    self.leftBottomKeyLabel:SetPosition(self.xPos + 2, self.yPos + self.height - 30)
 end
 
 function SkillDockViewItem:SetSize(width, height)
     self.width = width
     self.height = height
-
 end
 
 function SkillDockViewItem:SetEnable(enable)

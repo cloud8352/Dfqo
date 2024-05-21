@@ -20,13 +20,13 @@ local Widget = require("UI.Widget")
 ---@class TitleBar
 local TitleBar = require("core.class")(Widget)
 
-local TitleBarMargin = 5
+local CloseBtnWidth = 15
 
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
 
-    TitleBarMargin = 10 * Util.GetWindowSizeScale()
+    self.closeBtnWidth = CloseBtnWidth * Util.GetWindowSizeScale()
 
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
@@ -44,22 +44,24 @@ function TitleBar:Ctor(parentWindow)
     self.centerFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/CenterFrame")
     self.rightFrameImgData = _RESOURCE.GetSpriteData("ui/TitleBar/RightFrame")
 
+    self.isBackgroundVisible = true
+
     -- 上一帧时是否被按压
     self.lastIsPressed = false
 
-    self.leftMargin = 2
-    self.topMargin = 2
-    self.rightMargin = 2
+    self.leftMargin = 0
+    self.topMargin = 0
+    self.rightMargin = 0
     self.bottomMargin = 0
 
     -- 图标
     self.iconSprite = _Sprite.New()
     local spriteData = _RESOURCE.GetSpriteData("ui/TitleBar/TaskIcon")
     self.iconSprite:SetData(spriteData)
-    self.iconLeftMargin = 2
-    self.iconTopMargin = 2
-    self.iconRightMargin = 2
-    self.iconBottomMargin = 2
+    self.iconLeftMargin = 0
+    self.iconTopMargin = 0
+    self.iconRightMargin = 0
+    self.iconBottomMargin = 0
 
     -- 关闭按钮
     self.closeBtn = PushButton.New(self.parentWindow)
@@ -103,7 +105,9 @@ function TitleBar:Draw()
         return
     end
     
-    self.frameSprite:Draw()
+    if self.isBackgroundVisible then
+        self.frameSprite:Draw()
+    end
     self.iconSprite:Draw()
     self.closeBtn:Draw()
 end
@@ -137,10 +141,12 @@ end
 
 function TitleBar:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
+    local width, height = self:GetSize()
 
     local closeBtnWidth = self.closeBtn:GetWidth()
-    self.closeBtn:SetPosition(x + self.width - self.rightMargin - closeBtnWidth - TitleBarMargin * 0.8,
-        y + self.topMargin + TitleBarMargin)
+    local closeBtnMargin = (height - closeBtnWidth) / 2
+    self.closeBtn:SetPosition(x + self.width - closeBtnMargin - closeBtnWidth,
+        y + closeBtnMargin)
 
     -- position
     self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
@@ -150,9 +156,13 @@ end
 
 function TitleBar:SetSize(width, height)
     -- 关闭按钮
-    self.closeBtn:SetSize(height - TitleBarMargin * 2, height - TitleBarMargin * 2)
+    self.closeBtn:SetSize(self.closeBtnWidth, self.closeBtnWidth)
 
     Widget.SetSize(self, width, height)
+end
+
+function TitleBar:GetSize()
+    return Widget.GetSize(self)
 end
 
 function TitleBar:SetEnable(enable)
@@ -176,6 +186,11 @@ function TitleBar:SetScale(xScale, yScale)
     self.spriteYScale = yScale
 
     self:adjustScaleByMargin()
+end
+
+---@param isVisible boolean
+function TitleBar:SetIsBackgroundVisible(isVisible)
+    self.isBackgroundVisible = isVisible
 end
 
 function TitleBar:adjustScaleByMargin()

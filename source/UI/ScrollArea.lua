@@ -122,6 +122,10 @@ function ScrollArea:GetObjectName()
     return Widget.GetObjectName(self)
 end
 
+function ScrollArea:GetParentWindow()
+    return Widget.GetParentWindow(self)
+end
+
 function ScrollArea:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 

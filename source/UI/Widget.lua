@@ -104,6 +104,10 @@ function Widget:GetObjectName()
     return self.objectName
 end
 
+function Widget:GetParentWindow()
+    return self.parentWindow
+end
+
 ---@param x int
 ---@param y int
 function Widget:SetPosition(x, y)

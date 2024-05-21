@@ -7,6 +7,7 @@
 
 local _Mouse = require("lib.mouse")
 local Touch = require("lib.touch")
+local _TABLE = require("lib.table")
 
 local WindowManager = {}
 -- 默认窗口
@@ -15,7 +16,25 @@ WindowManager.DefaultWindow = nil
 
 ---@type table<number, Window>
 WindowManager.windowList = {}
-local whetherNeedUpdateUiWindowWidgetList = false
+
+---@class WindowWidgetStruct
+local WindowWidgetStruct = {
+    ---@type Window
+    Window = nil,
+    ---@type Widget
+    Widget = nil
+}
+
+---@type table<number, WindowWidgetStruct>
+local windowWidgetList = {}
+
+---
+---@param windowWidgetA WindowWidgetStruct
+---@param windowWidgetB WindowWidgetStruct
+---@return boolean
+local function windowWidgetListSortFuc(windowWidgetA, windowWidgetB)
+    return windowWidgetA.Window:GetWindowLayerIndex() < windowWidgetB.Window:GetWindowLayerIndex()
+end
 
 function WindowManager.Init()
     local Window = require("UI.Window")
@@ -28,7 +47,7 @@ function WindowManager.AppendToWindowList(obj)
 end
 
 ---@param obj Window
-function WindowManager.removeFromWindowList(obj)
+function WindowManager.RemoveFromWindowList(obj)
     local removeIndex = -1
     for i, window in pairs(WindowManager.windowList) do
         if obj == window then
@@ -42,6 +61,14 @@ function WindowManager.removeFromWindowList(obj)
     end
 
     table.remove(WindowManager.windowList, removeIndex)
+
+    -- 从 windowWidgetList 中移除
+    for i = #windowWidgetList, 1, -1 do
+        local windowWidget = windowWidgetList[i]
+        if windowWidget.Window == obj then
+            table.remove(windowWidgetList, i)
+        end
+    end
 end
 
 function WindowManager.GetMaxLayerIndex()
@@ -77,11 +104,7 @@ function WindowManager.IsMouseCapturedAboveLayer(layerIndex)
     end
 
     for _, window in pairs(WindowManager.windowList) do
-        if nil == window.GetWindowLayerIndex then
-            goto continue
-        end
-
-        local layerIndexTmp = window.GetWindowLayerIndex(window)
+        local layerIndexTmp = window:GetWindowLayerIndex()
         if layerIndex >= layerIndexTmp then
             goto continue
         end
@@ -155,11 +178,20 @@ function WindowManager.SetWindowToTopLayer(window)
     ---@type table<number, Window>
     local bottomToTopWindowList = {}
     ---@type table<number, Window>
+    local topHintWindowList = {}
+    ---@type table<number, Window>
     local toolTipWindowList = {}
     while (#WindowManager.windowList > 0) do
         local bottomLayerWindowIndex = 1
         ---@type Window
         local bottomLayerWindow = WindowManager.windowList[1]
+        -- 拆分出 置顶窗口
+        if bottomLayerWindow:IsWindowStayOnTopHint() then
+            table.insert(topHintWindowList, bottomLayerWindow)
+            table.remove(WindowManager.windowList, bottomLayerWindowIndex)
+            goto dispatchLoopContinue
+        end
+        -- 拆分出 提示工具窗口
         if bottomLayerWindow:IsTipToolWindow() then
             table.insert(toolTipWindowList, bottomLayerWindow)
             table.remove(WindowManager.windowList, bottomLayerWindowIndex)
@@ -196,6 +228,16 @@ function WindowManager.SetWindowToTopLayer(window)
         layerIndex = layerIndex + 1
     end
 
+    -- 将悬置顶窗口放到最顶层
+    for i, windowTmp in pairs(topHintWindowList) do
+        if windowTmp ~= window then
+            windowTmp:SetWindowLayerIndex(layerIndex)
+            table.insert(WindowManager.windowList, windowTmp)
+
+            layerIndex = layerIndex + 1
+        end
+    end
+
     -- 将悬浮提示窗口放到最顶层
     for i, windowTmp in pairs(toolTipWindowList) do
         if windowTmp ~= window then
@@ -206,20 +248,29 @@ function WindowManager.SetWindowToTopLayer(window)
         end
     end
 
-    whetherNeedUpdateUiWindowWidgetList = true
-end
-
-function WindowManager.WhetherNeedUpdateUiWindowWidgetList()
-    return whetherNeedUpdateUiWindowWidgetList
-end
-
-function WindowManager.OnUiWindowWidgetListUpdateFinished()
-    whetherNeedUpdateUiWindowWidgetList = false
+    -- 整理 windowWidgetList
+    table.sort(windowWidgetList, windowWidgetListSortFuc)
 end
 
 --- 重新排序窗口列表
 function WindowManager.SortWindowList()
     WindowManager.SetWindowToTopLayer(nil)
+end
+
+---
+---@param window Window
+---@param widget Widget
+function WindowManager.AppendWindowWidget(window, widget)
+    -- 将组件添加到窗口组件列表
+    ---@type WindowWidgetStruct
+    local windowWidget = _TABLE.DeepClone(WindowWidgetStruct)
+    windowWidget.Window = window
+    windowWidget.Widget = widget
+    table.insert(windowWidgetList, windowWidget)
+end
+
+function WindowManager.GetWindowWidgetList()
+    return windowWidgetList
 end
 
 return WindowManager
