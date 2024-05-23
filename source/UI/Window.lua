@@ -34,9 +34,6 @@ function Window:Ctor()
     self.windowLayerIndex = WindowManager.GetMaxLayerIndex() + 1
     WindowManager.AppendToWindowList(self)
 
-    self.bgSprite = _Sprite.New()
-    self.bgSprite:SwitchRect(true) -- 使用矩形
-    self.spriteXScale, self.spriteYScale = self.bgSprite:GetAttri("scale")
     self.isTipToolWindow = false
     self.isWindowStaysOnTopHint = false
     self.isInMoving = false
@@ -80,8 +77,6 @@ function Window:Draw()
         return
     end
     Widget.Draw(self)
-
-    self.bgSprite:Draw()
 
     self.contentWidget:Draw()
 
@@ -144,8 +139,6 @@ end
 
 function Window:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
-
-    self.bgSprite:SetAttri("position", x, y)
 
     local realTitleBarHeight = 0
     if self.titleBar:IsVisible() then
@@ -216,8 +209,9 @@ function Window:SetSize(w, h)
     painterSprite:Draw()
 
     _Graphics.RestoreCanvas()
-    self.bgSprite:SetImage(canvas)
-    self.bgSprite:AdjustDimensions()
+    local bgSprite = self:GetBgSprite()
+    bgSprite:SetImage(canvas)
+    bgSprite:AdjustDimensions()
 
     -- content
     local realTitleBarHeight = 0
@@ -236,6 +230,10 @@ function Window:GetSize()
     return Widget.GetSize(self)
 end
 
+function Window:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
 function Window:SetEnable(enable)
     Widget.SetEnable(self, enable)
 end
@@ -252,15 +250,38 @@ function Window:SetVisible(visible)
     Widget.SetVisible(self, visible)
 end
 
+---@param sprite Graphics.Drawable.Sprite
+function Window:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function Window:GetBgSprite()
+    return Widget.GetBgSprite(self)
+end
+
+--- 检查是否包含坐标。
+--- 由窗管调用
+---@param x number
+---@param y number
+---@return boolean
+function Window:CheckPoint(x, y)
+    if self.isTipToolWindow and
+        self.isWindowStaysOnTopHint == false
+    then
+        return false
+    end
+
+    if not self.isVisible then
+        return false
+    end
+
+    return Widget.CheckPoint(self, x, y)
+end
+
 --- 设置标题栏是否可见
 ---@param visible boolean
 function Window:SetTitleBarVisible(visible)
     self.titleBar:SetVisible(visible)
-end
-
-function Window:SetScale(xScale, yScale)
-    self.spriteXScale = xScale
-    self.spriteYScale = yScale
 end
 
 ---@return boolean
@@ -284,25 +305,6 @@ end
 ---@param layerIndex number
 function Window:SetWindowLayerIndex(layerIndex)
     self.windowLayerIndex = layerIndex
-end
-
---- 检查是否包含坐标。
---- 由窗管调用
----@param x number
----@param y number
----@return boolean
-function Window:CheckPoint(x, y)
-    if self.isTipToolWindow and
-        self.isWindowStaysOnTopHint == false
-    then
-        return false
-    end
-
-    if not self.isVisible then
-        return false
-    end
-
-    return self.bgSprite:CheckPoint(x, y)
 end
 
 function Window:SetIsTipToolWindow(is)
@@ -342,6 +344,11 @@ end
 ---@param isVisible boolean
 function Window:SetTitleBarIsBackgroundVisible(isVisible)
     self.titleBar:SetIsBackgroundVisible(isVisible)
+end
+
+---@param path string
+function Window:SetTitleBarIconPath(path)
+    self.titleBar:SetIconSpriteDataPath(path)
 end
 
 --- slots

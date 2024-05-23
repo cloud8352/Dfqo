@@ -25,8 +25,9 @@ local CloseBtnWidth = 15
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    local windowSizeScale = Util.GetWindowSizeScale()
 
-    self.closeBtnWidth = CloseBtnWidth * Util.GetWindowSizeScale()
+    self.closeBtnWidth = CloseBtnWidth * windowSizeScale
 
     -- 请求移动窗口位置信号的接收者
     self.receiverOfRequestMoveWindow = nil
@@ -58,10 +59,10 @@ function TitleBar:Ctor(parentWindow)
     self.iconSprite = _Sprite.New()
     local spriteData = _RESOURCE.GetSpriteData("ui/TitleBar/TaskIcon")
     self.iconSprite:SetData(spriteData)
-    self.iconLeftMargin = 0
-    self.iconTopMargin = 0
-    self.iconRightMargin = 0
-    self.iconBottomMargin = 0
+    self.iconLeftMargin = 5 * windowSizeScale
+    self.iconTopMargin = 5 * windowSizeScale
+    self.iconRightMargin = 6 * windowSizeScale
+    self.iconBottomMargin = 6 * windowSizeScale
 
     -- 关闭按钮
     self.closeBtn = PushButton.New(self.parentWindow)
@@ -75,7 +76,7 @@ function TitleBar:Ctor(parentWindow)
     self.receiverOfRequestCloseWindow = nil
 
     -- connect
-    self.closeBtn:MocConnectSignal(self.closeBtn.Signal_Clicked, self)
+    self.closeBtn:MocConnectSignal(self.closeBtn.Signal_BtnClicked, self)
 
     -- post init
     self:adjustScaleByMargin()
@@ -119,8 +120,6 @@ function TitleBar:PaintEvent()
     self.frameSprite:AdjustDimensions() -- 设置图片后调整精灵维度
 
     self:adjustScaleByMargin()
-
-    Widget.PaintEvent(self)
 end
 
 function TitleBar:MouseEvent()
@@ -299,6 +298,7 @@ function TitleBar:judgeAndExecRequestMoveWindow()
     end
 end
 
+---@param path string
 function TitleBar:SetIconSpriteDataPath(path)
     local spriteData = _RESOURCE.GetSpriteData(path)
     self.iconSprite:SetData(spriteData)

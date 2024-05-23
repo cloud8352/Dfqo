@@ -203,19 +203,21 @@ function UI.Init()
 
     -- article dock
     UI.articleDockFrame = ArticleDockFrame.New(bottomWindow, UI.model)
-    local articleDockFrameWidth, articleDockFrameHeight = UI.articleDockFrame:GetSize()
-    UI.articleDockFrame:SetPosition(Util.GetWindowWidth() / 2 - 20 - articleDockFrameWidth,
-        Util.GetWindowHeight() - articleDockFrameHeight - 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.articleDockFrame)
 
     -- skill dock
     UI.skillDockViewFrame = SkillDockViewFrame.New(bottomWindow, UI.model)
-    local _, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
-    UI.skillDockViewFrame:SetPosition(Util.GetWindowWidth() / 2 + 20,
-        Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.skillDockViewFrame)
+
+    -- 将 物品托盘 和 技能托盘 水平居中放到窗口底部
+    local articleDockFrameWidth, articleDockFrameHeight = UI.articleDockFrame:GetSize()
+    local skillDockViewFrameWidth, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
+    UI.articleDockFrame:SetPosition((Util.GetWindowWidth() - articleDockFrameWidth - skillDockViewFrameWidth) / 2,
+        Util.GetWindowHeight() - articleDockFrameHeight - 10)
+    UI.skillDockViewFrame:SetPosition((Util.GetWindowWidth() + articleDockFrameWidth - skillDockViewFrameWidth) / 2,
+        Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
 
     --
     UI.bossDirectionTipLabel = Label.New(bottomWindow)
@@ -261,9 +263,9 @@ function UI.Init()
 
     ---- connect
     -- characterTopBtn
-    UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_Clicked, UI)
+    UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_BtnClicked, UI)
     -- skillManagementBtn
-    UI.skillManagementBtn:MocConnectSignal(UI.skillManagementBtn.Signal_Clicked, UI)
+    UI.skillManagementBtn:MocConnectSignal(UI.skillManagementBtn.Signal_BtnClicked, UI)
     -- mapSelectComboBox
     UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
     -- model

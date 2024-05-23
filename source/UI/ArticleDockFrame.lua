@@ -41,7 +41,7 @@ function ArticleDockFrame:Ctor(parentWindow, model)
 
     self.model = model
 
-    local width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
+    local width = ItemWidth * ColCount + ItemSpace * ColCount
     local height = ItemWidth
     Widget.SetSize(self, width, height)
 
@@ -222,6 +222,31 @@ function ArticleDockFrame:MouseEvent()
     self:judgeAndExecRequestDragItem()
 end
 
+--- 连接信号
+---@param signal function
+---@param obj Object
+function ArticleDockFrame:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function ArticleDockFrame:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function ArticleDockFrame:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function ArticleDockFrame:GetObjectName()
+    return Widget.GetObjectName(self)
+end
+
+function ArticleDockFrame:GetParentWindow()
+    return Widget.GetParentWindow(self)
+end
+
 function ArticleDockFrame:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
@@ -240,13 +265,49 @@ function ArticleDockFrame:SetPosition(x, y)
     end
 end
 
----@return number, number w, h
+function ArticleDockFrame:GetPosition()
+    return Widget.GetPosition(self)
+end
+
+function ArticleDockFrame:SetSize(width, height)
+    Widget.SetSize(self, width, height)
+end
+
 function ArticleDockFrame:GetSize()
     return Widget.GetSize(self)
 end
 
+function ArticleDockFrame:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
 function ArticleDockFrame:SetEnable(enable)
     Widget.SetEnable(self, enable)
+end
+
+function ArticleDockFrame:IsVisible()
+    return Widget.IsVisible(self)
+end
+
+---@param isVisible bool
+function ArticleDockFrame:SetVisible(isVisible)
+    Widget.SetVisible(self, isVisible)
+end
+
+---@param sprite Graphics.Drawable.Sprite
+function ArticleDockFrame:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function ArticleDockFrame:GetBgSprite()
+    return Widget.GetBgSprite(self)
+end
+
+---@param x int
+---@param y int
+---@return boolean
+function ArticleDockFrame:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
 end
 
 --- 设置某一显示项的信息

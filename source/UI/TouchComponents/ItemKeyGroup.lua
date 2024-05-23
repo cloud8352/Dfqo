@@ -125,16 +125,16 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill7] = self.skill7Btn
 
     -- connect
-    self.normalAttackBtn:MocConnectSignal(self.normalAttackBtn.Signal_Clicked, self)
-    self.jumpBtn:MocConnectSignal(self.jumpBtn.Signal_Clicked, self)
-    self.counterAttackBtn:MocConnectSignal(self.counterAttackBtn.Signal_Clicked, self)
-    self.skill1Btn:MocConnectSignal(self.skill1Btn.Signal_Clicked, self)
-    self.skill2Btn:MocConnectSignal(self.skill2Btn.Signal_Clicked, self)
-    self.skill3Btn:MocConnectSignal(self.skill3Btn.Signal_Clicked, self)
-    self.skill4Btn:MocConnectSignal(self.skill4Btn.Signal_Clicked, self)
-    self.skill5Btn:MocConnectSignal(self.skill5Btn.Signal_Clicked, self)
-    self.skill6Btn:MocConnectSignal(self.skill6Btn.Signal_Clicked, self)
-    self.skill7Btn:MocConnectSignal(self.skill7Btn.Signal_Clicked, self)
+    self.normalAttackBtn:MocConnectSignal(self.normalAttackBtn.Signal_BtnClicked, self)
+    self.jumpBtn:MocConnectSignal(self.jumpBtn.Signal_BtnClicked, self)
+    self.counterAttackBtn:MocConnectSignal(self.counterAttackBtn.Signal_BtnClicked, self)
+    self.skill1Btn:MocConnectSignal(self.skill1Btn.Signal_BtnClicked, self)
+    self.skill2Btn:MocConnectSignal(self.skill2Btn.Signal_BtnClicked, self)
+    self.skill3Btn:MocConnectSignal(self.skill3Btn.Signal_BtnClicked, self)
+    self.skill4Btn:MocConnectSignal(self.skill4Btn.Signal_BtnClicked, self)
+    self.skill5Btn:MocConnectSignal(self.skill5Btn.Signal_BtnClicked, self)
+    self.skill6Btn:MocConnectSignal(self.skill6Btn.Signal_BtnClicked, self)
+    self.skill7Btn:MocConnectSignal(self.skill7Btn.Signal_BtnClicked, self)
 
     -- post init
     self:UpdatePosition()
@@ -148,21 +148,13 @@ function ItemKeyGroup:Update(dt)
 
     ---- skill item
     -- 更新技能显示项冷却时间
-    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
-    for k, v in pairs(mapOfTagToSkillObj) do
-        -- k 为 tag，即配置中的键
-        local btn = self.mapOfTagToSkillBtn[k]
-        if nil == btn then
-            goto continue
+    for k, v in pairs(self.mapOfTagToSkillBtn) do
+        local progress = 1.0
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
+        if actorSkillObj then
+            progress = actorSkillObj:GetProcess()
         end
-
-        local progress = v:GetProcess();
-        if 1.0 <= progress then
-            goto continue
-        end
-        btn:SetMaskPercent(progress)
-
-        ::continue::
+        v:SetMaskPercent(progress)
     end
 
     -- normal attack
@@ -239,18 +231,19 @@ function ItemKeyGroup:SetVisible(visible)
 end
 
 function ItemKeyGroup:reloadSkillBtnsIcon()
-    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
-    for k, v in pairs(mapOfTagToSkillObj) do
-        -- k 为 tag，即配置中的键
-        local btn = self.mapOfTagToSkillBtn[k]
-        if nil == btn then
-            goto continue
+    for k, v in pairs(self.mapOfTagToSkillBtn) do
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
+        if actorSkillObj then
+            local iconPath = "icon/skill/" .. actorSkillObj:GetData().icon
+            v:SetNormalSpriteDataPath(iconPath)
+            v:SetHoveringSpriteDataPath(iconPath)
+            v:SetDisabledSpriteDataPath(iconPath)
+        else
+            v:SetNormalSpriteDataPath(NormalImgPath)
+            v:SetHoveringSpriteDataPath(HoveringImgPath)
+            v:SetDisabledSpriteDataPath(DisabledImgPath)
         end
-        btn:SetNormalSpriteDataPath("icon/skill/" .. v:GetData().icon)
-        btn:SetHoveringSpriteDataPath("icon/skill/" .. v:GetData().icon)
-        btn:SetDisabledSpriteDataPath("icon/skill/" .. v:GetData().icon)
 
-        ::continue::
     end
 end
 

@@ -726,6 +726,25 @@ function UiModel:Signal_PlayerReborn()
     end
 end
 
+function UiModel:Signal_PlayerMountedSkillsChanged()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerMountedSkillsChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerMountedSkillsChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
 ---@param player Actor.Entity
 function UiModel:SetPlayer(player)
     if self.player == player then
@@ -963,14 +982,25 @@ function UiModel:SetPlayer(player)
     self.articleDockInfoList[5] = self.articleInfoList[5]
 
     -- 技能资源数据列表
-    self.skillResMgrDataList[1] = ResMgr.GetSkillData("swordman/upperSlash")
-    self.skillResMgrDataList[2] = ResMgr.GetSkillData("swordman/onigiri")
-    self.skillResMgrDataList[3] = ResMgr.GetSkillData("counterattack")
-    self.skillResMgrDataList[4] = ResMgr.GetSkillData("flashStep")
-    self.skillResMgrDataList[5] = ResMgr.GetSkillData("swordman/jumonji")
-    self.skillResMgrDataList[6] = ResMgr.GetSkillData("swordman/bloodFrenzyAttack")
-    self.skillResMgrDataList[7] = ResMgr.GetSkillData("swordman/hopsmash")
-    self.skillResMgrDataList[8] = ResMgr.GetSkillData("swordman/ashen_fork")
+    self.skillResMgrDataList = {}
+    local skillResMgrData = ResMgr.GetSkillData("swordman/normalAttack")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/upperSlash")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/onigiri")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("counterattack")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("flashStep")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/jumonji")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/bloodFrenzyAttack")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/hopsmash")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
+    skillResMgrData = ResMgr.GetSkillData("swordman/ashen_fork")
+    table.insert(self.skillResMgrDataList, skillResMgrData)
     -- test
     for i = 1, 15 do
         table.insert(self.skillResMgrDataList, ResMgr.GetSkillData("swordman/ashen_fork"))
@@ -989,12 +1019,14 @@ function UiModel:GetPlayer()
 end
 
 ---@return Actor.Skill
-function UiModel:GetMapOfTagToSkillObj()
+function UiModel:GetPlayerActorSkillObj(tag)
     if self.player == nil then
-        print("UiModel:GetMapOfTagToSkillObj()", "player is nil")
-        return {}
+        print("UiModel:GetPlayerActorSkillObj(tag)", "player is nil")
+        return nil
     end
-    return SkillSrv.GetMap(self.player.skills)
+    local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
+
+    return mapOfTagToActorSkillObj[tag]
 end
 
 function UiModel:GetSkillResMgrDataList()
@@ -1005,6 +1037,31 @@ end
 ---@return string keyStr
 function UiModel:GetSkillKeyByTag(tag)
     return _CONFIG.code[tag]
+end
+
+---@param tag string
+---@param skillInfo SkillInfo
+function UiModel:MountPlayerSkill(tag, skillInfo)
+    ---@type Actor.RESMGR.SkillData
+    local skillResMgrData = nil
+    for i, data in pairs(self.skillResMgrDataList) do
+        if skillInfo.resDataPath == data.path then
+            skillResMgrData = data
+        end
+    end
+
+    -- 如果已经转配了相同技能，则先卸载
+    self:unloadPlayerSkill(skillInfo)
+
+    SkillSrv.Set(self.player, tag, skillResMgrData)
+
+    self:Signal_PlayerMountedSkillsChanged()
+end
+
+---@param skillInfo SkillInfo
+function UiModel:UnloadPlayerSkill(skillInfo)
+    self:unloadPlayerSkill(skillInfo)
+    self:Signal_PlayerMountedSkillsChanged()
 end
 
 ---@param mapID number
@@ -1228,6 +1285,18 @@ function UiModel:playPlayerRebornSound()
     self.playerRebornSoundSource:stop()
     self.playerRebornSoundSource:setVolume(_CONFIG.setting.sound)
     self.playerRebornSoundSource:play()
+end
+
+---@param skillInfo SkillInfo
+function UiModel:unloadPlayerSkill(skillInfo)
+    local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
+    for tagTmp, actorSkillObj in pairs(mapOfTagToActorSkillObj) do
+        if actorSkillObj ~= nil and
+            actorSkillObj:GetData().path == skillInfo.resDataPath
+        then
+            SkillSrv.Set(self.player, tagTmp, nil)
+        end
+    end
 end
 
 return UiModel

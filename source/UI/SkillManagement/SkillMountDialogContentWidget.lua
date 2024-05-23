@@ -23,9 +23,6 @@ local PushButton = require("UI.PushButton")
 ---@class SkillMountDialogContentWidget
 local SkillMountDialogContentWidget = require("core.class")(Widget)
 
-local SkillShortcutsRowCount = 2
-local SkillShortcutsColCount = 6
-
 ---@param parentWindow Window
 ---@param model UiModel
 function SkillMountDialogContentWidget:Ctor(parentWindow, model)
@@ -48,6 +45,7 @@ function SkillMountDialogContentWidget:Ctor(parentWindow, model)
 
     -- connection
     self.skillDockViewFrame:MocConnectSignal(self.skillDockViewFrame.Signal_ItemClicked, self)
+    self.clearSkillShortcutsBtn:MocConnectSignal(self.clearSkillShortcutsBtn.Signal_BtnClicked, self)
 end
 
 function SkillMountDialogContentWidget:Update(dt)
@@ -127,6 +125,10 @@ function SkillMountDialogContentWidget:GetSize()
     return Widget.GetSize(self)
 end
 
+function SkillMountDialogContentWidget:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
 function SkillMountDialogContentWidget:SetEnable(enable)
     Widget.SetEnable(self, enable)
 end
@@ -138,6 +140,15 @@ end
 ---@param isVisible bool
 function SkillMountDialogContentWidget:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
+end
+
+---@param sprite Graphics.Drawable.Sprite
+function SkillMountDialogContentWidget:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function SkillMountDialogContentWidget:GetBgSprite()
+    return Widget.GetBgSprite(self)
 end
 
 ---@param x int
@@ -157,7 +168,14 @@ end
 ---@param sender Obj
 ---@param skillTag string
 function SkillMountDialogContentWidget:Slot_ItemClicked(sender, skillTag)
-    print(111, skillTag)
+    self.model:MountPlayerSkill(skillTag, self.needMountingSkillInfo)
+end
+
+---@param sender Obj
+function SkillMountDialogContentWidget:Slot_BtnClicked(sender)
+    if self.clearSkillShortcutsBtn == sender then
+        self.model:UnloadPlayerSkill(self.needMountingSkillInfo)
+    end
 end
 
 --- private function

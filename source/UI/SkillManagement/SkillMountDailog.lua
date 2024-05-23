@@ -30,7 +30,7 @@ function SkillMountDialog:Ctor(model)
 
     self:SetIsWindowStayOnTopHint(true)
     self:SetTitleBarIsBackgroundVisible(false)
-    local width = 305 * Util.GetWindowSizeScale()
+    local width = 400 * Util.GetWindowSizeScale()
     local height = 233 * Util.GetWindowSizeScale()
     self:SetSize(width, height)
     -- 移到程序窗口中央
@@ -123,10 +123,6 @@ function SkillMountDialog:SetTitleBarVisible(visible)
     Window.SetTitleBarVisible(self, visible)
 end
 
-function SkillMountDialog:SetScale(xScale, yScale)
-    Window.SetScale(self, xScale, yScale)
-end
-
 ---@return boolean
 function SkillMountDialog:IsInMoving()
     return Window.IsInMoving(self)
@@ -188,10 +184,17 @@ function SkillMountDialog:SetTitleBarIsBackgroundVisible(isVisible)
     Window.SetTitleBarIsBackgroundVisible(self, isVisible)
 end
 
+---@param path string
+function SkillMountDialog:SetTitleBarIconPath(path)
+    Window.SetTitleBarIconPath(self, path)
+end
+
 ---@param info SkillInfo
 function SkillMountDialog:SetNeedMountingSkillInfo(info)
     self.needMountingSkillInfo = info
     self.skillMountDialogContentWidget:SetNeedMountingSkillInfo(info)
+
+    self:SetTitleBarIconPath(info.iconPath)
 end
 
 --- slots

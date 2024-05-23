@@ -350,9 +350,9 @@ function PushButton:MocConnectSignal(signal, receiver)
 end
 
 --- 信号 - 被点击
-function PushButton:Signal_Clicked()
-    print("PushButton:Signal_Clicked()")
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_Clicked]
+function PushButton:Signal_BtnClicked()
+    print("PushButton:Signal_BtnClicked()")
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_BtnClicked]
     if receiverList == nil then
         return
     end
@@ -437,7 +437,7 @@ function PushButton:judgeSignals()
         self.isPressing = false
 
         -- 判断和执行点击触发事件
-        self:Signal_Clicked()
+        self:Signal_BtnClicked()
     end
 end
 

@@ -71,7 +71,7 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     
     -- connection
     self.skillItemListView:MocConnectSignal(self.skillItemListView.Signal_SelectedItemChanged, self)
-    self.mountBtn:MocConnectSignal(self.mountBtn.Signal_Clicked, self)
+    self.mountBtn:MocConnectSignal(self.mountBtn.Signal_BtnClicked, self)
 
     -- post init
     local skillResMgrDataList = self.model:GetSkillResMgrDataList()
@@ -80,8 +80,8 @@ function SkillManagementWidget:Ctor(parentWindow, model)
         print(info.iconPath, info.name)
 
         local item = SkillManagementItem.New()
-        item:SetIconPath("icon/skill/" .. skillResMgrData.icon)
-        item:SetTitle(skillResMgrData.name)
+        item:SetIconPath(info.iconPath)
+        item:SetTitle(info.name)
         item:SetLevel(1)
         item:SetProgress(50, 100)
         item:SetValue(ItemDataKey, info)
@@ -177,6 +177,9 @@ function SkillManagementWidget:Slot_SelectedItemChanged(sender, item)
     print("SkillManagementWidget:Slot_SelectedItemChanged(item)", item:GetIndex())
 
     self.selectedSkillItem = item
+    ---@type SkillInfo
+    local skillInfo = self.selectedSkillItem:GetValue(ItemDataKey)
+    self.skillMountDialog:SetNeedMountingSkillInfo(skillInfo)
 end
 
 ---@param sender Obj

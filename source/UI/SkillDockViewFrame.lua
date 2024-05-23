@@ -36,115 +36,56 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 
     local defaultItemWidth = 45 * Util.GetWindowSizeScale()
     defaultItemWidth = _MATH.Round(defaultItemWidth)
-    local width = defaultItemWidth * 6 + ItemSpace * 5
+    local width = defaultItemWidth * 8 + ItemSpace * 7
     local height = ItemSpace + defaultItemWidth * 2
     self:SetSize(width, height)
 
-    ---- skill item background
-    local itemBgImgPath = "ui/WindowFrame/CenterBg"
-    ---@type table<string, Label>
-    self.mapOfTagToSkillViewItemBg = {}
-    -- skill1
-    local bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill1"] = bgLabel
-    -- skill2
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill2"] = bgLabel
-    -- skill3
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill3"] = bgLabel
-    -- skill4
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill4"] = bgLabel
-    -- skill5
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill5"] = bgLabel
-    -- skill6
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill6"] = bgLabel
-    -- skill7
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill7"] = bgLabel
-    -- skill8
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill8"] = bgLabel
-    -- skill9
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill9"] = bgLabel
-    -- skill10
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill10"] = bgLabel
-    -- skill11
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill11"] = bgLabel
-    -- skill12
-    bgLabel = Label.New(parentWindow)
-    bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-    self.mapOfTagToSkillViewItemBg["skill12"] = bgLabel
-
-
     -- skill item
-    local itemImgPath = ""
     ---@type table<string, SkillDockViewItem>
     self.mapOfTagToSkillViewItem = {}
-    -- skill1
+    -- basic skill item
+    -- normalAttack
     local item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
+    self.mapOfTagToSkillViewItem["normalAttack"] = item
+    -- counterAttack
+    item = SkillDockViewItem.New(parentWindow)
+    self.mapOfTagToSkillViewItem["counterAttack"] = item
+
+    -- skill1
+    item = SkillDockViewItem.New(parentWindow)
     self.mapOfTagToSkillViewItem["skill1"] = item
     -- skill2
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill2"] = item
     -- skill3
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill3"] = item
     -- skill4
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill4"] = item
     -- skill5
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill5"] = item
     -- skill6
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill6"] = item
     -- skill7
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill7"] = item
     -- skill8
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill8"] = item
     -- skill9
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill9"] = item
     -- skill10
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill10"] = item
     -- skill11
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill11"] = item
     -- skill12
     item = SkillDockViewItem.New(parentWindow)
-    item:SetIconSpriteDataPath(itemImgPath)
     self.mapOfTagToSkillViewItem["skill12"] = item
 
     -- hovering item frame Label
@@ -158,6 +99,9 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
     self.itemHoveringTimer = Timer.New()
     self.isShowHoveringItemTip = false -- 是否显示悬浮技能项的提示信息
     self.lastIsShowHoveringItemTip = false
+
+    -- connection
+    self.model:MocConnectSignal(self.model.Signal_PlayerMountedSkillsChanged, self)
 
     --- post init
     self:ReloadSkillsViewData()
@@ -195,32 +139,17 @@ function SkillDockViewFrame:Update(dt)
         self:updateHoveringItemTipWindowData()
     end
 
-    -- skill item bg
-    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
-        v:Update(dt)
-    end
-
     ---- skill item
-    -- 更新技能显示项冷却时间
-    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
-    for k, v in pairs(mapOfTagToSkillObj) do
-        -- k 为 tag，即配置中的键
-        local item = self.mapOfTagToSkillViewItem[k]
-        if nil == item then
-            goto continue
-        end
-
-        local progress = v:GetProcess();
-        if 1.0 <= progress then
-            goto continue
-        end
-        item:SetCoolDownProgress(progress)
-
-        ::continue::
-    end
-
     -- 更新技能显示项
     for k, v in pairs(self.mapOfTagToSkillViewItem) do
+        -- 更新技能显示项冷却时间
+        local progress = 1.0
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
+        if actorSkillObj then
+            progress = actorSkillObj:GetProcess()
+        end
+        v:SetCoolDownProgress(progress)
+
         v:Update(dt)
     end
 
@@ -239,10 +168,6 @@ function SkillDockViewFrame:Draw()
     end
     Widget.Draw(self)
 
-    -- skill item bg
-    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
-        v:Draw()
-    end
     -- skill item
     for k, v in pairs(self.mapOfTagToSkillViewItem) do
         v:Draw()
@@ -266,8 +191,8 @@ function SkillDockViewFrame:MouseEvent()
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
         -- 寻找鼠标悬停处的显示项标签
         local hoveringItemTag = ""
-        for tag, label in pairs(self.mapOfTagToSkillViewItemBg) do
-            if label:CheckPoint(mousePosX, mousePosY) then
+        for tag, item in pairs(self.mapOfTagToSkillViewItem) do
+            if item:CheckPoint(mousePosX, mousePosY) then
                 hoveringItemTag = tag
                 break
             end
@@ -356,6 +281,15 @@ function SkillDockViewFrame:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
 end
 
+---@param sprite Graphics.Drawable.Sprite
+function SkillDockViewFrame:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function SkillDockViewFrame:GetBgSprite()
+    return Widget.GetBgSprite(self)
+end
+
 ---@param x int
 ---@param y int
 ---@return boolean
@@ -364,26 +298,28 @@ function SkillDockViewFrame:CheckPoint(x, y)
 end
 
 function SkillDockViewFrame:ReloadSkillsViewData()
-    local mapOfTagToSkillObj = self.model:GetMapOfTagToSkillObj()
-    for k, v in pairs(mapOfTagToSkillObj) do
-        -- k 为 tag，即配置中的键
-        local item = self.mapOfTagToSkillViewItem[k]
-        if nil == item then
-            goto continue
+    for tag, item in pairs(self.mapOfTagToSkillViewItem) do
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(tag)
+        if actorSkillObj then
+            item:SetIconSpriteDataPath("icon/skill/" .. actorSkillObj:GetData().icon)
+        else
+            item:SetIconSpriteDataPath("")
         end
-        item:SetIconSpriteDataPath("icon/skill/" .. v:GetData().icon)
 
-        local key = self.model:GetSkillKeyByTag(k)
+        local key = self.model:GetSkillKeyByTag(tag)
         if nil == key then
             key = ""
         end
         item:SetKey(key)
-
-        ::continue::
     end
 end
 
 --- slots
+
+---@param sender Obj
+function SkillDockViewFrame:Slot_PlayerMountedSkillsChanged()
+    self:ReloadSkillsViewData()
+end
 
 --- signals
 
@@ -411,71 +347,62 @@ end
 --- private function
 
 function SkillDockViewFrame:updateAllItemsPosition()
-    -- item background
     local _, height = self:GetSize()
     local xPos, yPos = self:GetPosition()
     local itemWidth = (height - ItemSpace) / 2
-    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
+    -- 左侧存在两个基础技能
+    local normalSkillXPos = xPos + (itemWidth + ItemSpace) * 2
+    for k, v in pairs(self.mapOfTagToSkillViewItem) do
+        if "normalAttack" == k then
+            v:SetPosition(xPos, yPos + (height - itemWidth) / 2) -- 垂直居中
+        end
+        if "counterAttack" == k then
+            v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos + (height - itemWidth) / 2)
+        end
         if "skill1" == k then
-            v:SetPosition(xPos, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos, yPos + itemWidth + ItemSpace)
         end
         if "skill2" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 1, yPos + itemWidth + ItemSpace)
         end
         if "skill3" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 2, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 2, yPos + itemWidth + ItemSpace)
         end
         if "skill4" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 3, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 3, yPos + itemWidth + ItemSpace)
         end
         if "skill5" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 4, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 4, yPos + itemWidth + ItemSpace)
         end
         if "skill6" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 5, yPos + itemWidth + ItemSpace)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 5, yPos + itemWidth + ItemSpace)
         end
         if "skill7" == k then
-            v:SetPosition(xPos, yPos)
+            v:SetPosition(normalSkillXPos, yPos)
         end
         if "skill8" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 1, yPos)
         end
         if "skill9" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 2, yPos)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 2, yPos)
         end
         if "skill10" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 3, yPos)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 3, yPos)
         end
         if "skill11" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 4, yPos)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 4, yPos)
         end
         if "skill12" == k then
-            v:SetPosition(xPos + (ItemSpace + itemWidth) * 5, yPos)
+            v:SetPosition(normalSkillXPos + (ItemSpace + itemWidth) * 5, yPos)
         end
-    end
-
-    -- item
-    for k, v in pairs(self.mapOfTagToSkillViewItem) do
-        local skillItemBg = self.mapOfTagToSkillViewItemBg[k]
-        local x, y = skillItemBg:GetPosition()
-        v:SetPosition(x, y)
     end
 end
 
 function SkillDockViewFrame:updateAllItemsSize()
-    -- item background
     local _, height = self:GetSize()
     local itemWidth = (height - ItemSpace) / 2
-    for k, v in pairs(self.mapOfTagToSkillViewItemBg) do
-        v:SetSize(itemWidth, itemWidth)
-        v:SetIconSize(itemWidth, itemWidth)
-    end
-
-    -- item
     for k, v in pairs(self.mapOfTagToSkillViewItem) do
-        local skillItemBg = self.mapOfTagToSkillViewItemBg[k]
-        local w, h = skillItemBg:GetSize()
-        v:SetSize(w, h)
+        v:SetSize(itemWidth, itemWidth)
     end
 
     -- 技能显示项改变,则悬浮框也需要随之改变
@@ -485,16 +412,16 @@ end
 
 function SkillDockViewFrame:updateHoveringItemFrameData()
     -- hovering item frame label
-    local skillItemBgLabel = self.mapOfTagToSkillViewItemBg[self.hoveringItemTag]
-    if nil == skillItemBgLabel then
+    local item = self.mapOfTagToSkillViewItem[self.hoveringItemTag]
+    if nil == item then
         self.hoveringItemFrameLabel:SetVisible(false)
         return
     end
 
-    local x, y = skillItemBgLabel:GetPosition()
+    local x, y = item:GetPosition()
     self.hoveringItemFrameLabel:SetPosition(x, y)
 
-    local w, h = skillItemBgLabel:GetSize()
+    local w, h = item:GetSize()
     self.hoveringItemFrameLabel:SetSize(w, h)
     self.hoveringItemFrameLabel:SetIconSize(w, h)
 
@@ -504,18 +431,18 @@ end
 function SkillDockViewFrame:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringSkillItemTipWindowVisibility(self.isShowHoveringItemTip)
 
-    local skillItemBgLabel = self.mapOfTagToSkillViewItemBg[self.hoveringItemTag]
-    if nil == skillItemBgLabel then
+    local item = self.mapOfTagToSkillViewItem[self.hoveringItemTag]
+    if nil == item then
         return
     end
 
     -- 设置悬浮框位置
     local tipWindowXPos = 0
     local tipWindowYPos = 0
-    local bgX, bgY = skillItemBgLabel:GetPosition()
-    local bgW, bgH = skillItemBgLabel:GetSize()
-    tipWindowXPos = bgX + bgW / 2
-    tipWindowYPos = bgY + bgH / 2
+    local itemX, itemY = item:GetPosition()
+    local itemW, itemH = item:GetSize()
+    tipWindowXPos = itemX + itemW / 2
+    tipWindowYPos = itemY + itemH / 2
 
     -- info
     ---@type SkillInfo
@@ -523,8 +450,7 @@ function SkillDockViewFrame:updateHoveringItemTipWindowData()
     skillInfo.id = 1
 
     -- 获取服务中正在运行的技能对象
-    local skillMap = self.model:GetMapOfTagToSkillObj()
-    local skill = skillMap[self.hoveringItemTag]
+    local skill = self.model:GetPlayerActorSkillObj(self.hoveringItemTag)
     -- 更新技能信息
     if nil ~= skill then
         local skillData = skill:GetData()

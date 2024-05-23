@@ -154,6 +154,10 @@ function ScrollArea:GetSize()
     return Widget.GetSize(self)
 end
 
+function ScrollArea:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
 function ScrollArea:SetEnable(enable)
     Widget.SetEnable(self, enable)
 end
@@ -165,6 +169,15 @@ end
 ---@param isVisible bool
 function ScrollArea:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
+end
+
+---@param sprite Graphics.Drawable.Sprite
+function ScrollArea:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function ScrollArea:GetBgSprite()
+    return Widget.GetBgSprite(self)
 end
 
 ---@param x int

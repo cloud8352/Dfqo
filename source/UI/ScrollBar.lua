@@ -123,6 +123,10 @@ function ScrollBar:GetSize()
     return Widget.GetSize(self)
 end
 
+function ScrollBar:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
 ---@return int
 function ScrollBar:GetWidth()
     local w, _ = self:GetSize()

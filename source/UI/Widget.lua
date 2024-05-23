@@ -52,8 +52,6 @@ function Widget:Update(dt)
             local spriteYScale = self.height / spriteHeight
             self.bgSprite:SetAttri("scale", spriteXScale, spriteYScale)
         end
-
-        self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0, 0)
     end
 
 
@@ -66,9 +64,6 @@ end
 
 function Widget:Draw()
     self.bgSprite:Draw()
-end
-
-function Widget:PaintEvent()
 end
 
 --- 连接信号
@@ -131,6 +126,8 @@ function Widget:SetSize(width, height)
     end
     self.width = width
     self.height = height
+    
+    self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0, 0)
 end
 
 ---@return number, number w, h
@@ -163,6 +160,10 @@ function Widget:SetBgSprite(sprite)
     self.bgSprite = sprite
 
     self.bgSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+function Widget:GetBgSprite()
+    return self.bgSprite
 end
 
 ---@param x int

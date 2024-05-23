@@ -183,6 +183,7 @@ UiCommon.SkillPropType = {
 ---@field id number
 ---@field name string
 ---@field desc string
+---@field resDataPath string
 ---@field iconPath string
 ---@field cdTime number
 ---@field mp number
@@ -192,6 +193,7 @@ local SkillInfo = {
     id = 0,
     name = "",
     desc = "",
+    resDataPath = "",
     iconPath = "",
     cdTime = 0,
     mp = 0,
@@ -215,8 +217,11 @@ function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     if data.special then
         skillInfo.desc = data.special
     end
+    if data.path then
+        skillInfo.resDataPath = data.path
+    end
     if data.icon then
-        skillInfo.iconPath = data.icon
+        skillInfo.iconPath = "icon/skill/" .. data.icon
     end
     if data.time then
         skillInfo.cdTime = data.time / 1000

@@ -107,14 +107,14 @@ function DirKeyGroupWidget:Ctor(parentWindow, model)
     self.leftUpKeyBtn:SetSize(MainKeyBtnHeight, MainKeyBtnHeight)
 
     -- connect
-    self.upKeyBtn:MocConnectSignal(self.upKeyBtn.Signal_Clicked, self)
-    self.upRightKeyBtn:MocConnectSignal(self.upRightKeyBtn.Signal_Clicked, self)
-    self.rightKeyBtn:MocConnectSignal(self.rightKeyBtn.Signal_Clicked, self)
-    self.rightDownKeyBtn:MocConnectSignal(self.rightDownKeyBtn.Signal_Clicked, self)
-    self.downKeyBtn:MocConnectSignal(self.downKeyBtn.Signal_Clicked, self)
-    self.downLeftKeyBtn:MocConnectSignal(self.downLeftKeyBtn.Signal_Clicked, self)
-    self.leftKeyBtn:MocConnectSignal(self.leftKeyBtn.Signal_Clicked, self)
-    self.leftUpKeyBtn:MocConnectSignal(self.leftUpKeyBtn.Signal_Clicked, self)
+    self.upKeyBtn:MocConnectSignal(self.upKeyBtn.Signal_BtnClicked, self)
+    self.upRightKeyBtn:MocConnectSignal(self.upRightKeyBtn.Signal_BtnClicked, self)
+    self.rightKeyBtn:MocConnectSignal(self.rightKeyBtn.Signal_BtnClicked, self)
+    self.rightDownKeyBtn:MocConnectSignal(self.rightDownKeyBtn.Signal_BtnClicked, self)
+    self.downKeyBtn:MocConnectSignal(self.downKeyBtn.Signal_BtnClicked, self)
+    self.downLeftKeyBtn:MocConnectSignal(self.downLeftKeyBtn.Signal_BtnClicked, self)
+    self.leftKeyBtn:MocConnectSignal(self.leftKeyBtn.Signal_BtnClicked, self)
+    self.leftUpKeyBtn:MocConnectSignal(self.leftUpKeyBtn.Signal_BtnClicked, self)
 
 end
 
