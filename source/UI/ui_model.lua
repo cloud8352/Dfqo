@@ -1179,6 +1179,18 @@ function UiModel:RebornPlayer()
         camp = 1
     })
 
+    -- 继承技能设置
+    player.skills.data = {} -- 实例首次更新时会调用 _Skills:OnEnter(entity) 函数，使用 player.skills.data 设置技能
+    local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
+    for tag, obj in pairs(mapOfTagToActorSkillObj) do
+        ---@type Actor.RESMGR.SkillData
+        local skillResMgrData = nil
+        if obj then
+            skillResMgrData = ResMgr.GetSkillData(obj:GetData().path)
+        end
+        player.skills.data[tag] = skillResMgrData
+    end
+
     local param = {
         x = pos.x,
         y = pos.y,
