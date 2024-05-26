@@ -20,14 +20,13 @@ local SkillManagementItem = require("UI.SkillManagement.SkillManagementItem")
 local Label = require("UI.Label")
 local PushButton = require("UI.PushButton")
 local ScrollArea = require("UI.ScrollArea")
-local SkillMountDialog = require("UI.SkillManagement.SkillMountDailog")
+local SkillMountContentWidget = require("UI.SkillManagement.SkillMountContentWidget")
 
 ---@class SkillManagementWidget
 local SkillManagementWidget = require("core.class")(Widget)
 
 
 local LeftPartWidth = 570
-local EachPartSpace = 30
 local ItemDataKey = "info"
 
 ---@param parentWindow Window
@@ -45,7 +44,6 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     self.bottomMargin = self.leftMargin
 
     LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
-    EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())
 
     self.skillItemListView = ListView.New(parentWindow)
     self.skillItemListView:SetItemHeight(50 * Util.GetWindowSizeScale())
@@ -61,17 +59,11 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     self.selectedSkillContentLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignVCenter })
     self.selectedSkillContentScrollArea = ScrollArea.New(parentWindow)
     self.selectedSkillContentScrollArea:SetContentWidget(self.selectedSkillContentLabel)
-    
-    self.mountBtn = PushButton.New(parentWindow)
-    self.mountBtn:SetText("装备到")
 
-    ---@type SkillMountDialog
-    self.skillMountDialog = SkillMountDialog.New(self.model)
-    self.skillMountDialog:SetVisible(false)
+    self.mountContentWidget = SkillMountContentWidget.New(parentWindow, model)
     
     -- connection
     self.skillItemListView:MocConnectSignal(self.skillItemListView.Signal_SelectedItemChanged, self)
-    self.mountBtn:MocConnectSignal(self.mountBtn.Signal_BtnClicked, self)
 
     -- post init
     local skillResMgrDataList = self.model:GetSkillResMgrDataList()
@@ -112,7 +104,7 @@ function SkillManagementWidget:Update(dt)
         self:updateSelectedSkillContentScrollAreaContentWidget()
     end
 
-    self.mountBtn:Update(dt)
+    self.mountContentWidget:Update(dt)
 
     self.lastSelectedSkillItem = self.selectedSkillItem
     Widget.Update(self, dt)
@@ -125,7 +117,7 @@ function SkillManagementWidget:Draw()
 
     self.selectedSkillTitleLabel:Draw()
     self.selectedSkillContentScrollArea:Draw()
-    self.mountBtn:Draw()
+    self.mountContentWidget:Draw()
 end
 
 function SkillManagementWidget:MouseEvent()
@@ -144,7 +136,7 @@ function SkillManagementWidget:SetPosition(x, y)
     self.selectedSkillContentScrollArea:SetPosition(x + LeftPartWidth, y + selectedSkillTitleLabelHeight)
 
     local _, selectedSkillContentScrollAreaHeight = self.selectedSkillContentScrollArea:GetSize()
-    self.mountBtn:SetPosition(x + LeftPartWidth, 
+    self.mountContentWidget:SetPosition(x + LeftPartWidth, 
         y + selectedSkillTitleLabelHeight + selectedSkillContentScrollAreaHeight)
 end
 
@@ -152,15 +144,16 @@ end
 ---@param height int
 function SkillManagementWidget:SetSize(width, height)
     Widget.SetSize(self, width, height)
+    local windowSizeScale = Util.GetWindowSizeScale()
 
     self.skillItemListView:SetSize(LeftPartWidth - self.leftMargin, height - self.topMargin - self.bottomMargin)
+    self.mountContentWidget:SetSize(width - LeftPartWidth, 180 * windowSizeScale)
 
     local selectedSkillTitleLabelHeight = 30 * Util.GetWindowSizeScale()
-    local mountBtnHeight = 30 * Util.GetWindowSizeScale()
+    local _, mountContentWidgetHeight = self.mountContentWidget:GetSize()
     self.selectedSkillTitleLabel:SetSize(width - LeftPartWidth, selectedSkillTitleLabelHeight)
     self.selectedSkillContentScrollArea:SetSize(width - LeftPartWidth,
-        height - selectedSkillTitleLabelHeight - mountBtnHeight)
-    self.mountBtn:SetSize(80 * Util.GetWindowSizeScale(), mountBtnHeight)
+        height - selectedSkillTitleLabelHeight - mountContentWidgetHeight)
 end
 
 function SkillManagementWidget:SetEnable(enable)
@@ -179,19 +172,7 @@ function SkillManagementWidget:Slot_SelectedItemChanged(sender, item)
     self.selectedSkillItem = item
     ---@type SkillInfo
     local skillInfo = self.selectedSkillItem:GetValue(ItemDataKey)
-    self.skillMountDialog:SetNeedMountingSkillInfo(skillInfo)
-end
-
----@param sender Obj
-function SkillManagementWidget:Slot_BtnClicked(sender)
-    if sender == self.mountBtn then
-        ---@type SkillInfo
-        local skillInfo = self.selectedSkillItem:GetValue(ItemDataKey)
-        self.skillMountDialog:SetNeedMountingSkillInfo(skillInfo)
-        self.skillMountDialog:SetVisible(true)
-        -- 移到程序窗口中央
-        Util.MoveWindowToCenter(self.skillMountDialog)
-    end
+    self.mountContentWidget:SetNeedMountingSkillInfo(skillInfo)
 end
 
 --- private function

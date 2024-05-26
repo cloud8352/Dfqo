@@ -16,7 +16,7 @@ local Common = require("UI.ui_common")
 local TitleBar = require("UI.TitleBar")
 local WindowManager = require("UI.WindowManager")
 local Window = require("UI.Window")
-local SkillMountDialogContentWidget = require("UI.SkillManagement.SkillMountDialogContentWidget")
+local SkillMountDialogContentWidget = require("UI.SkillManagement.SkillMountContentWidget")
 
 ---@class SkillMountDialog
 local SkillMountDialog = require("core.class")(Window)
