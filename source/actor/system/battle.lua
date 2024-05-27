@@ -48,6 +48,11 @@ function _Battle:OnEnter(entity)
     end
 end
 
+---@param entity Actor.Entity
+function _Battle:OnExit(entity)
+    entity.battle.beatenCaller:DelListener(entity, _Beaten)
+end
+
 function _Battle:Update(dt)
     for n=1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity

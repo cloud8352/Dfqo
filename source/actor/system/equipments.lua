@@ -21,6 +21,10 @@ end
 
 ---@param entity Actor.Entity
 function _Equipments:OnEnter(entity)
+    if entity.equipments.data == nil then
+        return
+    end
+
     for k, v in pairs(entity.equipments.data) do
         if (k ~= "class") then
             _EQUIPMENT.Set(entity, k, v)

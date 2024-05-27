@@ -207,41 +207,8 @@ function ListView:CheckPoint(x, y)
     return ScrollArea.CheckPoint(self, x, y)
 end
 
---- signals
----
----@param selectedItem StandardItem
-function ListView:Signal_SelectedItemChanged(selectedItem)
-    print("ListView:Signal_SelectedItemChanged()")
-    local receiverList = self:GetReceiverListOfSignal(self.Signal_SelectedItemChanged)
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_SelectedItemChanged
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, selectedItem)
-
-        ::continue::
-    end
-end
-
---- slot
----
----@param sender Obj
----@param xOffset int
----@param yOffset int
-function ListView:Slot_RequestMoveContent(sender, xOffset, yOffset)
-    ScrollArea.Slot_RequestMoveContent(self, sender, xOffset, yOffset)
-    print("ListView:Slot_RequestMoveContent()", sender, xOffset, yOffset)
-    self.needUpdateItemListContentWidgetSprite = true
-
-    -- item
-    self:updateAllItemsPosition()
+function ListView:ClearAllItems()
+    self.itemList = {}
 end
 
 ---@param item StandardItem
@@ -300,6 +267,10 @@ end
 
 ---@param item StandardItem
 function ListView:SetCurrentItem(item)
+    if item == nil then
+        return
+    end
+
     for _, itemTmp in pairs(self.itemList) do
         itemTmp:SetDisplayState(StandardItem.DisplayState.Normal)
     end
@@ -320,6 +291,43 @@ end
 function ListView:SetCurrentIndex(index)
     local item = self.itemList[index]
     self:SetCurrentItem(item)
+end
+
+--- signals
+---
+---@param selectedItem StandardItem
+function ListView:Signal_SelectedItemChanged(selectedItem)
+    print("ListView:Signal_SelectedItemChanged()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_SelectedItemChanged)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_SelectedItemChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, selectedItem)
+
+        ::continue::
+    end
+end
+
+--- slot
+---
+---@param sender Obj
+---@param xOffset int
+---@param yOffset int
+function ListView:Slot_RequestMoveContent(sender, xOffset, yOffset)
+    ScrollArea.Slot_RequestMoveContent(self, sender, xOffset, yOffset)
+    print("ListView:Slot_RequestMoveContent()", sender, xOffset, yOffset)
+    self.needUpdateItemListContentWidgetSprite = true
+
+    -- item
+    self:updateAllItemsPosition()
 end
 
 function ListView:updateItemListContentWidgetSprite()

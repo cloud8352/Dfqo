@@ -16,8 +16,8 @@ local _Obstacle = require("core.class")(_Base)
 local function _HandleObstacle(obstacle, data, nx, ny)
     local matrix = _MAP.GetMatrix()
 
-    for n=0, data.w do
-        for m=0, data.h do
+    for n = 0, data.w do
+        for m = 0, data.h do
             local x = nx + data.x + n
             local y = ny + data.y + m
 
@@ -46,18 +46,16 @@ function _Obstacle:OnEnter(entity)
     local ny = matrix:ToNode(entity.transform.position.y, "y")
 
     if (#data > 0) then
-        for n=1, #data do
+        for n = 1, #data do
             _HandleObstacle(obstacle, data[n], nx, ny)
         end
     else
         _HandleObstacle(obstacle, data, nx, ny)
     end
-
-    obstacle.data = nil
 end
 
 function _Obstacle:OnClean()
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         self:OnExit(self._list:Get(n))
     end
 end
@@ -69,8 +67,8 @@ function _Obstacle:OnExit(entity)
     end
 
     local matrix = _MAP.GetMatrix()
-    
-    for n=1, #entity.obstacle.list do
+
+    for n = 1, #entity.obstacle.list do
         local x, y = entity.obstacle.list[n]:Get()
         matrix:SetNode(x, y, false, true)
     end

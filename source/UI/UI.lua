@@ -299,8 +299,6 @@ function UI.Init()
         UI.dirKeyGroupWidget:SetVisible(false)
         UI.itemKeyGroup:SetVisible(false)
     end
-
-    UI.hpRectBar:SetMaxHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp))
 end
 
 function UI.Update(dt)
@@ -311,6 +309,7 @@ function UI.Update(dt)
     end
 
     UI.hpRectBar:SetHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.Hp))
+    UI.hpRectBar:SetMaxHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp))
 
     local hitEnemyHp = UI.model:GetHitEnemyHp()
     if hitEnemyHp > 0 then
@@ -336,6 +335,15 @@ end
 function UI.Draw()
     UI.totalSprite:Draw()
 end
+
+--- public function
+
+--- 获取玩家实例配置简化路径
+function UI.GetPlayerInstanceCfgSimplePath()
+    return UI.model:GetPlayerInstanceCfgSimplePath()
+end
+
+--- slots
 
 ---@param my Obj 对象自身，这里指UI自身
 ---@param sender PushButton 被电击的按钮对象
@@ -546,6 +554,8 @@ function UI.Slot_PlayerReborn(my, sender)
 
     UI.playerRebornDialog:SetVisible(false)
 end
+
+--- private function
 
 ---
 ---@param window Window

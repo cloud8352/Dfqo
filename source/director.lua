@@ -14,12 +14,18 @@ local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
 local UI = require("UI.UI")
 
-local _DIRECTOR = { rate = 1 } ---@class DIRECTOR
+---@class DIRECTOR
+local _DIRECTOR = { rate = 1 }
 ---@type Graphics.Curtain
 local _curtain = nil
 local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 
+local playerInstanceCfgSimplePath = ""
+
 function _DIRECTOR.Init()
+    -- ui
+    UI.Init()
+
     ---@type Graphics.Curtain
     _curtain = _Curtain.New()
 
@@ -27,9 +33,6 @@ function _DIRECTOR.Init()
     _MAP.Init(_WORLD.Draw)
 
     _DIRECTOR.StartGame()
-
-    -- ui
-    UI.Init()
 end
 
 function _DIRECTOR.Update(dt)
@@ -93,14 +96,13 @@ function _DIRECTOR.IsTweening()
 end
 
 function _DIRECTOR.StartGame()
-    local player = _FACTORY.New("duelist/swordman", {
+    local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
+    local player = _FACTORY.New(playerInstanceCfgSimplePath, {
         x = 700,
         y = 500,
         direction = 1,
         camp = 1
     })
-
-    _CONFIG.user:SetPlayer(player)
 
     -- 创建伙伴
     -- local partner = _FACTORY.New("duelist/atswordman", {
@@ -115,6 +117,8 @@ function _DIRECTOR.StartGame()
     -- _CONFIG.user:AddPartner(partner)
 
     _DIRECTOR.firstUpdate() -- Flush player.
+
+    _CONFIG.user:SetPlayer(player)
 
     -- 刷新距离boss的房间数
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()

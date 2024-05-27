@@ -88,7 +88,7 @@ function ArticleDockFrame:Ctor(parentWindow, model)
     self.originYPosWhenDragItem = 0
 
     -- connect
-    self.model:MocConnectSignal(self.model.PlayerChanged, self)
+    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
     
     --- post init
     self:initArticleData()
@@ -326,8 +326,7 @@ end
 
 --- 当玩家改变后
 ---@param sender Object
-function ArticleDockFrame:OnPlayerChanged(sender)
-    -- print("ArticleTableWidget:OnPlayerChanged(sender)")
+function ArticleDockFrame:Slot_PlayerChanged(sender)
     self:initArticleData()
 end
 

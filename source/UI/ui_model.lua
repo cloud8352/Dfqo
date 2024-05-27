@@ -16,6 +16,7 @@ local SkillSrv = require("actor.service.skill")
 local _CONFIG = require("config")
 local _MAP = require("map.init")
 local ResMgr = require("actor.resmgr")
+local EcsMgr = require("actor.ecsmgr")
 local EquSrv = require("actor.service.equipment")
 local AspectSrv = require("actor.service.aspect")
 local InputSrv = require("actor.service.input")
@@ -28,6 +29,9 @@ local UiModel = require("core.class")()
 local RebornEffectInstanceData = ResMgr.GetInstanceData("effect/death/normal")
 local CounterattackEffectInstanceData = ResMgr.GetInstanceData("effect/battle/counterattack2")
 local DotAreaBulletInstanceData = ResMgr.GetInstanceData("bullet/swordman/dotarea")
+
+local PlayerCfgSavedFileName = "player"
+local PlayerCfgSavedFileSuffix = ".cfg"
 
 function UiModel:Ctor()
     --- 信号到接收者的映射表
@@ -66,6 +70,10 @@ function UiModel:Ctor()
     self.hitEnemyOfPlayer = nil
 
     -- connect signals
+    _CONFIG.user.setPlayerCaller:AddListener(self, function(sender, lastPlayer, player) 
+        self:Slot_PlayerChanged(player)
+    end)
+
     local _DUELIST = require("actor.service.duelist")
     _DUELIST.AddListener("clear", _, function()
         self:Signal_EnemyCleared()
@@ -95,80 +103,9 @@ function UiModel:Ctor()
     self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
     -- 复活音效
     self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
-
-    -- player
-    self:SetPlayer(_CONFIG.user.player)
 end
 
---- 获取携带的物品列表
----@return table<number, ArticleInfo>
-function UiModel:GetArticleInfoList()
-    return self.articleInfoList
-end
-
---- 获取物品托盘的物品列表
----@return table<number, ArticleInfo>
-function UiModel:GetArticleDockInfoList()
-    return self.articleDockInfoList
-end
-
---- 获取已装配的装备列表
----@return table<number, ArticleInfo>
-function UiModel:GetMountedEquInfoList()
-    return self.mountedEquInfoList
-end
-
----@param index number
-function UiModel:OnRightKeyClickedArticleTableItem(index)
-    local clickedItemInfo = self.articleInfoList[index]
-    if clickedItemInfo == nil then
-        print("UiModel:OnRightKeyClickedArticleTableItem(index)", "err: can not find itemInfo")
-        return
-    end
-
-    if clickedItemInfo.type == Common.ArticleType.Consumable then
-        self:useConsumable(index, clickedItemInfo)
-    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
-        self:mountEquipment(index, clickedItemInfo)
-    end
-end
-
----@param index number
-function UiModel:OnRightKeyClickedArticleDockItem(index)
-    local clickedItemInfo = self.articleDockInfoList[index]
-    if clickedItemInfo == nil then
-        print("UiModel:OnRightKeyClickedArticleDockItem(index)", "err: can not find itemInfo")
-        return
-    end
-
-    local articleTableIndex = self:findInArticleInfoList(clickedItemInfo)
-    if (articleTableIndex.Index == -1) then
-        print("UiModel:OnRightKeyClickedArticleDockItem(index)", 
-            "err: can not find itemInfo in article table")
-        return
-    end
-
-    if clickedItemInfo.type == Common.ArticleType.Consumable then
-        self:useConsumable(articleTableIndex.Index, clickedItemInfo)
-    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
-        self:mountEquipment(articleTableIndex.Index, clickedItemInfo)
-    end
-end
-
----@param index number
-function UiModel:OnRightKeyClickedEquTableItem(index)
-    local clickedItemInfo = self.mountedEquInfoList[index]
-    if clickedItemInfo == nil then
-        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: can not find itemInfo")
-        return
-    end
-
-    if clickedItemInfo.type == Common.ArticleType.Equipment then
-        self:unloadEquipment(index, clickedItemInfo)
-    else
-        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: item info type is not Equipment")
-    end
-end
+--- public function
 
 --- 连接信号
 ---@param signal function
@@ -180,569 +117,6 @@ function UiModel:MocConnectSignal(signal, receiver)
         self.mapOfSignalToReceiverList[signal] = receiverList
     end
     table.insert(receiverList, receiver)
-end
-
---- 请求去设置物品栏某一显示项的信息
----@param index number
----@param itemInfo ArticleInfo
-function UiModel:RequestSetArticleTableItemInfo(index, itemInfo)
-    print("UiModel:RequestSetArticleTableItemInfo(index, itemInfo)", index, itemInfo.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetArticleTableItemInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, index, itemInfo)
-
-        ::continue::
-    end
-end
-
---- 请求去设置物品托盘某一显示项的信息
----@param index number
----@param itemInfo ArticleInfo
-function UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)
-    print("UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)", index, itemInfo.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_requestSetArticleDockItemInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_requestSetArticleDockItemInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, index, itemInfo)
-
-        ::continue::
-    end
-end
-
---- 请求去设置装备栏某一显示项的信息
----@param index number
----@param itemInfo ArticleInfo
-function UiModel:RequestSetEquTableItemInfo(index, itemInfo)
-    print("UiModel:RequestSetEquTableItemInfo(index, itemInfo)", index, itemInfo.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetEquTableItemInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, index, itemInfo)
-
-        ::continue::
-    end
-end
-
-function UiModel:SetArticleTableHoveringItemIndex(index)
-    self.articleTableHoveringItemIndex = index
-end
-
-function UiModel:SetArticleDockHoveringItemIndex(index)
-    self.articleDockHoveringItemIndex = index
-end
-
---- 拖拽物品项
----@param index number 物品项检索
-function UiModel:DragArticleItem(index)
-    self.articleTableDraggingItemIndex = index
-    self:RequestSetDraggingItemVisibility(true)
-    local info = self.articleInfoList[index]
-    self:RequestSetDraggingItemInfo(info)
-end
-
---- 拖拽物品托盘物品项
----@param index number 物品项检索
-function UiModel:DragArticleDockItem(index)
-    self.articleDockDraggingItemIndex = index
-    self:RequestSetDraggingItemVisibility(true)
-    local info = self.articleDockInfoList[index]
-    self:RequestSetDraggingItemInfo(info)
-end
-
---- 放下物品项
-function UiModel:DropArticleItem()
-    -- 拖拽项放到了何处
-    if self.articleTableHoveringItemIndex ~= -1 then
-        local hoveringArticleInfo = self.articleInfoList[self.articleTableHoveringItemIndex]
-
-        -- 移动拖拽项到当前悬停处
-        local draggingArticleInfo = self.articleInfoList[self.articleTableDraggingItemIndex]
-        self.articleInfoList[self.articleTableHoveringItemIndex] = draggingArticleInfo
-        self:RequestSetArticleTableItemInfo(self.articleTableHoveringItemIndex, draggingArticleInfo)
-
-        -- 移动原先悬停处的物品到拖拽之前的位置
-        self.articleInfoList[self.articleTableDraggingItemIndex] = hoveringArticleInfo
-        self:RequestSetArticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
-
-        -- 播放物品移动音效
-        self:playChangedArticlePosSound()
-    end
-
-    -- 请求界面设置拖拽项为不可见
-    self:RequestSetDraggingItemVisibility(false)
-end
-
---- 放下物品托盘物品项
-function UiModel:DropArticleDockItem()
-    -- 拖拽项放到了何处
-    if self.articleDockHoveringItemIndex ~= -1 then
-        local hoveringArticleInfo = self.articleDockInfoList[self.articleDockHoveringItemIndex]
-
-        -- 移动拖拽项到当前悬停处
-        local draggingArticleInfo = self.articleDockInfoList[self.articleDockDraggingItemIndex]
-        self.articleDockInfoList[self.articleDockHoveringItemIndex] = draggingArticleInfo
-        self:Signal_requestSetArticleDockItemInfo(self.articleDockHoveringItemIndex, draggingArticleInfo)
-
-        -- 移动原先悬停处的物品到拖拽之前的位置
-        self.articleDockInfoList[self.articleDockDraggingItemIndex] = hoveringArticleInfo
-        self:Signal_requestSetArticleDockItemInfo(self.articleDockDraggingItemIndex, hoveringArticleInfo)
-
-        -- 播放物品移动音效
-        self:playChangedArticlePosSound()
-    end
-
-    -- 请求界面设置拖拽项为不可见
-    self:RequestSetDraggingItemVisibility(false)
-end
-
----
----@param xPos number
----@param yPos number
-function UiModel:OnRequestMoveDraggingArticleItem(xPos, yPos)
-    self:RequestMoveDraggingItem(xPos, yPos)
-end
-
---- 使用物品
----@param index number
----@param itemInfo ArticleInfo
-function UiModel:useConsumable(index, itemInfo)
-    print("UiModel:useConsumable(index, itemInfo)", index, itemInfo.name)
-
-    local hpRecovery = itemInfo.consumableInfo.hpRecovery
-    local playerCurrentHp = self:GetPlayerAttribute(Common.ActorAttributeType.Hp)
-    hpRecovery = hpRecovery + playerCurrentHp * itemInfo.consumableInfo.hpRecoveryRate
-    if (hpRecovery > 0) then
-        self:AddHpWithEffect(self.player, hpRecovery)
-    end
-
-    itemInfo.count = itemInfo.count - 1
-    if itemInfo.count <= 0 then
-        itemInfo.count = 0
-        itemInfo.type = Common.ArticleType.Empty
-    end
-    self:RequestSetArticleTableItemInfo(index, itemInfo)
-
-    -- 更新物品托盘
-    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
-    if (articleDockIndex.Index > 0) then
-        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, itemInfo)
-    end
-end
-
---- 装载装备
----@param articleTableIndex number
----@param itemInfo ArticleInfo
-function UiModel:mountEquipment(articleTableIndex, itemInfo)
-    print("UiModel:mountEquipment(index, itemInfo)", articleTableIndex, itemInfo.name)
-
-    local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
-    -- 在ui上卸载原有装备到物品栏
-    self.articleInfoList[articleTableIndex] = lastEquItemInfo
-    self:RequestSetArticleTableItemInfo(articleTableIndex, lastEquItemInfo)
-
-    -- 待装备的物品是否存在于物品托盘，如存在，则更新物品托盘
-    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
-    if (articleDockIndex.Index > 0) then
-        self.articleDockInfoList[articleDockIndex.Index] = lastEquItemInfo
-        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, lastEquItemInfo)
-    end
-
-    -- 在服务上装载新装备
-    local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
-    EquSrv.Equip(self.player, keyTag, itemInfo.equInfo.resMgrEquData)
-    -- 在服务上调整实体装扮
-    AspectSrv.AdjustAvatar(self.player.aspect, self.player.states)
-
-    -- 在ui上装载新装备
-    self.mountedEquInfoList[itemInfo.equInfo.type] = itemInfo
-    self:RequestSetEquTableItemInfo(itemInfo.equInfo.type, itemInfo)
-
-    -- 播放物品移动音效
-    self:playChangedArticlePosSound()
-end
-
---- 卸载装备
----@param equTableIndex number
----@param itemInfo ArticleInfo
-function UiModel:unloadEquipment(equTableIndex, itemInfo)
-    print("UiModel:unloadEquipment(index, itemInfo)", equTableIndex, itemInfo.name)
-    -- 在ui上找到物品栏中第一个空位置
-    local emptyItemIndex = -1
-    ---@type ArticleInfo
-    local emptyItemInfo = nil
-    for i, info in pairs(self.articleInfoList) do
-        if info.type == Common.ArticleType.Empty then
-            emptyItemIndex = i
-            emptyItemInfo = info
-            break
-        end
-    end
-    if emptyItemInfo == nil then
-        print("UiModel:unloadEquipment(index, itemInfo)", "article table has no empty space")
-        return
-    end
-
-    -- 在ui上卸载到物品栏的空位置
-    self.articleInfoList[emptyItemIndex] = itemInfo
-    self:RequestSetArticleTableItemInfo(emptyItemIndex, itemInfo)
-
-    -- 在ui上将装备栏对应位置设置为空
-    self.mountedEquInfoList[equTableIndex] = emptyItemInfo
-    self:RequestSetEquTableItemInfo(equTableIndex, emptyItemInfo)
-
-    -- 在服务上卸载装备
-    local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
-    EquSrv.Del(self.player, keyTag)
-    -- 在服务上调整实体装扮
-    AspectSrv.AdjustAvatar(self.player.aspect, self.player.states)
-
-    -- 播放物品移动音效
-    self:playChangedArticlePosSound()
-end
-
---- 请求界面设置拖拽项为可见性
----@param visible boolean
-function UiModel:RequestSetDraggingItemVisibility(visible)
-    print("UiModel:RequestSetDraggingItemVisibility(visible)", visible)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetDraggingItemVisibility]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetDraggingItemVisibility
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, visible)
-
-        ::continue::
-    end
-end
-
---- 请求界面设置拖拽项信息
----@param info ArticleInfo
-function UiModel:RequestSetDraggingItemInfo(info)
-    print("UiModel:RequestSetDraggingItemInfo(info)", info.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetDraggingItemInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetDraggingItemInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, info)
-
-        ::continue::
-    end
-end
-
---- 请求界面设置移动拖拽项
----@param xPos number
----@param yPos number
-function UiModel:RequestMoveDraggingItem(xPos, yPos)
-    -- print("UiModel:RequestMoveDraggingItem(xPos, yPos)", xPos, yPos)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestMoveDraggingItem]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestMoveDraggingItem
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, xPos, yPos)
-
-        ::continue::
-    end
-end
-
---- 请求界面去设置悬停处的物品栏提示窗口可见性
----@param visible boolean
-function UiModel:RequestSetHoveringArticleItemTipWindowVisibility(visible)
-    -- print("UiModel:RequestSetHoveringArticleItemTipWindowVisibility(visible)", visible)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringArticleItemTipWindowVisibility]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetHoveringArticleItemTipWindowVisibility
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, visible)
-
-        ::continue::
-    end
-end
-
---- 请求界面去设置悬停处的物品栏提示窗口物品信息
----@param xPos number
----@param yPos number
----@param info ArticleInfo
-function UiModel:RequestSetHoveringArticleItemTipWindowPosAndInfo(xPos, yPos, info)
-    -- print("UiModel:RequestSetHoveringArticleItemTipWindowPosAndInfo(xPos, yPos, info)", xPos, yPos, info.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringArticleItemTipWindowPosAndInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetHoveringArticleItemTipWindowPosAndInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, xPos, yPos, info)
-
-        ::continue::
-    end
-end
-
---- 请求界面去设置悬停处的技能项提示窗口可见性
----@param visible boolean
-function UiModel:RequestSetHoveringSkillItemTipWindowVisibility(visible)
-    -- print("UiModel:RequestSetHoveringSkillItemTipWindowVisibility(visible)", visible)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringSkillItemTipWindowVisibility]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetHoveringSkillItemTipWindowVisibility
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, visible)
-
-        ::continue::
-    end
-end
-
---- 请求界面去设置悬停处的技能项提示窗口物品信息
----@param xPos number
----@param yPos number
----@param info SkillInfo
-function UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)
-    -- print("UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)", xPos, yPos, info.name)
-    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringSkillItemTipWindowPosAndInfo]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnRequestSetHoveringSkillItemTipWindowPosAndInfo
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, xPos, yPos, info)
-
-        ::continue::
-    end
-end
-
---- 请求界面去设置悬停处的技能项提示窗口物品信息
-function UiModel:PlayerChanged()
-    -- print("UiModel:PlayerChanged()")
-    local receiverList = self.mapOfSignalToReceiverList[self.PlayerChanged]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.OnPlayerChanged
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
-function UiModel:Signal_EnemyCleared()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyCleared]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_EnemyCleared
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
-function UiModel:Signal_EnemyAppeared()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyAppeared]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_EnemyAppeared
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
----@param attack Actor.Gear.Attack | Core.Gear
----@param hitEntity Actor.Entity
-function UiModel:Slot_onRecvSignalOfPlayerHitEnemy(attack, hitEntity)
-    if not hitEntity then
-        return
-    end
-    if not hitEntity.identity then
-        return
-    end
-    if hitEntity.attributes.hp <= 0 then
-        return
-    end
-
-    self.hitEnemyOfPlayer = hitEntity
-    self:Signal_PlayerHitEnemy(attack, hitEntity)
-end
-
----@param attack Actor.Gear.Attack | Core.Gear
----@param hitEntity Actor.Entity
-function UiModel:Signal_PlayerHitEnemy(attack, hitEntity)
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerHitEnemy]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_PlayerHitEnemy
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self, attack, hitEntity)
-
-        ::continue::
-    end
-end
-
-function UiModel:Slot_onRecvSignalOfPlayerDestroyed()
-    self:Signal_PlayerDestroyed()
-end
-
-function UiModel:Signal_PlayerDestroyed()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerDestroyed]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_PlayerDestroyed
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
-function UiModel:Signal_PlayerReborn()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerReborn]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_PlayerReborn
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
-function UiModel:Signal_PlayerMountedSkillsChanged()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerMountedSkillsChanged]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_PlayerMountedSkillsChanged
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
 end
 
 ---@param player Actor.Entity
@@ -1011,7 +385,7 @@ function UiModel:SetPlayer(player)
     self.player.identity.destroyCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerDestroyed)
 
     -- post init
-    self:PlayerChanged()
+    self:Signal_PlayerChanged()
 end
 
 function UiModel:GetPlayer()
@@ -1055,13 +429,107 @@ function UiModel:MountPlayerSkill(tag, skillInfo)
 
     SkillSrv.Set(self.player, tag, skillResMgrData)
 
+    self:SavePlayerData()
+
     self:Signal_PlayerMountedSkillsChanged()
 end
 
 ---@param skillInfo SkillInfo
 function UiModel:UnloadPlayerSkill(skillInfo)
     self:unloadPlayerSkill(skillInfo)
+
+    self:SavePlayerData()
     self:Signal_PlayerMountedSkillsChanged()
+end
+
+--- 获取携带的物品列表
+---@return table<number, ArticleInfo>
+function UiModel:GetArticleInfoList()
+    return self.articleInfoList
+end
+
+--- 获取物品托盘的物品列表
+---@return table<number, ArticleInfo>
+function UiModel:GetArticleDockInfoList()
+    return self.articleDockInfoList
+end
+
+--- 获取已装配的装备列表
+---@return table<number, ArticleInfo>
+function UiModel:GetMountedEquInfoList()
+    return self.mountedEquInfoList
+end
+
+function UiModel:SetArticleTableHoveringItemIndex(index)
+    self.articleTableHoveringItemIndex = index
+end
+
+function UiModel:SetArticleDockHoveringItemIndex(index)
+    self.articleDockHoveringItemIndex = index
+end
+
+--- 拖拽物品项
+---@param index number 物品项检索
+function UiModel:DragArticleItem(index)
+    self.articleTableDraggingItemIndex = index
+    self:RequestSetDraggingItemVisibility(true)
+    local info = self.articleInfoList[index]
+    self:RequestSetDraggingItemInfo(info)
+end
+
+--- 拖拽物品托盘物品项
+---@param index number 物品项检索
+function UiModel:DragArticleDockItem(index)
+    self.articleDockDraggingItemIndex = index
+    self:RequestSetDraggingItemVisibility(true)
+    local info = self.articleDockInfoList[index]
+    self:RequestSetDraggingItemInfo(info)
+end
+
+--- 放下物品项
+function UiModel:DropArticleItem()
+    -- 拖拽项放到了何处
+    if self.articleTableHoveringItemIndex ~= -1 then
+        local hoveringArticleInfo = self.articleInfoList[self.articleTableHoveringItemIndex]
+
+        -- 移动拖拽项到当前悬停处
+        local draggingArticleInfo = self.articleInfoList[self.articleTableDraggingItemIndex]
+        self.articleInfoList[self.articleTableHoveringItemIndex] = draggingArticleInfo
+        self:RequestSetArticleTableItemInfo(self.articleTableHoveringItemIndex, draggingArticleInfo)
+
+        -- 移动原先悬停处的物品到拖拽之前的位置
+        self.articleInfoList[self.articleTableDraggingItemIndex] = hoveringArticleInfo
+        self:RequestSetArticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
+
+        -- 播放物品移动音效
+        self:playChangedArticlePosSound()
+    end
+
+    -- 请求界面设置拖拽项为不可见
+    self:RequestSetDraggingItemVisibility(false)
+end
+
+--- 放下物品托盘物品项
+function UiModel:DropArticleDockItem()
+    -- 拖拽项放到了何处
+    if self.articleDockHoveringItemIndex ~= -1 then
+        local hoveringArticleInfo = self.articleDockInfoList[self.articleDockHoveringItemIndex]
+
+        -- 移动拖拽项到当前悬停处
+        local draggingArticleInfo = self.articleDockInfoList[self.articleDockDraggingItemIndex]
+        self.articleDockInfoList[self.articleDockHoveringItemIndex] = draggingArticleInfo
+        self:Signal_requestSetArticleDockItemInfo(self.articleDockHoveringItemIndex, draggingArticleInfo)
+
+        -- 移动原先悬停处的物品到拖拽之前的位置
+        self.articleDockInfoList[self.articleDockDraggingItemIndex] = hoveringArticleInfo
+        self:Signal_requestSetArticleDockItemInfo(self.articleDockDraggingItemIndex, hoveringArticleInfo)
+
+        -- 播放物品移动音效
+        self:playChangedArticlePosSound()
+    end
+
+    -- 请求界面设置拖拽项为不可见
+    self:RequestSetDraggingItemVisibility(false)
 end
 
 ---@param mapID number
@@ -1156,6 +624,10 @@ function UiModel:AddHpWithEffect(entity, value)
 end
 
 function UiModel:IsPlayerAlive()
+    if self.player == nil then
+        return false
+    end
+
     return self.player.identity.destroyProcess == 0
 end
 
@@ -1170,33 +642,18 @@ function UiModel:RebornPlayer()
         return
     end
 
+    print("UiModel:RebornPlayer()", "LifeSrv.RebornEntity(self.player)")
+    local LifeSrv = require("actor.service.LifeSrv")
+    LifeSrv.RebornEntity(self.player)
+
     local pos = self.player.transform.position
     local direction = self.player.transform.direction
-    local player = Factory.New("duelist/swordman", {
-        x = pos.x,
-        y = pos.y,
-        direction = direction,
-        camp = 1
-    })
-
-    -- 继承技能设置
-    player.skills.data = {} -- 实例首次更新时会调用 _Skills:OnEnter(entity) 函数，使用 player.skills.data 设置技能
-    local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
-    for tag, obj in pairs(mapOfTagToActorSkillObj) do
-        ---@type Actor.RESMGR.SkillData
-        local skillResMgrData = nil
-        if obj then
-            skillResMgrData = ResMgr.GetSkillData(obj:GetData().path)
-        end
-        player.skills.data[tag] = skillResMgrData
-    end
-
     local param = {
         x = pos.x,
         y = pos.y,
         z = pos.z,
         direction = direction,
-        entity = player
+        entity = self.player
     }
     Factory.New(RebornEffectInstanceData, param)
 
@@ -1204,10 +661,6 @@ function UiModel:RebornPlayer()
     Factory.New(CounterattackEffectInstanceData, param)
     Factory.New(DotAreaBulletInstanceData, param)
 
-    _CONFIG.user:SetPlayer(player)
-    self:SetPlayer(player)
-    -- hp恢复
-    AttributeSrv.AddHp(self.player.attributes, self.player.attributes.maxHp)
     -- 减少复活次数
     self.playerRebornCoinCount = self.playerRebornCoinCount - 1
 
@@ -1222,7 +675,627 @@ function UiModel:GetPlayerRebornCoinCount()
     return self.playerRebornCoinCount
 end
 
+function UiModel:SavePlayerData()
+    -- 1. 读取原始实例配置
+    local playerInstanceCfgSimplePath = self:GetPlayerInstanceCfgSimplePath()
+    local data, path = _RESOURCE.ReadConfig(playerInstanceCfgSimplePath, "config/actor/instance/%s.cfg", nil)
+    if data == nil then
+        print("UiModel:SavePlayerData()", "origin instance cfg read failed!")
+        return
+    end
+    if data.skills == nil then
+        print("UiModel:SavePlayerData()", "origin instance cfg data have nor skills data")
+        return
+    end
+    if data.equipments == nil then
+        print("UiModel:SavePlayerData()", "origin instance cfg data have nor equipments data")
+        return
+    end
+
+    -- 2. 更新技能配置
+    data.skills = {}
+    local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
+    for tag, obj in pairs(mapOfTagToActorSkillObj) do
+        if obj then
+            data.skills[tag] = obj:GetData().path
+        end
+    end
+
+    -- 3. 更新装备
+    data.equipments = {}
+    local mapOfTagToActorEquObj = EquSrv.GetMap(self.player.equipments)
+    for tag, obj in pairs(mapOfTagToActorEquObj) do
+        if obj then
+            data.equipments[tag] = obj:GetData().path
+        end
+    end
+
+    -- 4. 序列化数据
+    local Table = require("lib.table")
+    local dataStr = Table.Deserialize(data)
+
+    -- 5. 保存数据
+    local File = require("lib.file")
+
+    local dirPath = "config/actor/instance/duelist/"
+    local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
+    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    if not ok then
+        print("UiModel:SavePlayerData()", errMsg, dirPath .. fileName, "file write failed！")
+        return
+    end
+end
+
+function UiModel:GetPlayerInstanceCfgSimplePath()
+    local simplePath = "duelist/" .. PlayerCfgSavedFileName
+    local pathPrefix = "config/actor/instance/"
+    local path = pathPrefix .. simplePath .. ".cfg"
+    local File = require("lib.file")
+
+    if not File.Exists(path) then
+        simplePath = "duelist/swordman"
+    end 
+    return simplePath
+end
+
+--- signals
+
+--- 请求去设置物品栏某一显示项的信息
+---@param index number
+---@param itemInfo ArticleInfo
+function UiModel:RequestSetArticleTableItemInfo(index, itemInfo)
+    print("UiModel:RequestSetArticleTableItemInfo(index, itemInfo)", index, itemInfo.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetArticleTableItemInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, index, itemInfo)
+
+        ::continue::
+    end
+end
+
+--- 请求去设置物品托盘某一显示项的信息
+---@param index number
+---@param itemInfo ArticleInfo
+function UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)
+    print("UiModel:Signal_requestSetArticleDockItemInfo(index, itemInfo)", index, itemInfo.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_requestSetArticleDockItemInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_requestSetArticleDockItemInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, index, itemInfo)
+
+        ::continue::
+    end
+end
+
+--- 请求去设置装备栏某一显示项的信息
+---@param index number
+---@param itemInfo ArticleInfo
+function UiModel:RequestSetEquTableItemInfo(index, itemInfo)
+    print("UiModel:RequestSetEquTableItemInfo(index, itemInfo)", index, itemInfo.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetArticleTableItemInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetEquTableItemInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, index, itemInfo)
+
+        ::continue::
+    end
+end
+
+--- 请求界面设置拖拽项为可见性
+---@param visible boolean
+function UiModel:RequestSetDraggingItemVisibility(visible)
+    print("UiModel:RequestSetDraggingItemVisibility(visible)", visible)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetDraggingItemVisibility]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetDraggingItemVisibility
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, visible)
+
+        ::continue::
+    end
+end
+
+--- 请求界面设置拖拽项信息
+---@param info ArticleInfo
+function UiModel:RequestSetDraggingItemInfo(info)
+    print("UiModel:RequestSetDraggingItemInfo(info)", info.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetDraggingItemInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetDraggingItemInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, info)
+
+        ::continue::
+    end
+end
+
+--- 请求界面设置移动拖拽项
+---@param xPos number
+---@param yPos number
+function UiModel:RequestMoveDraggingItem(xPos, yPos)
+    -- print("UiModel:RequestMoveDraggingItem(xPos, yPos)", xPos, yPos)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestMoveDraggingItem]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestMoveDraggingItem
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, xPos, yPos)
+
+        ::continue::
+    end
+end
+
+--- 请求界面去设置悬停处的物品栏提示窗口可见性
+---@param visible boolean
+function UiModel:RequestSetHoveringArticleItemTipWindowVisibility(visible)
+    -- print("UiModel:RequestSetHoveringArticleItemTipWindowVisibility(visible)", visible)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringArticleItemTipWindowVisibility]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetHoveringArticleItemTipWindowVisibility
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, visible)
+
+        ::continue::
+    end
+end
+
+--- 请求界面去设置悬停处的物品栏提示窗口物品信息
+---@param xPos number
+---@param yPos number
+---@param info ArticleInfo
+function UiModel:RequestSetHoveringArticleItemTipWindowPosAndInfo(xPos, yPos, info)
+    -- print("UiModel:RequestSetHoveringArticleItemTipWindowPosAndInfo(xPos, yPos, info)", xPos, yPos, info.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringArticleItemTipWindowPosAndInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetHoveringArticleItemTipWindowPosAndInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, xPos, yPos, info)
+
+        ::continue::
+    end
+end
+
+--- 请求界面去设置悬停处的技能项提示窗口可见性
+---@param visible boolean
+function UiModel:RequestSetHoveringSkillItemTipWindowVisibility(visible)
+    -- print("UiModel:RequestSetHoveringSkillItemTipWindowVisibility(visible)", visible)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringSkillItemTipWindowVisibility]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetHoveringSkillItemTipWindowVisibility
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, visible)
+
+        ::continue::
+    end
+end
+
+--- 请求界面去设置悬停处的技能项提示窗口物品信息
+---@param xPos number
+---@param yPos number
+---@param info SkillInfo
+function UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)
+    -- print("UiModel:RequestSetHoveringSkillItemTipWindowPosAndInfo(xPos, yPos, info)", xPos, yPos, info.name)
+    local receiverList = self.mapOfSignalToReceiverList[self.RequestSetHoveringSkillItemTipWindowPosAndInfo]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.OnRequestSetHoveringSkillItemTipWindowPosAndInfo
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, xPos, yPos, info)
+
+        ::continue::
+    end
+end
+
+--- 请求界面去设置悬停处的技能项提示窗口物品信息
+function UiModel:Signal_PlayerChanged()
+    -- print("UiModel:Signal_PlayerChanged()")
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_EnemyCleared()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyCleared]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_EnemyCleared
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_EnemyAppeared()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_EnemyAppeared]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_EnemyAppeared
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_PlayerDestroyed()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerDestroyed]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerDestroyed
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_PlayerReborn()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerReborn]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerReborn
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function UiModel:Signal_PlayerMountedSkillsChanged()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerMountedSkillsChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerMountedSkillsChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+---@param attack Actor.Gear.Attack | Core.Gear
+---@param hitEntity Actor.Entity
+function UiModel:Signal_PlayerHitEnemy(attack, hitEntity)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerHitEnemy]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerHitEnemy
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, attack, hitEntity)
+
+        ::continue::
+    end
+end
+
+--- slots
+
+---@param player Actor.Entity
+function UiModel:Slot_PlayerChanged(player)
+    self:SetPlayer(player)
+end
+
+---@param index number
+function UiModel:OnRightKeyClickedArticleTableItem(index)
+    local clickedItemInfo = self.articleInfoList[index]
+    if clickedItemInfo == nil then
+        print("UiModel:OnRightKeyClickedArticleTableItem(index)", "err: can not find itemInfo")
+        return
+    end
+
+    if clickedItemInfo.type == Common.ArticleType.Consumable then
+        self:useConsumable(index, clickedItemInfo)
+    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:mountEquipment(index, clickedItemInfo)
+    end
+end
+
+---@param index number
+function UiModel:OnRightKeyClickedArticleDockItem(index)
+    local clickedItemInfo = self.articleDockInfoList[index]
+    if clickedItemInfo == nil then
+        print("UiModel:OnRightKeyClickedArticleDockItem(index)", "err: can not find itemInfo")
+        return
+    end
+
+    local articleTableIndex = self:findInArticleInfoList(clickedItemInfo)
+    if (articleTableIndex.Index == -1) then
+        print("UiModel:OnRightKeyClickedArticleDockItem(index)", 
+            "err: can not find itemInfo in article table")
+        return
+    end
+
+    if clickedItemInfo.type == Common.ArticleType.Consumable then
+        self:useConsumable(articleTableIndex.Index, clickedItemInfo)
+    elseif clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:mountEquipment(articleTableIndex.Index, clickedItemInfo)
+    end
+end
+
+---@param index number
+function UiModel:OnRightKeyClickedEquTableItem(index)
+    local clickedItemInfo = self.mountedEquInfoList[index]
+    if clickedItemInfo == nil then
+        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: can not find itemInfo")
+        return
+    end
+
+    if clickedItemInfo.type == Common.ArticleType.Equipment then
+        self:unloadEquipment(index, clickedItemInfo)
+    else
+        print("UiModel:OnRightKeyClickedEquTableItem(index)", "err: item info type is not Equipment")
+    end
+end
+
+---@param xPos number
+---@param yPos number
+function UiModel:OnRequestMoveDraggingArticleItem(xPos, yPos)
+    self:RequestMoveDraggingItem(xPos, yPos)
+end
+
+---@param attack Actor.Gear.Attack | Core.Gear
+---@param hitEntity Actor.Entity
+function UiModel:Slot_onRecvSignalOfPlayerHitEnemy(attack, hitEntity)
+    if not hitEntity then
+        return
+    end
+    if not hitEntity.identity then
+        return
+    end
+    if hitEntity.attributes.hp <= 0 then
+        return
+    end
+
+    self.hitEnemyOfPlayer = hitEntity
+    self:Signal_PlayerHitEnemy(attack, hitEntity)
+end
+
+function UiModel:Slot_onRecvSignalOfPlayerDestroyed()
+    self:Signal_PlayerDestroyed()
+end
+
 --========== private function ============
+
+--- 使用物品
+---@param index number
+---@param itemInfo ArticleInfo
+function UiModel:useConsumable(index, itemInfo)
+    print("UiModel:useConsumable(index, itemInfo)", index, itemInfo.name)
+
+    local hpRecovery = itemInfo.consumableInfo.hpRecovery
+    local playerCurrentHp = self:GetPlayerAttribute(Common.ActorAttributeType.Hp)
+    hpRecovery = hpRecovery + playerCurrentHp * itemInfo.consumableInfo.hpRecoveryRate
+    if (hpRecovery > 0) then
+        self:AddHpWithEffect(self.player, hpRecovery)
+    end
+
+    itemInfo.count = itemInfo.count - 1
+    if itemInfo.count <= 0 then
+        itemInfo.count = 0
+        itemInfo.type = Common.ArticleType.Empty
+    end
+    self:RequestSetArticleTableItemInfo(index, itemInfo)
+
+    -- 更新物品托盘
+    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
+    if (articleDockIndex.Index > 0) then
+        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, itemInfo)
+    end
+end
+
+--- 装载装备
+---@param articleTableIndex number
+---@param itemInfo ArticleInfo
+function UiModel:mountEquipment(articleTableIndex, itemInfo)
+    print("UiModel:mountEquipment(index, itemInfo)", articleTableIndex, itemInfo.name)
+
+    local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
+    -- 在ui上卸载原有装备到物品栏
+    self.articleInfoList[articleTableIndex] = lastEquItemInfo
+    self:RequestSetArticleTableItemInfo(articleTableIndex, lastEquItemInfo)
+
+    -- 待装备的物品是否存在于物品托盘，如存在，则更新物品托盘
+    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
+    if (articleDockIndex.Index > 0) then
+        self.articleDockInfoList[articleDockIndex.Index] = lastEquItemInfo
+        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, lastEquItemInfo)
+    end
+
+    -- 在服务上装载新装备
+    local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
+    EquSrv.Equip(self.player, keyTag, itemInfo.equInfo.resMgrEquData)
+    -- 在服务上调整实体装扮
+    AspectSrv.AdjustAvatar(self.player.aspect, self.player.states)
+
+    -- 在ui上装载新装备
+    self.mountedEquInfoList[itemInfo.equInfo.type] = itemInfo
+    self:RequestSetEquTableItemInfo(itemInfo.equInfo.type, itemInfo)
+
+    -- save
+    self:SavePlayerData()
+
+    -- 播放物品移动音效
+    self:playChangedArticlePosSound()
+end
+
+--- 卸载装备
+---@param equTableIndex number
+---@param itemInfo ArticleInfo
+function UiModel:unloadEquipment(equTableIndex, itemInfo)
+    print("UiModel:unloadEquipment(index, itemInfo)", equTableIndex, itemInfo.name)
+    -- 在ui上找到物品栏中第一个空位置
+    local emptyItemIndex = -1
+    ---@type ArticleInfo
+    local emptyItemInfo = nil
+    for i, info in pairs(self.articleInfoList) do
+        if info.type == Common.ArticleType.Empty then
+            emptyItemIndex = i
+            emptyItemInfo = info
+            break
+        end
+    end
+    if emptyItemInfo == nil then
+        print("UiModel:unloadEquipment(index, itemInfo)", "article table has no empty space")
+        return
+    end
+
+    -- 在ui上卸载到物品栏的空位置
+    self.articleInfoList[emptyItemIndex] = itemInfo
+    self:RequestSetArticleTableItemInfo(emptyItemIndex, itemInfo)
+
+    -- 在ui上将装备栏对应位置设置为空
+    self.mountedEquInfoList[equTableIndex] = emptyItemInfo
+    self:RequestSetEquTableItemInfo(equTableIndex, emptyItemInfo)
+
+    -- 在服务上卸载装备
+    local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
+    EquSrv.Del(self.player, keyTag)
+    -- 在服务上调整实体装扮
+    AspectSrv.AdjustAvatar(self.player.aspect, self.player.states)
+
+    -- save
+    self:SavePlayerData()
+
+    -- 播放物品移动音效
+    self:playChangedArticlePosSound()
+end
 
 function UiModel:playChangedArticlePosSound()
     -- 播放物品移动音效

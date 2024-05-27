@@ -101,10 +101,10 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
     self.lastIsShowHoveringItemTip = false
 
     -- connection
+    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
     self.model:MocConnectSignal(self.model.Signal_PlayerMountedSkillsChanged, self)
 
     --- post init
-    self:ReloadSkillsViewData()
     self:updateAllItemsPosition()
     self:updateAllItemsSize()
 end
@@ -317,7 +317,12 @@ end
 --- slots
 
 ---@param sender Obj
-function SkillDockViewFrame:Slot_PlayerMountedSkillsChanged()
+function SkillDockViewFrame:Slot_PlayerChanged(sender)
+    self:ReloadSkillsViewData()
+end
+
+---@param sender Obj
+function SkillDockViewFrame:Slot_PlayerMountedSkillsChanged(sender)
     self:ReloadSkillsViewData()
 end
 

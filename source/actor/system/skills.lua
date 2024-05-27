@@ -28,6 +28,9 @@ end
 ---@param entity Actor.Entity
 function _Skills:OnEnter(entity)
     local skills = entity.skills
+    if skills.data == nil then
+        return
+    end
 
     for k, v in pairs(skills.data) do
         if (k ~= "class" and type(v) == "table") then

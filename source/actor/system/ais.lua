@@ -30,6 +30,9 @@ end
 ---@param entity Actor.Entity
 function _Ais:OnEnter(entity)
     local ais = entity.ais
+    if ais.data == nil then
+        return
+    end
 
     for k, v in pairs(ais.data) do
         if (k ~= "class") then

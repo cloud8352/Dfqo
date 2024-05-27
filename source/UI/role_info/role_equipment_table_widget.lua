@@ -87,10 +87,9 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
     self.hoveringItemInfo = nil
 
     -- connect
-    self.model:MocConnectSignal(self.model.PlayerChanged, self)
+    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
 
     --- post init
-    self:initArticleData()
     self:updateData()
 end
 
@@ -339,8 +338,7 @@ end
 
 --- 当玩家改变后
 ---@type sender Object
-function RoleEquTableWidget:OnPlayerChanged(sender)
-    -- print("RoleEquTableWidget:OnPlayerChanged(sender)")
+function RoleEquTableWidget:Slot_PlayerChanged(sender)
     self:initArticleData()
 end
 
@@ -353,7 +351,7 @@ end
 function RoleEquTableWidget:updateData()
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
-        local itemXpos = self.xPos + (ItemWidth + ItemSpace) * col
+        local itemXPos = self.xPos + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
         local itemYPos = self.yPos + (ItemWidth + ItemSpace) * row
 

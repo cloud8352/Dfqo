@@ -36,6 +36,12 @@ function _EQUIPMENT.Set(entity, key, data)
 end
 
 ---@param equipments Actor.Component.Equipments
+---@return table<string, Actor.Equipment>
+function _EQUIPMENT.GetMap(equipments)
+    return equipments.container:GetMap()
+end
+
+---@param equipments Actor.Component.Equipments
 ---@param key string
 ---@return string
 function _EQUIPMENT.GetKind(equipments, key)

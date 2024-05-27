@@ -63,25 +63,10 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     self.mountContentWidget = SkillMountContentWidget.New(parentWindow, model)
     
     -- connection
+    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
     self.skillItemListView:MocConnectSignal(self.skillItemListView.Signal_SelectedItemChanged, self)
 
     -- post init
-    local skillResMgrDataList = self.model:GetSkillResMgrDataList()
-    for i, skillResMgrData in pairs(skillResMgrDataList) do
-        local info = Common.NewSkillInfoFromData(skillResMgrData)
-        print(info.iconPath, info.name)
-
-        local item = SkillManagementItem.New()
-        item:SetIconPath(info.iconPath)
-        item:SetTitle(info.name)
-        item:SetLevel(1)
-        item:SetProgress(50, 100)
-        item:SetValue(ItemDataKey, info)
-        self.skillItemListView:AppendItem(item)
-    end
-
-    --- post init
-    self.skillItemListView:SetCurrentIndex(1)
 end
 
 function SkillManagementWidget:Update(dt)
@@ -163,6 +148,28 @@ function SkillManagementWidget:SetEnable(enable)
 end
 
 --- slots
+
+---@param sender Obj
+function SkillManagementWidget:Slot_PlayerChanged()
+    self.skillItemListView:ClearAllItems()
+
+    local skillResMgrDataList = self.model:GetSkillResMgrDataList()
+    for i, skillResMgrData in pairs(skillResMgrDataList) do
+        local info = Common.NewSkillInfoFromData(skillResMgrData)
+        print("SkillManagementWidget:Slot_PlayerChanged()", info.iconPath, info.name)
+
+        local item = SkillManagementItem.New()
+        item:SetIconPath(info.iconPath)
+        item:SetTitle(info.name)
+        item:SetLevel(1)
+        item:SetProgress(50, 100)
+        item:SetValue(ItemDataKey, info)
+        self.skillItemListView:AppendItem(item)
+    end
+
+    --- post init
+    self.skillItemListView:SetCurrentIndex(1)
+end
 
 ---@param sender Obj
 ---@param item StandardItem
