@@ -24,6 +24,7 @@ local Util = require("util.Util")
 ---@class SkillDockViewFrame
 local SkillDockViewFrame = require("core.class")(Widget)
 
+local ItemWidth = 45
 local ItemSpace = 1
 local TimeOfWaiteToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
@@ -34,10 +35,12 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
 
     self.model = model
 
-    local defaultItemWidth = 45 * Util.GetWindowSizeScale()
-    defaultItemWidth = _MATH.Round(defaultItemWidth)
-    local width = defaultItemWidth * 8 + ItemSpace * 7
-    local height = ItemSpace + defaultItemWidth * 2
+    self.isBaseSkillItemVisible = false
+
+    local itemWidth = ItemWidth * Util.GetWindowSizeScale()
+    itemWidth = _MATH.Round(itemWidth)
+    local width = itemWidth * 6 + ItemSpace * 5
+    local height = itemWidth * 2 + ItemSpace
     self:SetSize(width, height)
 
     -- skill item
@@ -46,9 +49,11 @@ function SkillDockViewFrame:Ctor(parentWindow, model)
     -- basic skill item
     -- normalAttack
     local item = SkillDockViewItem.New(parentWindow)
+    item:SetVisible(false)
     self.mapOfTagToSkillViewItem["normalAttack"] = item
     -- counterAttack
     item = SkillDockViewItem.New(parentWindow)
+    item:SetVisible(false)
     self.mapOfTagToSkillViewItem["counterAttack"] = item
 
     -- skill1
@@ -279,6 +284,16 @@ end
 ---@param isVisible bool
 function SkillDockViewFrame:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
+
+    for k, v in pairs(self.mapOfTagToSkillViewItem) do
+        v:SetVisible(isVisible)
+    end
+
+    -- 如果不显示基础技能
+    if self.isBaseSkillItemVisible == false then
+        self.mapOfTagToSkillViewItem["normalAttack"]:SetVisible(false)
+        self.mapOfTagToSkillViewItem["counterAttack"]:SetVisible(false)
+    end
 end
 
 ---@param sprite Graphics.Drawable.Sprite
@@ -297,33 +312,39 @@ function SkillDockViewFrame:CheckPoint(x, y)
     return Widget.CheckPoint(self, x, y)
 end
 
-function SkillDockViewFrame:ReloadSkillsViewData()
-    for tag, item in pairs(self.mapOfTagToSkillViewItem) do
-        local actorSkillObj = self.model:GetPlayerActorSkillObj(tag)
-        if actorSkillObj then
-            item:SetIconSpriteDataPath("icon/skill/" .. actorSkillObj:GetData().icon)
-        else
-            item:SetIconSpriteDataPath("")
-        end
+---@param isVisible boolean
+function SkillDockViewFrame:SetIsBaseSkillItemVisible(isVisible)
+    self.isBaseSkillItemVisible = isVisible
 
-        local key = self.model:GetSkillKeyByTag(tag)
-        if nil == key then
-            key = ""
-        end
-        item:SetKey(key)
+    local reallyIsBaseSkillItemVisible = self.isBaseSkillItemVisible and self:IsVisible()
+    self.mapOfTagToSkillViewItem["normalAttack"]:SetVisible(reallyIsBaseSkillItemVisible)
+    self.mapOfTagToSkillViewItem["counterAttack"]:SetVisible(reallyIsBaseSkillItemVisible)
+
+    local itemWidth = ItemWidth * Util.GetWindowSizeScale()
+    itemWidth = _MATH.Round(itemWidth)
+
+    local width = itemWidth * 6 + ItemSpace * 5
+    local height = itemWidth * 2 + ItemSpace
+    if self.isBaseSkillItemVisible then
+        width = itemWidth * 8 + ItemSpace * 7
+        height = itemWidth * 2 + ItemSpace
     end
+
+    self:SetSize(width, height)
+
+    self:updateAllItemsPosition()
 end
 
 --- slots
 
 ---@param sender Obj
 function SkillDockViewFrame:Slot_PlayerChanged(sender)
-    self:ReloadSkillsViewData()
+    self:reloadSkillsViewData()
 end
 
 ---@param sender Obj
 function SkillDockViewFrame:Slot_PlayerMountedSkillsChanged(sender)
-    self:ReloadSkillsViewData()
+    self:reloadSkillsViewData()
 end
 
 --- signals
@@ -356,12 +377,15 @@ function SkillDockViewFrame:updateAllItemsPosition()
     local xPos, yPos = self:GetPosition()
     local itemWidth = (height - ItemSpace) / 2
     -- 左侧存在两个基础技能
-    local normalSkillXPos = xPos + (itemWidth + ItemSpace) * 2
+    local normalSkillXPos = xPos
+    if self.isBaseSkillItemVisible then
+        normalSkillXPos = xPos + (itemWidth + ItemSpace) * 2
+    end
     for k, v in pairs(self.mapOfTagToSkillViewItem) do
-        if "normalAttack" == k then
+        if "normalAttack" == k and self.isBaseSkillItemVisible then
             v:SetPosition(xPos, yPos + (height - itemWidth) / 2) -- 垂直居中
         end
-        if "counterAttack" == k then
+        if "counterAttack" == k and self.isBaseSkillItemVisible then
             v:SetPosition(xPos + (ItemSpace + itemWidth) * 1, yPos + (height - itemWidth) / 2)
         end
         if "skill1" == k then
@@ -414,7 +438,6 @@ function SkillDockViewFrame:updateAllItemsSize()
     self:updateHoveringItemFrameData()
 end
 
-
 function SkillDockViewFrame:updateHoveringItemFrameData()
     -- hovering item frame label
     local item = self.mapOfTagToSkillViewItem[self.hoveringItemTag]
@@ -463,6 +486,23 @@ function SkillDockViewFrame:updateHoveringItemTipWindowData()
     end
 
     self.model:RequestSetHoveringSkillItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, skillInfo)
+end
+
+function SkillDockViewFrame:reloadSkillsViewData()
+    for tag, item in pairs(self.mapOfTagToSkillViewItem) do
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(tag)
+        if actorSkillObj then
+            item:SetIconSpriteDataPath("icon/skill/" .. actorSkillObj:GetData().icon)
+        else
+            item:SetIconSpriteDataPath("")
+        end
+
+        local key = self.model:GetSkillKeyByTag(tag)
+        if nil == key then
+            key = ""
+        end
+        item:SetKey(key)
+    end
 end
 
 return SkillDockViewFrame

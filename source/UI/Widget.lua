@@ -169,6 +169,10 @@ end
 ---@param x int
 ---@param y int
 function Widget:CheckPoint(x, y)
+    if self.isVisible == false then
+        return false
+    end
+
     return self.checkRect:CheckPoint(x, y)
 end
 

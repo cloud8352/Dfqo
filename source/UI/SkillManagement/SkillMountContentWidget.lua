@@ -38,6 +38,7 @@ function SkillMountContentWidget:Ctor(parentWindow, model)
     self.tipLabel:SetText("点击下列快捷栏以装备技能：")
 
     self.skillDockViewFrame = SkillDockViewFrame.New(parentWindow, model)
+    self.skillDockViewFrame:SetIsBaseSkillItemVisible(true)
 
     self.clearSkillShortcutsBtn = PushButton.New(parentWindow)
     self.clearSkillShortcutsBtn:SetText("置空")

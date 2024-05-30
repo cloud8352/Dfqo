@@ -214,9 +214,10 @@ function UI.Init()
     -- 将 物品托盘 和 技能托盘 水平居中放到窗口底部
     local articleDockFrameWidth, articleDockFrameHeight = UI.articleDockFrame:GetSize()
     local skillDockViewFrameWidth, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
-    UI.articleDockFrame:SetPosition((Util.GetWindowWidth() - articleDockFrameWidth - skillDockViewFrameWidth) / 2,
+    local adfSdfSpace = 10 * Util.GetWindowSizeScale()
+    UI.articleDockFrame:SetPosition((Util.GetWindowWidth() - articleDockFrameWidth - skillDockViewFrameWidth - adfSdfSpace) / 2,
         Util.GetWindowHeight() - articleDockFrameHeight - 10)
-    UI.skillDockViewFrame:SetPosition((Util.GetWindowWidth() + articleDockFrameWidth - skillDockViewFrameWidth) / 2,
+    UI.skillDockViewFrame:SetPosition((Util.GetWindowWidth() + articleDockFrameWidth + adfSdfSpace - skillDockViewFrameWidth) / 2,
         Util.GetWindowHeight() - skillDockViewFrameHeight - 10)
 
     --
