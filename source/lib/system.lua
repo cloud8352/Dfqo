@@ -42,7 +42,7 @@ local WindowsOsDpi = 1.0
 local _SYSTEM = {} ---@class Lib.SYSTEM
 
 function _SYSTEM.Init()
-    _SYSTEM.initWindowOsDpi()
+    -- _SYSTEM.initWindowOsDpi()
     _SYSTEM.initWindowSize()
 end
 

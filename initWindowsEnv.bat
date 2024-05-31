@@ -5,4 +5,4 @@
 set __COMPAT_LAYER=HIGHDPIAWARE
 
 ::powershell (Get-WmiObject -Namespace root\cimv2 -Class Win32_VideoController).CurrentHorizontalResolution > realWindowsOsDesktopWidth.tmp
-wmic DESKTOPMONITOR where Status='ok' get ScreenWidth > realWindowsOsScreenWidth.tmp
+::wmic DESKTOPMONITOR where Status='ok' get ScreenWidth > realWindowsOsScreenWidth.tmp

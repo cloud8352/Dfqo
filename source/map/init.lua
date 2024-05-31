@@ -343,7 +343,7 @@ local function _Load(path)
 end
 
 function _MAP.Init(OnDraw)
-    local sx, _ = _SYSTEM.GetScale() * _SYSTEM.GetWindowsOsDpi()
+    local sx, _ = _SYSTEM.GetScale()
     _MAP.camera = _Camera.New(_const.cameraSpeed, sx * _const.scale, sx * _const.scale)
     _MAP.camera:SetWorld(0, 0, _SYSTEM.GetStdDimensions())
 
