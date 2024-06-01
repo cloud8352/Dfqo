@@ -3,6 +3,7 @@ function love.conf(t)
     io.stdout:setvbuf("no")
     -- t.console = true                   -- Attach a console (boolean, Windows only)
 
+    t.identity = "com.ccc.dfqo"
     t.window.title = "Dungeon Fighter Quest"
     t.window.width = 960
     t.window.height = 540
