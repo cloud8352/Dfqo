@@ -121,7 +121,7 @@ function UI.Init()
     UI.skillManagementWindow:SetSize(977 * Util.GetWindowSizeScale(),
         622 * Util.GetWindowSizeScale())
     UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos, characterInfoWindowOriginYPos)
-    UI.skillManagementWindow:SetVisible(true)
+    UI.skillManagementWindow:SetVisible(false)
 
     UI.skillManagementWidget = SkillManagementWidget.New(UI.skillManagementWindow, UI.model)
     UI.skillManagementWindow:SetContentWidget(UI.skillManagementWidget)

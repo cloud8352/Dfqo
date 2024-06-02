@@ -29,7 +29,13 @@ function _EQUIPMENT.Set(entity, key, data)
     end
 
     if (data) then
-        container:Add(data.class.New(entity, key, data), key)
+        equ = data.class.New(entity, key, data)
+        container:Add(equ, key)
+
+        -- 隐藏默认武器装扮
+        if "defaultWeapon" == key then
+            equ:Exit()
+        end
     end
 
     entity.equipments.caller:Call(key, edata)
