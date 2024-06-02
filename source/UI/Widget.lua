@@ -7,6 +7,7 @@
 
 local Sprite = require("graphics.drawable.sprite")
 local Rect = require("graphics.drawunit.rect")
+local WindowManager = require("UI.WindowManager")
 
 ---@class Widget
 local Widget = require("core.class")()
@@ -19,7 +20,9 @@ function Widget:Ctor(parentWindow)
 
     self.objectName = ""
 
-    assert(parentWindow, "must assign parent window")
+    if parentWindow == nil then
+        parentWindow = WindowManager.DefaultWindow
+    end
     ---@type Window
     self.parentWindow = parentWindow
 

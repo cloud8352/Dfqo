@@ -24,9 +24,10 @@ local SkillManagementItem = require("core.class")(StandardItem)
 
 local IconLabelMarginSpace = 0
 
-function SkillManagementItem:Ctor()
+---@param parentWindow Window
+function SkillManagementItem:Ctor(parentWindow)
     -- 父类构造函数
-    StandardItem.Ctor(self)
+    StandardItem.Ctor(self, parentWindow)
 
     local windowSizeScale = Util.GetWindowSizeScale()
     IconLabelMarginSpace = 5 * windowSizeScale
@@ -40,15 +41,46 @@ function SkillManagementItem:Ctor()
 end
 
 function SkillManagementItem:Update(dt)
+    if not self:IsVisible() then
+        return
+    end
     StandardItem.Update(self, dt)
 end
 
 function SkillManagementItem:Draw()
+    if not self:IsVisible() then
+        return
+    end
     StandardItem.Draw(self)
+end
+
+--- 连接信号
+---@param signal function
+---@param obj Object
+function SkillManagementItem:MocConnectSignal(signal, receiver)
+    StandardItem.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function SkillManagementItem:GetReceiverListOfSignal(signal)
+    return StandardItem.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function SkillManagementItem:SetObjectName(name)
+    StandardItem.SetObjectName(self, name)
+end
+
+function SkillManagementItem:GetObjectName()
+    return StandardItem.GetObjectName(self)
 end
 
 function SkillManagementItem:SetPosition(x, y)
     StandardItem.SetPosition(self, x, y)
+end
+
+function SkillManagementItem:GetPosition()
+    return StandardItem.GetPosition(self)
 end
 
 ---@param width int
@@ -90,6 +122,104 @@ function SkillManagementItem:SetSize(width, height)
     StandardItem.SetSize(self, width, height)
 end
 
+function SkillManagementItem:GetSize()
+    return StandardItem.GetSize(self)
+end
+
+
+function SkillManagementItem:SetEnable(enable)
+    StandardItem.SetEnable(self, enable)
+end
+
+---@param isVisible bool
+function SkillManagementItem:SetVisible(isVisible)
+    StandardItem.SetVisible(self, isVisible)
+end
+
+function SkillManagementItem:IsVisible()
+    return StandardItem.IsVisible(self)
+end
+
+---@return changed boolean
+function SkillManagementItem:IsSizeChanged()
+    return StandardItem.IsSizeChanged(self)
+end
+
+---@param sprite Graphics.Drawable.Sprite
+function SkillManagementItem:SetBgSprite(sprite)
+    StandardItem.SetBgSprite(self, sprite)
+end
+
+function SkillManagementItem:GetBgSprite()
+    return StandardItem.GetBgSprite(self)
+end
+
+---@param x int
+---@param y int
+function SkillManagementItem:CheckPoint(x, y)
+    return StandardItem.CheckPoint(self, x, y)
+end
+
+---@return canvas
+function SkillManagementItem:GetCurrentImgCanvas()
+    return StandardItem.GetCurrentImgCanvas(self)
+end
+
+---@return state StandardItem.DisplayState
+function SkillManagementItem:GetCurrentDisplayState()
+    return StandardItem.GetCurrentDisplayState(self)
+end
+
+---@param state StandardItem.DisplayState
+function SkillManagementItem:SetDisplayState(state)
+    StandardItem.SetDisplayState(self, state)
+end
+
+---@return index int
+function SkillManagementItem:GetIndex()
+    return StandardItem.GetIndex(self)
+end
+
+---@param index int
+function SkillManagementItem:SetIndex(index)
+    StandardItem.SetIndex(self, index)
+end
+
+---@param key string
+---@param value obj
+function SkillManagementItem:SetValue(key, value)
+    StandardItem.SetValue(self, key, value)
+end
+
+---@param key string
+---@return obj value
+function SkillManagementItem:GetValue(key)
+    return StandardItem.GetValue(self, key)
+end
+
+---@param str string
+function SkillManagementItem:SetSortingStr(str)
+    StandardItem.SetSortingStr(self, str)
+end
+
+function SkillManagementItem:GetSortingStr()
+    return StandardItem.GetSortingStr(self)
+end
+
+---@param num number
+function SkillManagementItem:SetSortingNum(num)
+    StandardItem.SetSortingNum(self, num)
+end
+
+function SkillManagementItem:GetSortingNum()
+    return StandardItem.GetSortingNum(self)
+end
+
+---@param need boolean
+function SkillManagementItem:SetNeedUpdateAllStateCanvas(need)
+    StandardItem.SetNeedUpdateAllStateCanvas(self, need)
+end
+
 ---@param path string
 function SkillManagementItem:SetIconPath(path)
     self.iconLabel:SetIconSpriteDataPath(path)
@@ -120,53 +250,13 @@ function SkillManagementItem:SetBarColor(red, green, blue, alpha)
     self.progressBar:SetBarColor(red, green, blue, alpha)
 end
 
----@return canvas
-function SkillManagementItem:GetCurrentImgCanvas()
-    return StandardItem.GetCurrentImgCanvas(self)
+--- signals
+
+function SkillManagementItem:Signal_ItemDisplayChanged()
+    StandardItem.Signal_ItemDisplayChanged(self)
 end
 
----@return state StandardItem.DisplayState
-function SkillManagementItem:GetCurrentDisplayState()
-    return StandardItem.GetCurrentDisplayState(self)
-end
-
----@param state StandardItem.DisplayState
-function SkillManagementItem:SetDisplayState(state)
-    StandardItem.SetDisplayState(self, state)
-end
-
-function SkillManagementItem:IsDisplayStateChanged()
-    return StandardItem.IsDisplayStateChanged(self)
-end
-
----@param x int
----@param y int
-function SkillManagementItem:CheckPoint(x, y)
-    return StandardItem.CheckPoint(self, x, y)
-end
-
----@return index int
-function SkillManagementItem:GetIndex()
-    return StandardItem.GetIndex(self)
-end
-
----@param index int
-function SkillManagementItem:SetIndex(index)
-    StandardItem.SetIndex(self, index)
-end
-
----@param key string
----@param value obj
-function SkillManagementItem:SetValue(key, value)
-    StandardItem.SetValue(self, key, value)
-end
-
----@param key string
----@return obj value
-function SkillManagementItem:GetValue(key)
-    return StandardItem.GetValue(self, key)
-end
-
+--- overrride
 ---@param state StandardItem.DisplayState
 function SkillManagementItem:createDisplayStateCanvas(state)
     local windowSizeScale = Util.GetWindowSizeScale()

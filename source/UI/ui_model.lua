@@ -20,6 +20,7 @@ local EcsMgr = require("actor.ecsmgr")
 local EquSrv = require("actor.service.equipment")
 local AspectSrv = require("actor.service.aspect")
 local InputSrv = require("actor.service.input")
+local InputLib = require("lib.input")
 local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
 
@@ -736,6 +737,50 @@ function UiModel:GetPlayerInstanceCfgSimplePath()
         simplePath = "duelist/swordman"
     end 
     return simplePath
+end
+
+---@return table<string, string>
+function UiModel:GetConfigMapOfFunNameToKey()
+    return _CONFIG.code
+end
+
+---@param map table<string, string>
+function UiModel:SaveConfigMapOfFunNameToKey(map)
+    for funName, key in pairs(map) do
+        InputLib.SetKey(funName, key)
+    end
+
+    -- 1、获取设置文件路径
+    local File = require("lib.file")
+    local settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.SettingsFileName
+    if not File.Exists(settingsFilePath) then
+        settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.DefaultSettingsFileName
+    end
+
+    -- 2、读取原设置数据
+    local content = File.ReadFile(settingsFilePath)
+    ---@type CONFIG
+    local configData = loadstring(content)()
+
+    -- 3、更新设置数据
+    configData.code = _CONFIG.code
+
+    -- 4. 序列化数据
+    local Table = require("lib.table")
+    local dataStr = Table.Deserialize(configData)
+
+    -- 5. 保存数据
+    local File = require("lib.file")
+
+    local dirPath = _CONFIG.ConfigDirPath
+    local fileName = _CONFIG.SettingsFileName
+    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    if not ok then
+        print("UiModel:SaveConfigMapOfFunNameToKey(map)", errMsg, dirPath .. fileName, "file write failed！")
+        return
+    end
+
+    self:Signal_PlayerMountedSkillsChanged()
 end
 
 --- signals

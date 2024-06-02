@@ -10,7 +10,9 @@ local _INPUT = require("lib.input")
 local _Caller = require("core.caller")
 
 local _map = {}
+---@type string
 local _pressKey
+---@type string
 local _releasedKey
 
 ---@type table<string, Core.Caller>

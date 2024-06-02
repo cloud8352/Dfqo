@@ -1,16 +1,15 @@
 --[[
-    desc: StandardItem class. 用于存储表格或列表的单元数据
-    author: keke <243768648@qq.com>
-    since: 2022-12-09
-    alter: 2022-12-09
+	desc: StandardItem class. 用于存储表格或列表的单元数据
+	author: keke <243768648@qq.com>
 ]] --
 
-local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
+local Sprite = require("graphics.drawable.sprite")
 
---- 滑动区域
+local Widget = require("UI.Widget")
+
 ---@class StandardItem
-local StandardItem = require("core.class")()
+local StandardItem = require("core.class")(Widget)
 
 ---@enum StandardItem.DisplayState
 StandardItem.DisplayState = {
@@ -21,20 +20,11 @@ StandardItem.DisplayState = {
     Disable = 4,
 }
 
-function StandardItem:Ctor()
-    self.xPos = 0
-    self.yPos = 0
-    ---@type int
-    self.width = 0
-    ---@type int
-    self.height = 0
-    self.enable = true
-    self.lastDisplayState = StandardItem.DisplayState.Unknown
-    self.displayState = StandardItem.DisplayState.Normal
+---@param parentWindow Window
+function StandardItem:Ctor(parentWindow)
+    Widget.Ctor(self, parentWindow)
 
-    ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
-    self.sprite = _Sprite.New()
-    self.sprite:SwitchRect(true)
+    self.displayState = StandardItem.DisplayState.Normal
     self.text = ""
 
     self.normalImgCanvas = nil
@@ -43,28 +33,32 @@ function StandardItem:Ctor()
     self.disableImgCanvas = nil
     self.currentImgCanvas = nil
 
+    self.needUpdateAllStateCanvas = true
+    self.needUpdateSpriteImg = false
+
     self.index = 1 -- 显示项检索值
+
+    self.sortingStr = ""
+    self.sortingNum = 0
 
     ---@type table<string, obj>
     self.mapOfKeyToValue = {}
 end
 
 function StandardItem:Update(dt)
-    if nil == self.normalImgCanvas then
-        self.normalImgCanvas = _Graphics.NewCanvas(self.width, self.height)
+    if false == self:IsVisible() then
+        return
     end
-    if nil == self.hoveringImgCanvas then
-        self.hoveringImgCanvas = _Graphics.NewCanvas(self.width, self.height)
-    end
-    if nil == self.selectedImgCanvas then
-        self.selectedImgCanvas = _Graphics.NewCanvas(self.width, self.height)
-    end
-    if nil == self.disableImgCanvas then
-        self.disableImgCanvas = _Graphics.NewCanvas(self.width, self.height)
+    if self.needUpdateAllStateCanvas then
+        self.needUpdateAllStateCanvas = false
+        self:updateAllStateCanvas()
+
+        self.needUpdateSpriteImg = true
     end
 
-    -- 根据状态设置按钮图片
-    if self.lastDisplayState ~= self.displayState then
+    if self.needUpdateSpriteImg then
+        self.needUpdateSpriteImg = false
+        -- 根据状态设置按钮图片
         if StandardItem.DisplayState.Normal == self.displayState then
             self.currentImgCanvas = self.normalImgCanvas
         elseif StandardItem.DisplayState.Hovering == self.displayState then
@@ -74,48 +68,107 @@ function StandardItem:Update(dt)
         elseif StandardItem.DisplayState.Disable == self.displayState then
             self.currentImgCanvas = self.disableImgCanvas
         end
-        self.sprite:SetImage(self.currentImgCanvas)
+
+        local sprite = Sprite.New()
+        sprite:SetImage(self.currentImgCanvas)
         -- 设置图片后调整精灵维度
-        self.sprite:AdjustDimensions()
+        sprite:AdjustDimensions()
+        self:SetBgSprite(sprite)
+
+        self:Signal_ItemDisplayChanged()
     end
 
-    self.lastDisplayState = self.displayState
+    Widget.Update(self, dt)
 end
 
 function StandardItem:Draw()
-    self.sprite:Draw()
+    if false == self.isVisible then
+        return
+    end
+    Widget.Draw(self)
+end
+
+--- 连接信号
+---@param signal function
+---@param obj Object
+function StandardItem:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function StandardItem:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function StandardItem:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function StandardItem:GetObjectName()
+    return Widget.GetObjectName(self)
 end
 
 function StandardItem:SetPosition(x, y)
-    self.sprite:SetAttri("position", x, y)
-    self.xPos = x
-    self.yPos = y
+    Widget.SetPosition(self, x, y)
 end
 
 function StandardItem:GetPosition()
-    return self.xPos, self.yPos
+    return Widget.GetPosition(self)
 end
 
-function StandardItem:SetSize(w, h)
-    self.width = w or 0
-    self.height = h or 0
-    if (self.width == 0 or self.height == 0) then
-        return
-    end
+function StandardItem:SetSize(width, height)
+    Widget.SetSize(self, width, height)
 
-    self.normalImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Normal)
-    self.hoveringImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Hovering)
-    self.selectedImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Selected)
-    self.disableImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Disable)
+    self.needUpdateAllStateCanvas = true
 end
 
 function StandardItem:GetSize()
-    return self.width, self.height
+    return Widget.GetSize(self)
+end
+
+function StandardItem:SetEnable(enable)
+    Widget.SetEnable(self, enable)
+end
+
+---@param isVisible bool
+function StandardItem:SetVisible(isVisible)
+    Widget.SetVisible(self, isVisible)
+end
+
+function StandardItem:IsVisible()
+    return Widget.IsVisible(self)
+end
+
+---@return changed boolean
+function StandardItem:IsSizeChanged()
+    return Widget.IsSizeChanged(self)
+end
+
+---@param sprite Graphics.Drawable.Sprite
+function StandardItem:SetBgSprite(sprite)
+    Widget.SetBgSprite(self, sprite)
+end
+
+function StandardItem:GetBgSprite()
+    return Widget.GetBgSprite(self)
+end
+
+---@param x int
+---@param y int
+function StandardItem:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
 end
 
 ---@param text string
 function StandardItem:SetText(text)
+    if self.text == text then
+        return
+    end
+
     self.text = text
+
+    self.needUpdateAllStateCanvas = false
 end
 
 function StandardItem:GetText()
@@ -134,13 +187,86 @@ end
 
 ---@param state StandardItem.DisplayState
 function StandardItem:SetDisplayState(state)
+    if self.displayState == state then
+        return
+    end
     self.displayState = state
+
+    self.needUpdateSpriteImg = true
 end
 
-function StandardItem:IsDisplayStateChanged()
-    -- 判断显示模式是否改变
-    return self.lastDisplayState ~= self.displayState
+---@return index int
+function StandardItem:GetIndex()
+    return self.index
 end
+
+---@param index int
+function StandardItem:SetIndex(index)
+    self.index = index
+end
+
+---@param key string
+---@param value obj
+function StandardItem:SetValue(key, value)
+    self.mapOfKeyToValue[key] = value
+end
+
+---@param key string
+---@return obj
+function StandardItem:GetValue(key)
+    return self.mapOfKeyToValue[key]
+end
+
+---@param str string
+function StandardItem:SetSortingStr(str)
+    self.sortingStr = str
+end
+
+function StandardItem:GetSortingStr()
+    return self.sortingStr
+end
+
+---@param num number
+function StandardItem:SetSortingNum(num)
+    self.sortingNum = num
+end
+
+function StandardItem:GetSortingNum()
+    return self.sortingNum
+end
+
+---@param need boolean
+function StandardItem:SetNeedUpdateAllStateCanvas(need)
+    self.needUpdateAllStateCanvas = need
+end
+
+--- signals
+
+---
+function StandardItem:Signal_ItemDisplayChanged()
+    print("StandardItem:Signal_ItemDisplayChanged()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_ItemDisplayChanged)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_ItemDisplayChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+--- slot
+
+
+--- private function
 
 ---@param state StandardItem.DisplayState
 function StandardItem:createDisplayStateCanvas(state)
@@ -181,32 +307,11 @@ function StandardItem:createDisplayStateCanvas(state)
     return canvas
 end
 
----@param x int
----@param y int
-function StandardItem:CheckPoint(x, y)
-    return self.sprite:CheckPoint(x, y)
-end
-
----@return index int
-function StandardItem:GetIndex()
-    return self.index
-end
-
----@param index int
-function StandardItem:SetIndex(index)
-    self.index = index
-end
-
----@param key string
----@param value obj
-function StandardItem:SetValue(key, value)
-    self.mapOfKeyToValue[key] = value
-end
-
----@param key string
----@return obj
-function StandardItem:GetValue(key)
-    return self.mapOfKeyToValue[key]
+function StandardItem:updateAllStateCanvas()
+    self.normalImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Normal)
+    self.hoveringImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Hovering)
+    self.selectedImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Selected)
+    self.disableImgCanvas = self:createDisplayStateCanvas(StandardItem.DisplayState.Disable)
 end
 
 return StandardItem

@@ -38,6 +38,9 @@ function ListView:Ctor(parentWindow)
     ---@type table<int, StandardItem>
     self.itemList = {}
 
+    ---@type StandardItem
+    self.currentItem = nil
+
     self.needUpdateItemListContentWidgetSprite = false
 end
 
@@ -131,14 +134,6 @@ function ListView:MouseEvent()
         hoveringItem:SetDisplayState(StandardItem.DisplayState.Hovering)
         break
     end
-
-    -- 判断显示内容是否改变
-    for _, item in pairs(self.itemList) do
-        if item:IsDisplayStateChanged() then
-            self.needUpdateItemListContentWidgetSprite = true
-            break
-        end
-    end
 end
 
 --- 连接信号
@@ -184,6 +179,10 @@ function ListView:SetSize(width, height)
     self.itemListContentWidget:SetSize(displayContentWidth, itemListContentWidgetHeight)
 end
 
+function ListView:GetSize()
+    return ScrollArea.GetSize(self)
+end
+
 function ListView:SetEnable(enable)
     ScrollArea.SetEnable(self, enable)
 
@@ -214,6 +213,9 @@ end
 ---@param item StandardItem
 function ListView:InsertItem(i, item)
     table.insert(self.itemList, i, item)
+
+    -- connection
+    item:MocConnectSignal(item.Signal_ItemDisplayChanged, self)
 
     -- 更新index
     for i, item in pairs(self.itemList) do
@@ -270,6 +272,7 @@ function ListView:SetCurrentItem(item)
     if item == nil then
         return
     end
+    self.currentItem = item
 
     for _, itemTmp in pairs(self.itemList) do
         itemTmp:SetDisplayState(StandardItem.DisplayState.Normal)
@@ -277,20 +280,40 @@ function ListView:SetCurrentItem(item)
     item:SetDisplayState(StandardItem.DisplayState.Selected)
     -- -- 判断和执行选中项改变事件
     self:Signal_SelectedItemChanged(item)
+end
 
-    -- 判断显示内容是否改变
-    for _, item in pairs(self.itemList) do
-        if item:IsDisplayStateChanged() then
-            self.needUpdateItemListContentWidgetSprite = true
-            break
-        end
-    end
+function ListView:GetCurrentItem()
+    return self.currentItem
 end
 
 ---@param index int
 function ListView:SetCurrentIndex(index)
     local item = self.itemList[index]
     self:SetCurrentItem(item)
+end
+
+function ListView:SortByStr()
+    ---@param a StandardItem
+    ---@param b StandardItem
+    local function compare(a, b)
+        return a:GetSortingStr() < b:GetSortingStr()
+    end
+
+    table.sort(self.itemList, compare)
+
+    self.needUpdateItemListContentWidgetSprite = true
+end
+
+function ListView:SortByNum()
+    ---@param a StandardItem
+    ---@param b StandardItem
+    local function compare(a, b)
+        return a:GetSortingNum() < b:GetSortingNum()
+    end
+
+    table.sort(self.itemList, compare)
+
+    self.needUpdateItemListContentWidgetSprite = true
 end
 
 --- signals
@@ -329,6 +352,13 @@ function ListView:Slot_RequestMoveContent(sender, xOffset, yOffset)
     -- item
     self:updateAllItemsPosition()
 end
+
+---@param sender Obj
+function ListView:Slot_ItemDisplayChanged(sender)
+    self.needUpdateItemListContentWidgetSprite = true
+end
+
+--- private function
 
 function ListView:updateItemListContentWidgetSprite()
     local contentWidth, contentHeight = self.itemListContentWidget:GetSize()

@@ -18,6 +18,7 @@ local SkillDockViewFrame = require("UI.SkillDockViewFrame")
 local HoveringSkillItemTipWidget = require("UI.hovering_skill_item_tip_widget")
 local RoleInfoWidget = require("UI.role_info.role_info_widget")
 local SkillManagementWidget = require("UI.SkillManagement.SkillManagementWidget")
+local SettingsWidget = require("UI.Settings.SettingsWidget")
 local Widget = require("UI.Widget")
 local ArticleViewItem = require("UI.role_info.article_view_item")
 local HoveringArticleItemTipWidget = require("UI.role_info.hovering_article_item_tip_widget")
@@ -120,13 +121,25 @@ function UI.Init()
     UI.skillManagementWindow = Window.New()
     UI.skillManagementWindow:SetSize(977 * Util.GetWindowSizeScale(),
         622 * Util.GetWindowSizeScale())
-    UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos, characterInfoWindowOriginYPos)
+    UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos + 10, characterInfoWindowOriginYPos + 10)
     UI.skillManagementWindow:SetVisible(false)
 
     UI.skillManagementWidget = SkillManagementWidget.New(UI.skillManagementWindow, UI.model)
     UI.skillManagementWindow:SetContentWidget(UI.skillManagementWidget)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(UI.skillManagementWindow, UI.skillManagementWindow)
+
+    -- settingsWindow
+    UI.settingsWindow = Window.New()
+    UI.settingsWindow:SetSize(977 * Util.GetWindowSizeScale(),
+        622 * Util.GetWindowSizeScale())
+    UI.settingsWindow:SetPosition(characterInfoWindowOriginXPos + 20, characterInfoWindowOriginYPos + 20)
+    UI.settingsWindow:SetVisible(false)
+    UI.settingsWindow:SetTitleBarIsBackgroundVisible(false)
+
+    UI.settingWidget = SettingsWidget.New(UI.settingsWindow, UI.model)
+    UI.settingsWindow:SetContentWidget(UI.settingWidget)
+    UI.appendWindowWidget(UI.settingsWindow, UI.settingsWindow)
 
     -- 悬停处的物品栏提示窗口
     UI.hoveringArticleItemTipWindow = Window.New()
@@ -267,6 +280,8 @@ function UI.Init()
     UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_BtnClicked, UI)
     -- skillManagementBtn
     UI.skillManagementBtn:MocConnectSignal(UI.skillManagementBtn.Signal_BtnClicked, UI)
+    -- settingsBtn
+    UI.settingsBtn:MocConnectSignal(UI.settingsBtn.Signal_BtnClicked, UI)
     -- mapSelectComboBox
     UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
     -- model
@@ -358,6 +373,11 @@ function UI.Slot_BtnClicked(my, sender)
         local isVisible = UI.skillManagementWindow:IsVisible()
         UI.skillManagementWindow:SetVisible(not isVisible)
         WindowManager.SetWindowToTopLayer(UI.skillManagementWindow)
+    end
+    if (UI.settingsBtn == sender) then
+        local isVisible = UI.settingsWindow:IsVisible()
+        UI.settingsWindow:SetVisible(not isVisible)
+        WindowManager.SetWindowToTopLayer(UI.settingsWindow)
     end
 end
 
@@ -590,6 +610,7 @@ function UI.keyboardEvent()
     if (Keyboard.IsPressed("escape")) then
         UI.characterInfoWindow:SetVisible(false)
         UI.skillManagementWindow:SetVisible(false)
+        UI.settingsWindow:SetVisible(false)
     end
 
     --- 判断物品托盘快捷键
