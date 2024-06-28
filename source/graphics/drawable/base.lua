@@ -53,7 +53,7 @@ function _Base:SetQuad(quad)
     self._renderer.quad = quad
 end
 
----@return number
+---@return number, number, number, number x, y, w, h, sw, sh
 function _Base:GetQuadValues()
     local quad = self._renderer.quad
 

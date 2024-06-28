@@ -345,11 +345,15 @@ function UI.Update(dt)
         windowWidget.Widget:Update(dt)
     end
 
-    UI.mergeTotalSprite()
+    -- UI.mergeTotalSprite()
 end
 
 function UI.Draw()
-    UI.totalSprite:Draw()
+    -- UI.totalSprite:Draw()
+    local windowWidgetList = WindowManager.GetWindowWidgetList()
+    for _, windowWidget in pairs(windowWidgetList) do
+        windowWidget.Widget:Draw()
+    end
 end
 
 --- public function

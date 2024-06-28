@@ -47,7 +47,7 @@ function _DIRECTOR.Update(dt)
     _MAP.Update(dt)
 
     -- ui
-    UI.Update(dt)
+    UI.Update(dt) -- 此处存在内存泄漏！！！
 end
 
 function _DIRECTOR.firstUpdate()

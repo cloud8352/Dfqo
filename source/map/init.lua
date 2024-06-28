@@ -100,17 +100,11 @@ local _load = {
     caller = _Caller.New()
 }
 
-local _event = {
-    GetShift = function()
-        return _MAP.camera:GetShift()
-    end
-}
-
 local _layerGroup = {
-    far = _BackGround.New(_event, _const.backgroundRate.far),
-    near = _BackGround.New(_event, _const.backgroundRate.near),
-    floor = _Sprite.New(),
-    object = _Sprite.New(),
+    far = _BackGround.New(_MAP, _const.backgroundRate.far),
+    near = _BackGround.New(_MAP, _const.backgroundRate.near),
+    floor = _BackGround.New(_MAP, 0),
+    object = _BackGround.New(_MAP, 0),
     effect = _Layer.New()
 }
 
@@ -228,8 +222,6 @@ local function _Load(path)
         end
 
         if (values.bgs.path ~= data.info.bgs) then
-            local source
-
             if (values.bgs.source) then
                 values.bgs.source:stop()
             end
@@ -262,9 +254,12 @@ local function _Load(path)
         end
     end
 
-    local spriteBoard = _Sprite.New()
     local pool = {}
 
+    _layerGroup.far:ClearAllSprite()
+    _layerGroup.near:ClearAllSprite()
+    _layerGroup.floor:ClearAllSprite()
+    _layerGroup.object:ClearAllSprite()
     _layerGroup.effect:DelAll()
 
     for k, v in pairs(_layerGroup) do
@@ -289,6 +284,8 @@ local function _Load(path)
                     obj:SetAttri("position", i.x, i.y)
                 end
             else
+                ---@type Map.Background
+                local background = v
                 for n = 1, #data.layer[k] do
                     local i = data.layer[k][n]
                     local spriteData = pool[i.sprite]
@@ -299,32 +296,37 @@ local function _Load(path)
                     end
 
                     i.sprite = spriteData
+
+                    local mapBgItemInfo = _BackGround.NewMapBgItemInfo()
+                    mapBgItemInfo.Id = i.id
+                    mapBgItemInfo.Order = i.order
+                    mapBgItemInfo.SpriteData = spriteData
+
+                    local drawableSprite = _Sprite.New()
+                    drawableSprite:SwitchRect(true)
+                    drawableSprite:SetAttri("position", i.x, i.y)
+
+                    i.sx = i.sx or 1
+                    i.sy = i.sy or 1
+                    drawableSprite:SetAttri("scale", i.sx, i.sy)
+                    
+                    drawableSprite:SetData(spriteData)
+                    mapBgItemInfo.DrawableSprite = drawableSprite
+
+                    -- x y w h
+                    mapBgItemInfo.X = drawableSprite:GetRectValue("x")
+                    mapBgItemInfo.Y = drawableSprite:GetRectValue("y")
+                    mapBgItemInfo.W = drawableSprite:GetRectValue("w")
+                    mapBgItemInfo.H = drawableSprite:GetRectValue("h")
+
+                    background:AppendItem(mapBgItemInfo)
                 end
 
                 if (k ~= "floor") then
                     table.sort(data.layer[k], _Sorting)
+
+                    background:Sort()
                 end
-
-                _GRAPHICS.SaveCanvas()
-                local canvas = _GRAPHICS.NewCanvas(data.info.width, data.info.height)
-                _GRAPHICS.SetCanvas(canvas)
-
-                for n = 1, #data.layer[k] do
-                    local i = data.layer[k][n]
-
-                    spriteBoard:SetData(i.sprite)
-                    spriteBoard:SetAttri("position", i.x, i.y)
-
-                    i.sx = i.sx or 1
-                    i.sy = i.sy or 1
-                    local sx, sy = spriteBoard:GetAttri("scale")
-
-                    spriteBoard:SetAttri("scale", i.sx * sx, i.sy * sy)
-                    spriteBoard:Draw()
-                end
-
-                _GRAPHICS.RestoreCanvas()
-                v:SetImage(canvas)
             end
         elseif (v.SetImage) then
             v:SetImage()
@@ -366,6 +368,11 @@ function _MAP.Update(dt)
 
     _MAP.camera:Update(dt)
     _MAP.curtain:Update(dt)
+
+    _layerGroup.far:Update(dt)
+    _layerGroup.near:Update(dt)
+    _layerGroup.floor:Update(dt)
+    _layerGroup.object:Update(dt)
     _layerGroup.effect:Update(dt)
 end
 
@@ -374,9 +381,9 @@ function _MAP.Draw()
 
     _layerGroup.far:Draw()
     _layerGroup.near:Draw()
-    _layerGroup.effect:Draw()
     _layerGroup.floor:Draw()
     _layerGroup.object:Draw()
+    _layerGroup.effect:Draw()
 
     _MAP.matrixGroup.normal:Draw()
     _MAP.matrixGroup.object:Draw()

@@ -94,12 +94,12 @@ function _WORLD.Init()
         require("actor.system.obstacle").New(event),
         require("actor.system.attacker").New(event),
         require("actor.system.effect").New(event),
-        require("actor.system.transparency").New(event),
+        require("actor.system.transparency").New(event), -- 此处存在内存泄漏！！！
         require("actor.system.drawing").New(event),
         require("actor.system.onceplay").New(event),
         require("actor.system.battle").New(event),
-        require("actor.system.ais").New(event),
-        require("actor.system.states").New(event),
+        require("actor.system.ais").New(event), -- 此处存在内存泄漏！！！
+        require("actor.system.states").New(event), -- o
         require("actor.system.duelist.init").New(event),
         require("actor.system.duelist.cowardGoblin").New(event),
         require("actor.system.effect.figure").New(event),

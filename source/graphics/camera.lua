@@ -195,4 +195,11 @@ function _Camera:SetShader(shader)
     end
 end
 
+function _Camera:GetVisibleArea()
+    local sx, sy = self._scale:Get()
+    local w, h = _GetVisibleArea(self, sx, sy, 1, 1)
+    
+    return w, h
+end
+
 return _Camera

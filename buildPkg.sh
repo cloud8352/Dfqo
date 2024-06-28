@@ -1,7 +1,14 @@
-#!/bin/sh
+#!/bin/bash
+
+# 获取版本号
+read -p "version: " version
+if [[ "" == $version ]] || [[ "\n" == $version ]]
+then
+    version=0.1.5
+fi
 
 pkgName=dfqo
-pkgVer=0.1.5
+pkgVer=${version}
 buildDirPath=buildDir
 buildBranch=origin/diy
 
