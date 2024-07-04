@@ -19,6 +19,9 @@ local _CONFIG = require("config")
 
 local _User = require("user")
 
+collectgarbage("setpause",100)
+-- collectgarbage("setstepmul",500)
+
 function readconfig(path, pathFormat, keys)
     local config = _RESOURCE.ReadConfig(path, "config/" .. pathFormat .. "%s.cfg", keys)
 
@@ -48,6 +51,10 @@ function love.load()
 
     _GRAPHICS.Init()
     _DIRECTOR.Init()
+
+    -- thread
+    -- local thread = love.thread.newThread("GarbageCollectJob.lua")
+    -- thread:start()
 end
 
 function love.update(dt)
