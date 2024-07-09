@@ -19,7 +19,7 @@ local _CONFIG = require("config")
 
 local _User = require("user")
 
-collectgarbage("setpause",100)
+-- collectgarbage("setpause",100)
 -- collectgarbage("setstepmul",500)
 
 function readconfig(path, pathFormat, keys)
@@ -63,6 +63,8 @@ function love.update(dt)
     while (_TIME.CanUpdate()) do
         _Update()
         _TIME.LateUpdate()
+        
+        collectgarbage("step", 1000)
     end
 end
 
