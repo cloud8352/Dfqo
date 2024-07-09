@@ -81,7 +81,9 @@ function _SearchMove:Update(dt)
         x = x + math.random(self.moveRange.xa, self.moveRange.xb) * directionX
         y = y + math.random(self.moveRange.ya, self.moveRange.yb) * directionY
         
-        self._moveAi:Tick(x, y)
+        if hasTarget then
+            self._moveAi:Tick(x, y)
+        end
 
         --return true
     end

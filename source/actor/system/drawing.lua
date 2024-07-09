@@ -9,6 +9,7 @@ local _CONFIG = require("config")
 local _GRAPHICS = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
 local _ASPECT = require("actor.service.aspect")
+local Map = require("map.init")
 
 local _Base = require("actor.system.base")
 
@@ -37,6 +38,9 @@ function _Drawing:Ctor(upperEvent)
         aspect = true,
         identity = true
     }, "drawing")
+
+    ---@type table<int, Actor.Entity>
+    self.needDrawList = {}
 end
 
 ---@param entity Actor.Entity
@@ -55,6 +59,7 @@ function _Drawing:OnInit(entity)
         end
     end
 end
+
 --[[
 ---@param entity Actor.Entity
 function _Drawing:OnExit(entity)
@@ -62,7 +67,7 @@ function _Drawing:OnExit(entity)
 end
 ]]--
 function _Drawing:Update(dt)
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
         local aspect = e.aspect
 
@@ -73,7 +78,7 @@ function _Drawing:Update(dt)
 end
 
 function _Drawing:LateUpdate()
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         local e = self._list:Get(n)
         local aspect = e.aspect ---@type Actor.Component.Aspect
         local transform = e.transform ---@type Actor.Component.Transform
@@ -109,22 +114,47 @@ function _Drawing:LateUpdate()
     end
 
     self._list:Sort(_Sorting)
+
+    --
+    local cameraVisibleAreaW, cameraVisibleAreaH = Map.camera:GetVisibleArea()
+    local cameraXPos, cameraYPos = Map.camera:GetPosition()
+    self.needDrawList = {}
+    for n = 1, self._list:GetLength() do
+        ---@type Actor.Entity
+        local entity = self._list:Get(n)
+        local main = _ASPECT.GetPart(entity.aspect)
+
+        -- 全图的粒子特效一直显示
+        if main.GetRectValue == nil then
+            table.insert(self.needDrawList, entity)
+            goto continue
+        end
+
+        local x = main:GetRectValue("x")
+        local y = main:GetRectValue("y")
+        local w = main:GetRectValue("w")
+        local h = main:GetRectValue("h")
+        if x + w > cameraXPos - cameraVisibleAreaW / 2 and x < cameraXPos + cameraVisibleAreaW / 2 and
+            y + h > cameraYPos - cameraVisibleAreaH / 2 and y < cameraYPos + cameraVisibleAreaH / 2
+        then
+            table.insert(self.needDrawList, entity)
+        end
+
+        ::continue::
+    end
 end
 
 function _Drawing:Draw()
-    local length = self._list:GetLength()
-
     if (_CONFIG.setting.shadow) then
-        for n=1, length do
-            self._list:Get(n).aspect.layer:RunEvent_All("DrawShadow")
+        for _, entity in pairs(self.needDrawList) do
+            entity.aspect.layer:RunEvent_All("DrawShadow")
         end
     end
 
     _GRAPHICS.SetColor(255, 255, 255, 255)
 
-    for n=1, length do
-        local e = self._list:Get(n) ---@type Actor.Entity
-        local aspect = e.aspect
+    for _, entity in pairs(self.needDrawList) do
+        local aspect = entity.aspect
 
         if (aspect.stroke.scaleRate >= 1) then
             _GRAPHICS.SetShader(_shader_white)
@@ -146,7 +176,7 @@ function _Drawing:Draw()
 
         if (_CONFIG.debug.ai) then
             if (aspect.path) then
-                for n=1, #aspect.path - 1 do
+                for n = 1, #aspect.path - 1 do
                     love.graphics.circle("fill", aspect.path[n].x, aspect.path[n].y, 6)
                     love.graphics.line(aspect.path[n].x, aspect.path[n].y, aspect.path[n + 1].x, aspect.path[n + 1].y)
                 end
@@ -158,11 +188,23 @@ function _Drawing:Draw()
         end
 
         if (_CONFIG.debug.point) then
-            e.transform.position:Draw(4)
+            entity.transform.position:Draw(4)
         end
     end
 
     _GRAPHICS.SetColor(255, 255, 255, 255)
+end
+
+---@param entity Actor.Entity
+function _Drawing:OnEntityRemoved(entity)
+    -- print("_Drawing:OnEntityRemoved(entity)", entity)
+
+    for i, entityTmp in pairs(self.needDrawList) do
+        if entityTmp == entity then
+            table.remove(self.needDrawList, i)
+            break
+        end
+    end
 end
 
 return _Drawing

@@ -204,6 +204,12 @@ function _SolidRect:CheckPoint(x, y, z)
     return self.rectGroup.xy:CheckPoint(x, y)
 end
 
+---@param rect Graphics.Drawunit.Rect
+---@return boolean
+function _SolidRect:CheckRect(rect)
+    return self.rectGroup.xy:CheckRect(rect)
+end
+
 ---@param color_xy Graphics.Drawunit.Color
 ---@param color_xz Graphics.Drawunit.Color
 function _SolidRect:Draw(color_xy, color_xz)

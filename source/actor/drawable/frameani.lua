@@ -63,7 +63,7 @@ end
 ---@param avatarConfig table
 function _Frameani:Ctor(upperEvent, frameaniData, hasShadow, order, avatarData, avatarConfig, z)
 	_Base.Ctor(self, upperEvent, hasShadow, "frameani", order)
-	_Graphics_Frameani.Ctor(self, upperEvent, frameaniData)
+	_Graphics_Frameani.Ctor(self, upperEvent, frameaniData, true)
 
 	if (avatarData) then
 		---@class Actor.Drawable.Frameani.Avatar

@@ -8,8 +8,9 @@
 local _MAP = require("map.init")
 
 local _Point = require("graphics.drawunit.point")
-local _Base = require("actor.system.base")
+local JobsModel = require("Jobs.JobsModel")
 
+local _Base = require("actor.system.base")
 ---@class Actor.System.Obstacle : Actor.System
 local _Obstacle = require("core.class")(_Base)
 
@@ -23,6 +24,7 @@ local function _HandleObstacle(obstacle, data, nx, ny)
 
             if (not matrix:GetNode(x, y, true)) then
                 matrix:SetNode(x, y, true, true)
+                JobsModel.SetThreadObstacle(x, y, true)
                 table.insert(obstacle.list, _Point.New(true, x, y))
             end
         end
@@ -71,6 +73,7 @@ function _Obstacle:OnExit(entity)
     for n = 1, #entity.obstacle.list do
         local x, y = entity.obstacle.list[n]:Get()
         matrix:SetNode(x, y, false, true)
+        JobsModel.SetThreadObstacle(x, y, false)
     end
 
     entity.obstacle.list = nil

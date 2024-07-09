@@ -18,6 +18,8 @@ local _DIRECTOR = require("director")
 local _CONFIG = require("config")
 
 local _User = require("user")
+local JobsModel = require("Jobs.JobsModel")
+local JobsCommon = require("Jobs.JobsCommon")
 
 -- collectgarbage("setpause",100)
 -- collectgarbage("setstepmul",500)
@@ -43,6 +45,7 @@ end
 function love.load()
     -- 禁用文本输入
     love.keyboard.setTextInput(false)
+    JobsModel.Init()
 
     _SYSTEM.Init()
     math.randomseed(os.time())
@@ -52,12 +55,10 @@ function love.load()
     _GRAPHICS.Init()
     _DIRECTOR.Init()
 
-    -- thread
-    -- local thread = love.thread.newThread("GarbageCollectJob.lua")
-    -- thread:start()
 end
 
 function love.update(dt)
+    JobsModel.Update()
     _TIME.Update(dt)
 
     while (_TIME.CanUpdate()) do

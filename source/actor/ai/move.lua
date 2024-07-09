@@ -95,6 +95,7 @@ function _Move:Tick(x, y)
         local position = self._entity.transform.position
 
         self._path = matrix:GetPath(position.x, position.y, x, y)
+        -- self._path = matrix:GetSimplePath(position.x, position.y, x, y)
         self._entity.aspect.path = self._path
         self._index = 0
         _NextTarget(self)

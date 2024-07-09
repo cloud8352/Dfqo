@@ -31,7 +31,7 @@ end
 ---@param hasShadow boolean
 function _Sprite:Ctor(upperEvent, data, hasShadow, order)
 	_Base.Ctor(self, upperEvent, hasShadow, "sprite", order)
-	_Graphics_Sprite.Ctor(self, upperEvent, data)
+	_Graphics_Sprite.Ctor(self, upperEvent, data, true)
 end
 
 function _Sprite:SetData(data)

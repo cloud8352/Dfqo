@@ -32,7 +32,7 @@ local function _SkillTick(container)
         return
     end
 
-    for n=1, container:GetLength() do
+    for n = 1, container:GetLength() do
         local skill = container:GetWithIndex(n) ---@type Actor.Skill
         
         if (skill:AITick(true)) then
@@ -107,7 +107,7 @@ function _UseSkill:Update(dt)
             end
 
             if (self._action and self._timer.to > 0) then
-                _FACTORY.New(_warningData, {entity = self._entity})
+                _FACTORY.New(_warningData, { entity = self._entity })
             end
         end
     end

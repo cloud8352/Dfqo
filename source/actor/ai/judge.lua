@@ -39,7 +39,7 @@ function _Judge:Tick()
 
     if (self.target) then
         if (self.key) then
-            _INPUT.Press(self._entity.input, self.key)
+            -- _INPUT.Press(self._entity.input, self.key)
         end
 
         return true

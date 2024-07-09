@@ -31,7 +31,7 @@ function _AutoUse:Tick()
     end
 
     if (self.skill:CanUse()) then
-        _INPUT.Press(self._entity.input, self.skill:GetKey())
+        -- _INPUT.Press(self._entity.input, self.skill:GetKey())
     end
 
     return false

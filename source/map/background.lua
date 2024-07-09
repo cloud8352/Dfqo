@@ -82,12 +82,6 @@ function _Background:Update(dt)
 
     self.needDrawList = {}
     for _, info in pairs(self.list) do
-        local spriteDataW = 0
-        local spriteDataH = 0
-        if info.SpriteData then
-            spriteDataW = info.SpriteData.w
-            spriteDataH = info.SpriteData.h
-        end
         local x = info.X
         local y = info.Y
         local w = info.W

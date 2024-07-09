@@ -123,7 +123,8 @@ function _DIRECTOR.StartGame()
     -- 刷新距离boss的房间数
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
     -- 加载地图
-    _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
+    -- _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
+    _MAP.Load("testMap")
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
 end

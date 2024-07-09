@@ -111,4 +111,19 @@ function _Collider:CheckPoint(x, y, z, key)
     return false
 end
 
+---@param rect Graphics.Drawunit.Rect
+---@param key string
+---@return boolean
+function _Collider:CheckRect(rect, key)
+    local list = self:GetList(key)
+
+    for n=1, #list do
+        if (list[n]:CheckRect(rect)) then
+            return true
+        end
+    end
+
+    return false
+end
+
 return _Collider

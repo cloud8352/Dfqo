@@ -111,6 +111,9 @@ local _effectPool = {}
 local _counterEffectData = _RESMGR.GetInstanceData("effect/hitting/counter")
 local _meta = { __mode = 'k' }
 
+local AttackJudgeRangeX = 1000
+local AttackJudgeRangeY = 700
+
 ---@param entity Actor.Entity
 ---@return boolean
 local function _IsPlayer(entity)
@@ -234,9 +237,15 @@ function _Attack:Update(dt)
 
     for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
+
+        local xDistance = math.abs(e.transform.position.x - self._entity.transform.position.x)
+        local yDistance = math.abs(e.transform.position.y - self._entity.transform.position.y)
+
         local camp = self.camp == 0 or self.camp ~= e.battle.camp
 
-        if (e.battle.banCountMap.attack == 0 and e.battle.deadProcess == 0 and camp and self._hasAttackedMap[e] == nil) then
+        if (xDistance < AttackJudgeRangeX and yDistance < AttackJudgeRangeY and
+                e.battle.banCountMap.attack == 0 and e.battle.deadProcess == 0 and camp and self._hasAttackedMap[e] == nil
+            ) then
             local isdone, x, y, z, ax, direction, isCritical = self:Collide(e)
             direction = direction or self._entity.transform.direction
 

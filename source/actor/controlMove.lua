@@ -8,6 +8,8 @@ local _TIME = require("lib.time")
 local _CONFIG = require("config")
 local _INPUT = require("actor.service.input")
 local _MOTION = require("actor.service.motion")
+local JobsModel = require("Jobs.JobsModel")
+local JobsCommon = require("Jobs.JobsCommon")
 
 local _Point = require("graphics.drawunit.point")
 
@@ -84,14 +86,16 @@ function _ControlMove:Update()
     end
 
     if (axisX ~= 0) then
-        _MOTION.Move(self.transform, self.aspect, "x", self.speed.x * axisX)
+        -- _MOTION.Move(self.transform, self.aspect, "x", self.speed.x * axisX)
+        JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.X, self.speed.x * axisX)
     end
 
     if (axisY ~= 0) then
-        _MOTION.Move(self.transform, self.aspect, "y", self.speed.y * axisY)
+        -- _MOTION.Move(self.transform, self.aspect, "y", self.speed.y * axisY)
+        JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.Y, self.speed.y * axisY)
     end
 
-    for n=1, #_CONFIG.arrow do
+    for n = 1, #_CONFIG.arrow do
         if (_INPUT.IsPressed(self.input, _CONFIG.arrow[n])) then
             self._keyPressedFrame[_CONFIG.arrow[n]] = _TIME.GetFrame()
             break

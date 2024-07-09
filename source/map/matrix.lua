@@ -198,6 +198,20 @@ function _Matrix:GetPath(x1, y1, x2, y2)
 
     return path
 end
+local Point = require("graphics.drawunit.point")
+---@param x1 int
+---@param y1 int
+---@param x2 int
+---@param y2 int
+---@return table<int, Graphics.Drawunit.Point> @path
+function _Matrix:GetSimplePath(x1, y1, x2, y2)
+    ---@type table<int, Graphics.Drawunit.Point>
+    local path = {}
+    local point = Point.New(true, x2, y2)
+    table.insert(path, point)
+
+    return path
+end
 
 ---@param x int
 ---@param y int
