@@ -124,7 +124,7 @@ function _DIRECTOR.StartGame()
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
     -- 加载地图
     -- _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
-    _MAP.Load("testMap")
+    _MAP.Load("1") -- TestMap
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
 end
