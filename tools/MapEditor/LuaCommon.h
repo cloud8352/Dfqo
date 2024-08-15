@@ -9,5 +9,6 @@
 
 namespace Lua {
 QJsonObject LuaStrToJsonObj(const QString &luaStr);
+QJsonArray LuaStrToJsonArray(const QString &luaStr);
 QString JsonObjToLuaStr(const QJsonObject &jsonObj);
 }

@@ -3,6 +3,29 @@
 #include <QPainter>
 #include <QDebug>
 
+void adjustImgByColor(QImage &image, const ColorInfoStruct &color) {
+    float rPercent = float(color.R) / 255;
+    float gPercent = float(color.G) / 255;
+    float bPercent = float(color.B) / 255;
+    float aPercent = float(color.A) / 255;
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            QRgb color = image.pixel(x, y);
+            // 调整颜色分量
+            int red = qRed(color) * rPercent;
+            int green = qGreen(color) * gPercent;
+            int blue = qBlue(color) * bPercent;
+            int alpha = qAlpha(color) * aPercent;
+
+            // 重新合成颜色
+            color = qRgba(red, green, blue, alpha);
+
+            // 设置新的像素值
+            image.setPixel(x, y, color);
+        }
+    }
+}
+
 MapWidget::MapWidget(QWidget *parent, Model *model)
     : QWidget(parent)
     , m_model(model)
@@ -12,7 +35,6 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
     , m_xOffset(0)
     , m_yOffset(0)
     , m_placingViewType(Floor)
-    , m_needShowPlacingDrawingSprite(false)
     , m_menu(nullptr)
 {
     // pre data init
@@ -30,40 +52,35 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
     // connect
     connect(m_menu, &QMenu::triggered, this, [=](QAction *action) {
         if (action == deleteAction) {
-            removeDrawingSpriteInfo({m_hoveringDrawingSpriteInfo});
+            removeDrawingObj({m_hoveringDrawingObj});
             update();
         }
     });
 
     // post init
-    loadAllLayersDrawingSpriteInfoList();
+    loadAllDrawingObj();
 }
 
 MapWidget::~MapWidget()
 {
 }
 
-void MapWidget::SetViewTypeList(QList<ViewType> viewTypeList)
+void MapWidget::SetViewTypeList(QList<ViewTypeEnum> viewTypeList)
 {
     m_viewTypeList = viewTypeList;
     update();
 }
 
-void MapWidget::SetPlacingViewType(ViewType type)
+void MapWidget::SetPlacingViewType(ViewTypeEnum type)
 {
     m_placingViewType = type;
 }
 
-void MapWidget::SetPlacingDrawingSpriteVisible(bool visible)
-{
-    m_needShowPlacingDrawingSprite = visible;
-    m_movingDrawingSpriteInfo.Id = 0;
-}
-
 void MapWidget::SetPlacingSpriteInfo(SpriteInfoStruct info)
 {
-    m_placingDrawingSpriteInfo.SpriteInfo = info;
-    m_placingDrawingSpriteInfo.Img = QImage(info.ImgPath);
+    MapLayerSpriteInfoStruct layerInfo;
+    layerInfo.SpriteTag = info.Tag;
+    m_placingDrawingObj = createDrawingObjFromLayerSpriteInfo(m_placingViewType, layerInfo);
 }
 
 void MapWidget::mousePressEvent(QMouseEvent *event)
@@ -79,13 +96,16 @@ void MapWidget::mousePressEvent(QMouseEvent *event)
 
     if  (event->button() == Qt::MouseButton::LeftButton) {
         // 没有正在放置元素，则开始移动元素
-        if (m_needShowPlacingDrawingSprite == false) {
-            if (m_movingDrawingSpriteInfo.Id == 0) {
-                m_movingDrawingSpriteInfo = m_hoveringDrawingSpriteInfo;
+        if (m_placingDrawingObj.Id == 0) {
+            if (m_movingDrawingObj.Id == 0) {
+                m_movingDrawingObj = m_hoveringDrawingObj;
+                m_movingDrawingObj.X = event->pos().x();
+                m_movingDrawingObj.Y = event->pos().y();
+                m_movingDrawingObj.UpdateRects(0, 0);
                 update();
             } else {
-                finishMovingDrawingSprite(event->pos());
-                m_movingDrawingSpriteInfo.Id = 0;
+                finishMovingDrawingObj(event->pos());
+                m_movingDrawingObj.Id = 0;
                 update();
             }
         }
@@ -105,8 +125,8 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event)
         }
     }
     if (event->button() == Qt::MouseButton::LeftButton) {
-        if (m_needShowPlacingDrawingSprite) {
-            addDrawingSpriteInfo(event->pos());
+        if (m_placingDrawingObj.Id) {
+            addDrawingObj(event->pos());
             update();
         }
     }
@@ -120,25 +140,31 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event)
         m_xOffset = m_lastXOffset - m_originMousePos.x() + event->pos().x();
         m_yOffset = m_lastYOffset - m_originMousePos.y() + event->pos().y();
 
-        updateRectOfAllDrawingSprites();
+        updateRectOfAllDrawingObj();
 
         update();
     } else {
         bool needUpdate = false;
         // 查找 悬停中的元素
-        findHoveringDrawingSpriteInfoInAllSprites(event->pos());
-        if (m_lastHoveringDrawingSpriteInfo != m_hoveringDrawingSpriteInfo) {
+        findHoveringDrawingObjInAll(event->pos());
+        if (m_lastHoveringDrawingObj != m_hoveringDrawingObj) {
             needUpdate = true;
         }
-        m_lastHoveringDrawingSpriteInfo = m_hoveringDrawingSpriteInfo;
+        m_lastHoveringDrawingObj = m_hoveringDrawingObj;
 
         // 当存在待放置的元素时，需要更新画面
-        if (m_needShowPlacingDrawingSprite) {
+        if (m_placingDrawingObj.Id) {
+            m_placingDrawingObj.X = event->pos().x();
+            m_placingDrawingObj.Y = event->pos().y();
+            m_placingDrawingObj.UpdateRects(0, 0);
             needUpdate = true;
         }
 
         // 当存在待移动的元素时，需要更新画面
-        if (m_movingDrawingSpriteInfo.Id != 0) {
+        if (m_movingDrawingObj.Id != 0) {
+            m_movingDrawingObj.X = event->pos().x();
+            m_movingDrawingObj.Y = event->pos().y();
+            m_movingDrawingObj.UpdateRects(0, 0);
             needUpdate = true;
         }
 
@@ -156,60 +182,47 @@ void MapWidget::paintEvent(QPaintEvent *event)
     QWidget::paintEvent(event);
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::RenderHint::Antialiasing, true);
+    painter.setRenderHint(QPainter::RenderHint::SmoothPixmapTransform, true);
 
     if (m_viewTypeList.contains(Far)) {
-        drawDrawingSpriteInfoList(painter, Far);
+        drawDrawingObjList(painter, Far);
     }
     if (m_viewTypeList.contains(Near)) {
-        drawDrawingSpriteInfoList(painter, Near);
+        drawDrawingObjList(painter, Near);
     }
     if (m_viewTypeList.contains(Floor)) {
-        drawDrawingSpriteInfoList(painter, Floor);
+        drawDrawingObjList(painter, Floor);
     }
     if (m_viewTypeList.contains(Obj)) {
-        drawDrawingSpriteInfoList(painter, Obj);
+        drawDrawingObjList(painter, Obj);
     }
     if (m_viewTypeList.contains(Effect)) {
-        drawDrawingSpriteInfoList(painter, Effect);
+        drawDrawingObjList(painter, Effect);
     }
     if (m_viewTypeList.contains(Actor)) {
-        drawDrawingSpriteInfoList(painter, Actor);
+        // drawdDrawingInstanceInfoList(painter);
+        drawDrawingObjList(painter, Actor);
     }
 
     // hovering DrawingSprite
-    if (m_hoveringDrawingSpriteInfo.Id != 0) {
+    if (m_hoveringDrawingObj.Id != 0) {
         painter.save();
         QPen pen(QColor(0, 200, 30));
         pen.setWidth(2);
         painter.setPen(pen);
-        painter.drawRect(m_hoveringDrawingSpriteInfo.Rect);
+        painter.drawRect(m_hoveringDrawingObj.MainRect);
 
         painter.restore();
     }
 
     // 画 待放置的元素
-    if (m_needShowPlacingDrawingSprite) {
-        const SpriteInfoStruct &spriteInfo = m_placingDrawingSpriteInfo.SpriteInfo;
-        const QImage &img = m_placingDrawingSpriteInfo.Img;
-
-        const QPoint &cursorPos = mapFromGlobal(QCursor::pos());
-        QRect rect(cursorPos.x() - spriteInfo.OX,
-                   cursorPos.y() - spriteInfo.OY, img.width(), img.height());
-
-        painter.drawImage(rect, img);
+    if (m_placingDrawingObj.Id) {
+        m_placingDrawingObj.Draw(&painter);
     }
 
     // 画 待移动的元素
-    if (m_movingDrawingSpriteInfo.Id != 0) {
-        const SpriteInfoStruct &spriteInfo = m_movingDrawingSpriteInfo.SpriteInfo;
-        const QImage &img = m_movingDrawingSpriteInfo.Img;
-
-        const QPoint &cursorPos = mapFromGlobal(QCursor::pos());
-        QRect rect(cursorPos.x() - spriteInfo.OX,
-                   cursorPos.y() - spriteInfo.OY, img.width(), img.height());
-
-        painter.drawImage(rect, img);
+    if (m_movingDrawingObj.Id != 0) {
+        m_movingDrawingObj.Draw(&painter);
     }
 
     // frame
@@ -226,73 +239,247 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
     QWidget::keyPressEvent(event);
 
     if (event->key() == Qt::Key_Escape) {
-        m_movingDrawingSpriteInfo.Id = 0;
+        m_movingDrawingObj.Id = 0;
         update();
     }
 
     if (event->key() == Qt::Key_Up) {
-        uint id = m_movingDrawingSpriteInfo.Id;
-        DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(id);
-        if (info) {
-            int x = info->LayerSpriteInfo.X;
-            int y = info->LayerSpriteInfo.Y - 1;
-            updateDrawingSpritePosToMap(id, x, y);
+        uint id = m_movingDrawingObj.Id;
+        DrawingObjStruct *obj = getDrawingObjById(id);
+        if (obj) {
+            int x = obj->LayerSpriteInfo.X;
+            int y = obj->LayerSpriteInfo.Y - 1;
+            setDrawingObjPos(id, x, y);
             update();
         }
     }
     if (event->key() == Qt::Key_Down) {
-        uint id = m_movingDrawingSpriteInfo.Id;
-        DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(id);
-        if (info) {
-            int x = info->LayerSpriteInfo.X;
-            int y = info->LayerSpriteInfo.Y + 1;
-            updateDrawingSpritePosToMap(id, x, y);
+        uint id = m_movingDrawingObj.Id;
+        DrawingObjStruct *obj = getDrawingObjById(id);
+        if (obj) {
+            int x = obj->LayerSpriteInfo.X;
+            int y = obj->LayerSpriteInfo.Y + 1;
+            setDrawingObjPos(id, x, y);
             update();
         }
     }
     if (event->key() == Qt::Key_Left) {
-        uint id = m_movingDrawingSpriteInfo.Id;
-        DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(id);
-        if (info) {
-            int x = info->LayerSpriteInfo.X - 1;
-            int y = info->LayerSpriteInfo.Y;
-            updateDrawingSpritePosToMap(id, x, y);
+        uint id = m_movingDrawingObj.Id;
+        DrawingObjStruct *obj = getDrawingObjById(id);
+        if (obj) {
+            int x = obj->LayerSpriteInfo.X - 1;
+            int y = obj->LayerSpriteInfo.Y;
+            setDrawingObjPos(id, x, y);
             update();
         }
     }
     if (event->key() == Qt::Key_Right) {
-        uint id = m_movingDrawingSpriteInfo.Id;
-        DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(id);
-        if (info) {
-            int x = info->LayerSpriteInfo.X + 1;
-            int y = info->LayerSpriteInfo.Y;
-            updateDrawingSpritePosToMap(id, x, y);
+        uint id = m_movingDrawingObj.Id;
+        DrawingObjStruct *obj = getDrawingObjById(id);
+        if (obj) {
+            int x = obj->LayerSpriteInfo.X + 1;
+            int y = obj->LayerSpriteInfo.Y;
+            setDrawingObjPos(id, x, y);
             update();
         }
     }
 }
 
-void MapWidget::loadDrawingSpriteInfoList(ViewType viewType)
+DrawingObjStruct MapWidget::createDrawingObjFromLayerSpriteInfo(const ViewTypeEnum type,
+    const MapLayerSpriteInfoStruct &layerSpriteInfo)
 {
-    const MapInfoStruct &mapInfo = m_model->GetMapInfo();
-    const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = m_model->GetMapOfTagToSpriteInfo();
+    DrawingObjStruct drawingObj;
+    drawingObj.LayerSpriteInfo = layerSpriteInfo;
 
+    drawingObj.Id = createId();
+    drawingObj.ViewType = type;
+    drawingObj.X = layerSpriteInfo.X;
+    drawingObj.Y = layerSpriteInfo.Y;
+
+    // load drawing unit
+    DrawingUnitStruct drawingUnit;
+    const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(layerSpriteInfo.SpriteTag);
+    drawingUnit.OX = spriteInfo.OX;
+    drawingUnit.OY = spriteInfo.OY;
+    QImage img(spriteInfo.ImgPath);
+    adjustImgByColor(img, spriteInfo.ColorInfo);
+    drawingUnit.Img = img;
+
+    // load drawing avatar
+    DrawingAvatarStruct drawingAvatar;
+    drawingAvatar.Type = Skin;
+    // append drawing unit
+    drawingAvatar.DrawingUnitList.append(drawingUnit);
+    // append drawing avatar
+    drawingObj.DrawingAvatarList.append(drawingAvatar);
+
+    return drawingObj;
+}
+
+DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoStruct &actorInfo)
+{
+    DrawingObjStruct drawingObj;
+    drawingObj.ViewType = Actor;
+    drawingObj.Id = createId();
+    drawingObj.MapActorInfo = actorInfo;
+    drawingObj.X = actorInfo.X;
+    drawingObj.Y = actorInfo.Y;
+
+    auto appendDrawingAvatar = [this, &drawingObj, &actorInfo]
+        (AvatarType type, const QStringList &spriteTagList) {
+        DrawingAvatarStruct drawingAvatar;
+        for (const QString &spriteTag : spriteTagList) {
+            // load drawing unit
+            DrawingUnitStruct drawingUnit;
+            const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(spriteTag);
+            drawingUnit.OX = spriteInfo.OX;
+            drawingUnit.OY = spriteInfo.OY;
+            QImage img(spriteInfo.ImgPath);
+            adjustImgByColor(img, spriteInfo.ColorInfo);
+            if (actorInfo.Direction == -1) {
+                img = img.mirrored(true, false);
+                drawingUnit.OX = img.width() - drawingUnit.OX;
+            }
+            drawingUnit.Img = img;
+
+            // load drawing avatar
+            drawingAvatar.Type = type;
+            // append drawing unit
+            drawingAvatar.DrawingUnitList.append(drawingUnit);
+        }
+        // append drawing avatar
+        drawingObj.DrawingAvatarList.append(drawingAvatar);
+    };
+
+    const InstanceInfoStruct &instanceInfo = m_mapOfTagToInstanceInfo.value(actorInfo.Path);
+    if (instanceInfo.AspectInfo.Type == "sprite") {
+        const QString &spriteTag = "actor/" + instanceInfo.AspectInfo.Path;
+        appendDrawingAvatar(Skin, {spriteTag});
+    }
+    if (instanceInfo.AspectInfo.Type == "frameani") {
+        QString frameAniTag;
+        if (instanceInfo.AspectInfo.Path.isEmpty()) {
+            frameAniTag = "actor/" + instanceInfo.AspectInfo.Avatar + "/stay";
+        } else {
+            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path;
+        }
+        const FrameAniInfoList &frameAniInfoList =
+            m_mapOfTagToFrameAniInfoList.value(frameAniTag);
+        if (frameAniInfoList.isEmpty()) {
+            return drawingObj;
+        }
+        const FrameAniInfoStruct &frameAniInfo = frameAniInfoList.first();
+
+        // 如果不存在装扮，则直接添加到显示列表
+        if (instanceInfo.AspectInfo.Avatar.isEmpty()) {
+            appendDrawingAvatar(Skin, {frameAniInfo.Sprite});
+        } else {
+            // 如果存在装扮
+            // function
+            auto getSimplePathAndAppendDrawingAvatar = [&](AvatarType type) {
+                const QString &spriteSimplePath = instanceInfo.AspectInfo.MapOfAvatarTypeToSimplePath.value(type);
+                if (spriteSimplePath.isEmpty()) {
+                    return;
+                }
+                const QString &spriteTag = "actor/" + instanceInfo.AspectInfo.Avatar + "/" + spriteSimplePath + "/" + frameAniInfo.Sprite;
+                appendDrawingAvatar(type, {spriteTag});
+            };
+
+            // skin avatar
+            getSimplePathAndAppendDrawingAvatar(Skin);
+
+            // hat
+            getSimplePathAndAppendDrawingAvatar(Hat);
+
+            // weapon
+            getSimplePathAndAppendDrawingAvatar(Weapon);
+
+            // equ ...
+            const QMap<AvatarType, QString> &mapOfAvatarTypeToEquTag = instanceInfo.MapOfAvatarTypeToEquTag;
+            for (QMap<AvatarType, QString>::const_iterator cIter = mapOfAvatarTypeToEquTag.cbegin();
+                 cIter != mapOfAvatarTypeToEquTag.cend(); cIter++) {
+                const QString &equTag =  cIter.value();
+                const EquInfoStruct &equInfo = m_mapOfTagToEquInfo.value(equTag);
+                const QMap<AvatarType, QString> &mapOfAvatarTypeToSimplePath = equInfo.MapOfAvatarTypeToSimplePath;
+                for (QMap<AvatarType, QString>::const_iterator cIter2 = mapOfAvatarTypeToSimplePath.cbegin();
+                     cIter2 != mapOfAvatarTypeToSimplePath.cend(); cIter2++) {
+
+                    const QString &spriteSimplePath = cIter2.value();
+                    if (spriteSimplePath.isEmpty()) {
+                        continue;
+                    }
+                    const QString &spriteTag = "actor/" + instanceInfo.AspectInfo.Avatar + "/" + spriteSimplePath + "/" + frameAniInfo.Sprite;
+                    appendDrawingAvatar(cIter2.key(), {spriteTag});
+                }
+            }
+
+        }
+    }
+
+    //// aspect layer
+    if (instanceInfo.AspectInfo.LayerInfo.Type == "sprite") {
+        const QString &spriteTag = "actor/" + instanceInfo.AspectInfo.LayerInfo.Path;
+        appendDrawingAvatar(Skin, {spriteTag});
+    }
+    if (instanceInfo.AspectInfo.LayerInfo.Type == "frameani") {
+
+        QString frameAniTag = "actor/" + instanceInfo.AspectInfo.LayerInfo.Path;
+        const FrameAniInfoList &frameAniInfoList =
+            m_mapOfTagToFrameAniInfoList.value(frameAniTag);
+        if (frameAniInfoList.isEmpty()) {
+            return drawingObj;
+        }
+        const FrameAniInfoStruct &frameAniInfo = frameAniInfoList.first();
+        const QString &spriteTag = frameAniInfo.Sprite;
+
+        appendDrawingAvatar(Skin, {spriteTag});
+    }
+    if (!instanceInfo.AspectInfo.LayerInfoList.isEmpty()) {
+        QStringList spriteTagList;
+        for (const AspectLayerInfoStruct &layerInfo : instanceInfo.AspectInfo.LayerInfoList) {
+            QString spriteTag;
+            if (layerInfo.Type == "sprite") {
+                spriteTag = "actor/" + layerInfo.Path;
+            } else if (layerInfo.Type == "frameani") {
+                QString frameAniTag = "actor/" + layerInfo.Path;
+                const FrameAniInfoList &frameAniInfoList =
+                    m_mapOfTagToFrameAniInfoList.value(frameAniTag);
+                if (frameAniInfoList.isEmpty()) {
+                    continue;
+                }
+                const FrameAniInfoStruct &frameAniInfo = frameAniInfoList.first();
+                spriteTag = frameAniInfo.Sprite;
+            } else {
+                continue;
+            }
+
+            spriteTagList.append(spriteTag);
+        }
+
+        appendDrawingAvatar(Skin, spriteTagList);
+    }
+
+    return drawingObj;
+}
+
+void MapWidget::loadDrawingObjList(ViewTypeEnum viewType)
+{
     QList<MapLayerSpriteInfoStruct> layerSpriteInfoList;
     switch (viewType) {
     case Far:
-        layerSpriteInfoList = mapInfo.LayerInfo.FarLayerSpriteInfoList;
+        layerSpriteInfoList = m_mapInfo.LayerInfo.FarLayerSpriteInfoList;
         break;
     case Near:
-        layerSpriteInfoList = mapInfo.LayerInfo.NearLayerSpriteInfoList;
+        layerSpriteInfoList = m_mapInfo.LayerInfo.NearLayerSpriteInfoList;
         break;
     case Floor:
-        layerSpriteInfoList = mapInfo.LayerInfo.FloorLayerSpriteInfoList;
+        layerSpriteInfoList = m_mapInfo.LayerInfo.FloorLayerSpriteInfoList;
         break;
     case Obj:
-        layerSpriteInfoList = mapInfo.LayerInfo.ObjLayerSpriteInfoList;
+        layerSpriteInfoList = m_mapInfo.LayerInfo.ObjLayerSpriteInfoList;
         break;
     case Effect:
-        layerSpriteInfoList = mapInfo.LayerInfo.EffectLayerSpriteInfoList;
+        layerSpriteInfoList = m_mapInfo.LayerInfo.EffectLayerSpriteInfoList;
         break;
     case Actor:
         break;
@@ -300,185 +487,188 @@ void MapWidget::loadDrawingSpriteInfoList(ViewType viewType)
         break;
     }
 
-    QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = m_mapOfViewTypeToDrawingSpriteInfoList[viewType];
-    drawingSpriteInfoList.clear();
+    QList<DrawingObjStruct> &drawingObjList = m_mapOfTypeToDrawingObjList[viewType];
+    drawingObjList.clear();
     for (const MapLayerSpriteInfoStruct &layerSpriteInfo : layerSpriteInfoList) {
-        const SpriteInfoStruct &spriteInfo = mapOfTagToSpriteInfo.value(layerSpriteInfo.SpriteTag);
-        QImage img(spriteInfo.ImgPath);
+        DrawingObjStruct drawingObj = createDrawingObjFromLayerSpriteInfo(viewType, layerSpriteInfo);
 
-        DrawingSpriteInfoStruct drawingSpriteInfo;
-        drawingSpriteInfo.SpriteInfo = spriteInfo;
-        drawingSpriteInfo.LayerSpriteInfo = layerSpriteInfo;
-        drawingSpriteInfo.Img = img;
-        drawingSpriteInfo.Id = creatNewId();
+        // append drawing obj
+        drawingObjList.append(drawingObj);
+    }
 
-        drawingSpriteInfoList.append(drawingSpriteInfo);
+    if (viewType != Actor) {
+        return;
+    }
+
+    const QList<MapActorInfoStruct> &actorInfoList = m_mapInfo.ActorInfoList;
+    for (const MapActorInfoStruct &actorInfo : actorInfoList) {
+        DrawingObjStruct drawingObj = createDrawingObjFromMapActorInfo(actorInfo);
+
+        // append drawing obj
+        drawingObjList.append(drawingObj);
     }
 }
 
-void MapWidget::loadAllLayersDrawingSpriteInfoList()
+void MapWidget::loadAllDrawingObj()
 {
-    loadDrawingSpriteInfoList(Far);
-    loadDrawingSpriteInfoList(Near);
-    loadDrawingSpriteInfoList(Floor);
-    loadDrawingSpriteInfoList(Obj);
-    loadDrawingSpriteInfoList(Effect);
+    m_mapInfo = m_model->GetMapInfo();
+    m_mapOfTagToSpriteInfo = m_model->GetMapOfTagToSpriteInfo();
+    m_mapOfTagToFrameAniInfoList = m_model->GetMapOfTagToFrameAniInfoList();
+    m_mapOfTagToEquInfo = m_model->GetMapOfTagToEquInfo();
+    m_mapOfTagToInstanceInfo = m_model->GetMapOfTagToInstanceInfo();
 
-    updateRectOfAllDrawingSprites();
+    loadDrawingObjList(Far);
+    loadDrawingObjList(Near);
+    loadDrawingObjList(Floor);
+    loadDrawingObjList(Obj);
+    loadDrawingObjList(Effect);
+    loadDrawingObjList(Actor);
+
+    updateRectOfAllDrawingObj();
 }
 
-void MapWidget::updateRectOfDrawingSprite(DrawingSpriteInfoStruct &drawingSpriteInfo)
+void MapWidget::updateRectOfAllDrawingObj()
 {
-    const SpriteInfoStruct &spriteInfo = drawingSpriteInfo.SpriteInfo;
-    const MapLayerSpriteInfoStruct &layerSpriteInfo = drawingSpriteInfo.LayerSpriteInfo;
-    const QImage &img = drawingSpriteInfo.Img;
-    drawingSpriteInfo.Rect = QRect(layerSpriteInfo.X - spriteInfo.OX + m_xOffset,
-                                   layerSpriteInfo.Y - spriteInfo.OY + m_yOffset, img.width(), img.height());
-}
-
-void MapWidget::updateRectOfAllDrawingSprites()
-{
-    QMap<ViewType, QList<DrawingSpriteInfoStruct>>::Iterator iter =
-        m_mapOfViewTypeToDrawingSpriteInfoList.begin();
-    for (; iter != m_mapOfViewTypeToDrawingSpriteInfoList.end(); iter++) {
-        QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = *iter;
-        for (DrawingSpriteInfoStruct &drawingSpriteInfo : drawingSpriteInfoList) {
-            updateRectOfDrawingSprite(drawingSpriteInfo);
+    QMap<ViewTypeEnum, QList<DrawingObjStruct>>::Iterator iter =
+        m_mapOfTypeToDrawingObjList.begin();
+    for (; iter != m_mapOfTypeToDrawingObjList.end(); iter++) {
+        QList<DrawingObjStruct> &drawingObjList = *iter;
+        for (DrawingObjStruct &drawingObj : drawingObjList) {
+            drawingObj.UpdateRects(m_xOffset, m_yOffset);
         }
     }
 
-    updateRectOfDrawingSprite(m_hoveringDrawingSpriteInfo);
+    m_hoveringDrawingObj.UpdateRects(m_xOffset, m_yOffset);
 }
 
-void MapWidget::drawDrawingSpriteInfoList(QPainter &painter, ViewType viewType)
+void MapWidget::drawDrawingObjList(QPainter &painter, ViewTypeEnum viewType)
 {
-    QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = m_mapOfViewTypeToDrawingSpriteInfoList[viewType];
-    for (const DrawingSpriteInfoStruct &drawingSpriteInfo : drawingSpriteInfoList) {
-        if (drawingSpriteInfo.Id == m_movingDrawingSpriteInfo.Id) {
-            painter.save();
-            painter.setOpacity(0.7);
-            painter.drawImage(drawingSpriteInfo.Rect, drawingSpriteInfo.Img);
-            QColor color(50, 100, 255, 130);
-            painter.fillRect(drawingSpriteInfo.Rect, color);
+    QList<DrawingObjStruct> &drawingObjList = m_mapOfTypeToDrawingObjList[viewType];
+    for (const DrawingObjStruct &drawingObj : drawingObjList) {
+        if (drawingObj.Id == m_movingDrawingObj.Id) {
+            // save painter property
+            qreal originOpacity = painter.opacity();
 
-            painter.restore();
+            painter.setOpacity(0.7);
+            drawingObj.Draw(&painter);
+            QColor color(50, 100, 255, 130);
+            painter.fillRect(drawingObj.MainRect, color);
+
+            // restore painter property
+            painter.setOpacity(originOpacity);
             continue;
         }
-        painter.drawImage(drawingSpriteInfo.Rect, drawingSpriteInfo.Img);
+        drawingObj.Draw(&painter);
     }
 }
 
-DrawingSpriteInfoStruct MapWidget::findHoveringDrawingSpriteInfo(ViewType viewType, const QPoint &curserPos)
+DrawingObjStruct MapWidget::findHoveringDrawingObj(ViewTypeEnum viewType, const QPoint &curserPos)
 {
-    QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = m_mapOfViewTypeToDrawingSpriteInfoList[viewType];
-    QList<DrawingSpriteInfoStruct>::reverse_iterator rIter = drawingSpriteInfoList.rbegin();
-    for (; rIter != drawingSpriteInfoList.rend(); rIter++) {
-        if (rIter->Rect.contains(curserPos)) {
+    QList<DrawingObjStruct> &drawingObjList = m_mapOfTypeToDrawingObjList[viewType];
+    QList<DrawingObjStruct>::reverse_iterator rIter = drawingObjList.rbegin();
+    for (; rIter != drawingObjList.rend(); rIter++) {
+        if (rIter->MainRect.contains(curserPos)) {
             return *rIter;
         }
     }
 
-    return DrawingSpriteInfoStruct();
+    return DrawingObjStruct();
 }
 
-void MapWidget::findHoveringDrawingSpriteInfoInAllSprites(const QPoint &curserPos)
+void MapWidget::findHoveringDrawingObjInAll(const QPoint &curserPos)
 {
-    DrawingSpriteInfoStruct drawingSpriteInfo;
+    DrawingObjStruct drawingObj;
 
     if (m_viewTypeList.contains(Actor)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Actor, curserPos);
+        drawingObj = findHoveringDrawingObj(Actor, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
     if (m_viewTypeList.contains(Effect)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Effect, curserPos);
+        drawingObj = findHoveringDrawingObj(Effect, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
     if (m_viewTypeList.contains(Obj)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Obj, curserPos);
+        drawingObj = findHoveringDrawingObj(Obj, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
     if (m_viewTypeList.contains(Floor)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Floor, curserPos);
+        drawingObj = findHoveringDrawingObj(Floor, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
     if (m_viewTypeList.contains(Near)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Near, curserPos);
+        drawingObj = findHoveringDrawingObj(Near, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
     if (m_viewTypeList.contains(Far)) {
-        drawingSpriteInfo = findHoveringDrawingSpriteInfo(Far, curserPos);
+        drawingObj = findHoveringDrawingObj(Far, curserPos);
     }
-    if (drawingSpriteInfo.Id != 0) {
-        m_hoveringDrawingSpriteInfo = drawingSpriteInfo;
+    if (drawingObj.Id != 0) {
+        m_hoveringDrawingObj = drawingObj;
         return;
     }
 
-    m_hoveringDrawingSpriteInfo = DrawingSpriteInfoStruct();
+    m_hoveringDrawingObj = DrawingObjStruct();
 }
 
-void MapWidget::addDrawingSpriteInfo(const QPoint &cursorPos)
+void MapWidget::addDrawingObj(const QPoint &cursorPos)
 {
-    QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList =
-        m_mapOfViewTypeToDrawingSpriteInfoList[m_placingViewType];
+    QList<DrawingObjStruct> &drawingObjList =
+        m_mapOfTypeToDrawingObjList[m_placingViewType];
 
-    m_placingDrawingSpriteInfo.Id = creatNewId();
-
-    MapLayerSpriteInfoStruct &layerSpriteInfo = m_placingDrawingSpriteInfo.LayerSpriteInfo;
-    layerSpriteInfo.SpriteTag = m_placingDrawingSpriteInfo.SpriteInfo.Tag;
+    MapLayerSpriteInfoStruct layerSpriteInfo = m_placingDrawingObj.LayerSpriteInfo;
     layerSpriteInfo.X = cursorPos.x() - m_xOffset;
     layerSpriteInfo.Y = cursorPos.y() - m_yOffset;
+    DrawingObjStruct drawingObj = createDrawingObjFromLayerSpriteInfo(m_placingViewType, layerSpriteInfo);
 
-    updateRectOfDrawingSprite(m_placingDrawingSpriteInfo);
-
-    drawingSpriteInfoList.append(m_placingDrawingSpriteInfo);
+    drawingObj.UpdateRects(m_xOffset, m_yOffset);
+    drawingObjList.append(drawingObj);
 }
 
-void MapWidget::removeDrawingSpriteInfo(QList<DrawingSpriteInfoStruct> drawingSpriteInfoList)
+void MapWidget::removeDrawingObj(QList<DrawingObjStruct> drawingObjList)
 {
-    QMap<ViewType, QList<DrawingSpriteInfoStruct>>::Iterator iter =
-        m_mapOfViewTypeToDrawingSpriteInfoList.begin();
-    for (; iter != m_mapOfViewTypeToDrawingSpriteInfoList.end(); iter++) {
-        QList<DrawingSpriteInfoStruct> &drawingSpriteInfoListTmp = *iter;
+    QMap<ViewTypeEnum, QList<DrawingObjStruct>>::Iterator iter =
+        m_mapOfTypeToDrawingObjList.begin();
+    for (; iter != m_mapOfTypeToDrawingObjList.end(); iter++) {
+        QList<DrawingObjStruct> &drawingObjListTmp = *iter;
 
-        for (const DrawingSpriteInfoStruct &drawingSpriteInfo : drawingSpriteInfoList) {
-            drawingSpriteInfoListTmp.removeAll(drawingSpriteInfo);
+        for (const DrawingObjStruct &drawingObj : drawingObjList) {
+            drawingObjListTmp.removeAll(drawingObj);
         }
     }
 }
 
-uint MapWidget::creatNewId()
+uint MapWidget::createId()
 {
     uint id = 1;
     while(1) {
         bool existSameId = false;
-        QMap<ViewType, QList<DrawingSpriteInfoStruct>>::Iterator iter =
-            m_mapOfViewTypeToDrawingSpriteInfoList.begin();
-        for (; iter != m_mapOfViewTypeToDrawingSpriteInfoList.end(); iter++) {
-            QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = *iter;
+        QMap<ViewTypeEnum, QList<DrawingObjStruct>>::Iterator iter =
+            m_mapOfTypeToDrawingObjList.begin();
+        for (; iter != m_mapOfTypeToDrawingObjList.end(); iter++) {
+            QList<DrawingObjStruct> &drawingObjList = *iter;
 
-            for (const DrawingSpriteInfoStruct &drawingSpriteInfo : drawingSpriteInfoList) {
-                // drawingSpriteInfoListTmp.removeAll(drawingSpriteInfo);
-                if (id == drawingSpriteInfo.Id) {
+            for (const DrawingObjStruct &drawingObj : drawingObjList) {
+                if (id == drawingObj.Id) {
                     existSameId = true;
                     break;
                 }
@@ -499,15 +689,15 @@ uint MapWidget::creatNewId()
     return id;
 }
 
-DrawingSpriteInfoStruct *MapWidget::getDrawingSpriteInfoById(uint id)
+DrawingObjStruct *MapWidget::getDrawingObjById(uint id)
 {
-    QMap<ViewType, QList<DrawingSpriteInfoStruct>>::Iterator iter =
-        m_mapOfViewTypeToDrawingSpriteInfoList.begin();
-    for (; iter != m_mapOfViewTypeToDrawingSpriteInfoList.end(); iter++) {
-        QList<DrawingSpriteInfoStruct> &drawingSpriteInfoList = *iter;
-        for (DrawingSpriteInfoStruct &drawingSpriteInfoTmp : drawingSpriteInfoList) {
-            if (id == drawingSpriteInfoTmp.Id) {
-                return &drawingSpriteInfoTmp;
+    QMap<ViewTypeEnum, QList<DrawingObjStruct>>::Iterator iter =
+        m_mapOfTypeToDrawingObjList.begin();
+    for (; iter != m_mapOfTypeToDrawingObjList.end(); iter++) {
+        QList<DrawingObjStruct> &drawingObjList = *iter;
+        for (DrawingObjStruct &drawingObjTmp : drawingObjList) {
+            if (id == drawingObjTmp.Id) {
+                return &drawingObjTmp;
             }
         }
     }
@@ -515,32 +705,34 @@ DrawingSpriteInfoStruct *MapWidget::getDrawingSpriteInfoById(uint id)
     return nullptr;
 }
 
-void MapWidget::updateDrawingSpriteInfoToMap(const DrawingSpriteInfoStruct &drawingSpriteInfo)
+void MapWidget::updateToDrawingObj(const DrawingObjStruct &drawingObj)
 {
-    DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(drawingSpriteInfo.Id);
-    if (!info) {
+    DrawingObjStruct *obj = getDrawingObjById(drawingObj.Id);
+    if (!obj) {
         return;
     }
 
     // 更新数据
-    *info = drawingSpriteInfo;
+    *obj = drawingObj;
 }
 
-void MapWidget::updateDrawingSpritePosToMap(uint id, int x, int y)
+void MapWidget::setDrawingObjPos(uint id, int x, int y)
 {
-    DrawingSpriteInfoStruct *info = getDrawingSpriteInfoById(id);
-    if (!info) {
+    DrawingObjStruct *obj = getDrawingObjById(id);
+    if (!obj) {
         return;
     }
 
-    info->LayerSpriteInfo.X = x;
-    info->LayerSpriteInfo.Y = y;
-    updateRectOfDrawingSprite(*info);
+    obj->LayerSpriteInfo.X = x;
+    obj->LayerSpriteInfo.Y = y;
+    obj->X = x;
+    obj->Y = y;
+    obj->UpdateRects(m_xOffset, m_yOffset);
 }
 
-void MapWidget::finishMovingDrawingSprite(const QPoint &cursorPos)
+void MapWidget::finishMovingDrawingObj(const QPoint &cursorPos)
 {
-    updateDrawingSpritePosToMap(m_movingDrawingSpriteInfo.Id, cursorPos.x() - m_xOffset,
-                                cursorPos.y() - m_yOffset);
+    setDrawingObjPos(m_movingDrawingObj.Id, cursorPos.x() - m_xOffset,
+                    cursorPos.y() - m_yOffset);
 }
 

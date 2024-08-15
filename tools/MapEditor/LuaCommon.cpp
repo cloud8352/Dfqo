@@ -5,10 +5,8 @@
 #include <QDir>
 #include <QFileInfo>
 
-const QString &LuaBeginStr = "return{";
-const int LuaBeginStrLength = LuaBeginStr.length();
-const QString &LuaEndStr = "}";
-const int LuaEndStrLength = LuaEndStr.length();
+const QString &LuaReturnStr = "return";
+const int LuaReturnStrLength = LuaReturnStr.length();
 
 enum LuaVariableType {
     Base,
@@ -291,12 +289,30 @@ QJsonObject LuaStrToJsonObj(const QString &luaStr)
 {
     QString contentStr = luaStr;
     contentStr.remove(" ").remove("\n").remove("\r").remove("\t");
-    contentStr = contentStr.mid(LuaBeginStrLength - 1, contentStr.length() - LuaBeginStrLength - LuaEndStrLength + 2);
+
+    int luaReturnStrIndex = contentStr.indexOf(LuaReturnStr);
+    contentStr = contentStr.mid(luaReturnStrIndex + LuaReturnStrLength,
+                                contentStr.length() - luaReturnStrIndex - LuaReturnStrLength);
     // qDebug() << Q_FUNC_INFO << contentStr;
 
     const QJsonObject &jsonObj = strToJsonObj(contentStr);
 
     return jsonObj;
+}
+
+QJsonArray LuaStrToJsonArray(const QString &luaStr)
+{
+    QString contentStr = luaStr;
+    contentStr.remove(" ").remove("\n").remove("\r").remove("\t");
+
+    int luaReturnStrIndex = contentStr.indexOf(LuaReturnStr);
+    contentStr = contentStr.mid(luaReturnStrIndex + LuaReturnStrLength,
+                                contentStr.length() - luaReturnStrIndex - LuaReturnStrLength);
+    // qDebug() << Q_FUNC_INFO << contentStr;
+
+    const QJsonArray &jsonArray = strToJsonArray(contentStr);
+
+    return jsonArray;
 }
 
 QString JsonObjToLuaStr(const QJsonObject &jsonObj)

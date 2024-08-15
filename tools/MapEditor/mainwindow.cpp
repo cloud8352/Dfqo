@@ -185,7 +185,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     connect(viewTypeBtnMenu, &QMenu::triggered, this, [=](QAction *action) {
-        QList<ViewType> viewTypeList;
+        QList<ViewTypeEnum> viewTypeList;
         if (farViewAction->isChecked()) {
             viewTypeList.append(Far);
         }
@@ -219,7 +219,7 @@ MainWindow::MainWindow(QWidget *parent)
         action->setChecked(true);
         placeAsBtn->setText(action->text());
 
-        ViewType placingViewType = Floor;
+        ViewTypeEnum placingViewType = Floor;
         if (action == farViewItemAction) {
             placingViewType = Far;
         } else if  (action == nearViewItemAction) {
@@ -242,7 +242,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (m_lastSelectedIndex == index) {
             itemTreeView->setCurrentIndex(QModelIndex());
 
-            mapWidget->SetPlacingDrawingSpriteVisible(false);
+            mapWidget->SetPlacingSpriteInfo({});
             m_lastSelectedIndex = QModelIndex();
             return;
         }
@@ -250,13 +250,10 @@ MainWindow::MainWindow(QWidget *parent)
         const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = model->GetMapOfTagToSpriteInfo();
         const SpriteInfoStruct &spriteInfo = mapOfTagToSpriteInfo.value(tag);
 
-        mapWidget->SetPlacingDrawingSpriteVisible(true);
         mapWidget->SetPlacingSpriteInfo(spriteInfo);
 
         m_lastSelectedIndex = index;
     });
-
-
 
     //// post data init
     // select placing view type
@@ -266,6 +263,9 @@ MainWindow::MainWindow(QWidget *parent)
     const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = model->GetMapOfTagToSpriteInfo();
     QMap<QString, SpriteInfoStruct>::const_iterator cIt = mapOfTagToSpriteInfo.constBegin();
     for (; cIt != mapOfTagToSpriteInfo.constEnd(); cIt++) {
+        if (!cIt.key().startsWith("map")) {
+            continue;
+        }
         QStandardItem *item = new QStandardItem(cIt.key());
         item->setCheckable(false);
         // item->setData("")

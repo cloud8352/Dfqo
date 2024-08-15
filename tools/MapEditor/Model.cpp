@@ -37,14 +37,10 @@ QFileInfoList listDirFilePath(const QString &path)
     return retList;
 }
 
-Model::Model(QObject *parent)
-    : QObject(parent)
-{
-}
-
-SpriteInfoStruct getSpriteInfoFromFile(const QString &path)
+SpriteInfoStruct getSpriteInfoFromFile(const QString &tag, const QString &path)
 {
     SpriteInfoStruct retInfo;
+    retInfo.Tag = tag;
 
     QFile f(path);
     if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
@@ -55,10 +51,39 @@ SpriteInfoStruct getSpriteInfoFromFile(const QString &path)
     QString contentStr = f.readAll().trimmed();
     f.close();
 
+    // whether is link
+   const QString &LinkCfgFileBeginStr = "return \"";
+   bool isLink = contentStr.startsWith(LinkCfgFileBeginStr);
+   if (isLink) {
+       contentStr.remove("\n").remove("\r").remove("\t");
+       const QString &linkTag = contentStr.mid(LinkCfgFileBeginStr.length(),
+                                             contentStr.length() - LinkCfgFileBeginStr.length() - 1);
+       retInfo.LinkTag = linkTag;
+       return retInfo;
+   }
+
+   QStringList tagPathList = tag.split("/");
+   tagPathList.pop_back();
+   const QString tagParentPath = tagPathList.join("/");
+
+    // to json obj
     const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
     // 装载数值
+    retInfo.ImgPath = jsonObj.value("image").toString();
+    retInfo.ImgPath = retInfo.ImgPath.replace("$0", tagParentPath);
+    retInfo.ImgPath = retInfo.ImgPath.replace("$A", tag);
+
     retInfo.OX = jsonObj.value("ox").toInt();
     retInfo.OY = jsonObj.value("oy").toInt();
+
+    if (jsonObj.keys().contains("color")) {
+        const QJsonObject &colorInfoJsonObj = jsonObj.value("color").toObject();
+        retInfo.ColorInfo.R = colorInfoJsonObj.value("r").toInt();
+        retInfo.ColorInfo.G = colorInfoJsonObj.value("g").toInt();
+        retInfo.ColorInfo.B = colorInfoJsonObj.value("b").toInt();
+        retInfo.ColorInfo.A = colorInfoJsonObj.value("a").toInt();
+    }
+
     QList<ColliderInfoStruct> &damageColliderInfoList = retInfo.ColliderInfoGroup.DamageColliderInfoList;
     if (jsonObj.keys().contains("collider")) {
         const QJsonObject &colliderInfoGroupJsonObj = jsonObj.value("collider").toObject();
@@ -82,12 +107,263 @@ SpriteInfoStruct getSpriteInfoFromFile(const QString &path)
     return retInfo;
 }
 
-void Model::loadSpriteInfosFromeImgFile(const QString &imgFileRelativePath)
+FrameAniInfoList getFrameAniInfoListFromFile(const QString &tag, const QString &path)
+{
+    FrameAniInfoList infoList;
+
+    QFile f(path);
+    if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        qCritical() << Q_FUNC_INFO << path << "open failed!";
+        return infoList;
+    }
+
+    QString contentStr = f.readAll().trimmed();
+    f.close();
+
+    QStringList tagPathList = tag.split("/");
+    tagPathList.pop_back();
+    const QString tagParentPath = tagPathList.join("/");
+
+    const QJsonArray &jsonArrray = Lua::LuaStrToJsonArray(contentStr);
+    for (const QJsonValue &jsonValue : jsonArrray) {
+        const QJsonObject &frameAniInfoJsonObj = jsonValue.toObject();
+        FrameAniInfoStruct info;
+        info.Sprite = frameAniInfoJsonObj.value("sprite").toString();
+        info.Sprite = info.Sprite.replace("$0", tagParentPath);
+        info.Sprite = info.Sprite.replace("$A", tag);
+        info.Time = frameAniInfoJsonObj.value("time").toInt();
+
+        infoList.append(info);
+    }
+
+    return infoList;
+}
+
+EquInfoStruct getEquInfoFromFile(const QString &tag, const QString &path)
+{
+    EquInfoStruct info;
+
+    QFile f(path);
+    if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        qCritical() << Q_FUNC_INFO << path << "open failed!";
+        return info;
+    }
+
+    QString contentStr = f.readAll().trimmed();
+    f.close();
+
+    QStringList tagPathList = tag.split("/");
+    tagPathList.pop_back();
+    const QString tagParentPath = tagPathList.join("/");
+
+    const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
+    const QJsonObject &nameJsonObj = jsonObj.value("name").toObject();
+    if (nameJsonObj.keys().contains("cn")) {
+        info.NameMap[CN] = nameJsonObj.value("cn").toString();
+    }
+    if (nameJsonObj.keys().contains("jp")) {
+        info.NameMap[JP] = nameJsonObj.value("jp").toString();
+    }
+    if (nameJsonObj.keys().contains("kr")) {
+        info.NameMap[KR] = nameJsonObj.value("kr").toString();
+    }
+    if (nameJsonObj.keys().contains("en")) {
+        info.NameMap[EN] = nameJsonObj.value("en").toString();
+    }
+
+    info.Script = jsonObj.value("script").toString();
+    info.Icon = jsonObj.value("icon").toString();
+    info.Icon = info.Icon.replace("$0", tagParentPath);
+    info.Icon = info.Icon.replace("$A", tag);
+
+    info.Kind = jsonObj.value("kind").toString();
+    info.SubKind = jsonObj.value("subKind").toString();
+
+    // avatar path map
+    const QJsonObject &avatarJsonObj = jsonObj.value("avatar").toObject();
+    const QStringList &avatarPathKeys = avatarJsonObj.keys();
+    QMap<AvatarType, QString> &mapOfAvatarTypeToSimplePath = info.MapOfAvatarTypeToSimplePath;
+    // function
+    auto loadSimplePath = [&avatarJsonObj, &avatarPathKeys, &mapOfAvatarTypeToSimplePath]
+        (AvatarType type, const QString &pathKey) {
+        if (avatarPathKeys.contains(pathKey)) {
+            const QString &simplePath = avatarJsonObj.value(pathKey).toString();
+            mapOfAvatarTypeToSimplePath.insert(type, simplePath);
+        }
+    };
+    // load
+    loadSimplePath(Belt, "belt");
+    loadSimplePath(BeltB, "belt_b");
+    loadSimplePath(BeltC, "belt_c");
+    loadSimplePath(BeltD, "belt_d");
+    loadSimplePath(BeltF, "belt_f");
+    loadSimplePath(Cap, "cap");
+    loadSimplePath(CapB, "cap_b");
+    loadSimplePath(CapC, "cap_c");
+    loadSimplePath(CapF, "cap_f");
+    loadSimplePath(Coat, "coat");
+    loadSimplePath(CoatB, "coat_b");
+    loadSimplePath(CoatC, "coat_c");
+    loadSimplePath(CoatD, "coat_d");
+    loadSimplePath(CoatF, "coat_f");
+    loadSimplePath(Eyes, "eyes");
+    loadSimplePath(Face, "face");
+    loadSimplePath(FaceB, "face_b");
+    loadSimplePath(Hair, "hair");
+    loadSimplePath(Neck, "neck");
+    loadSimplePath(NeckB, "neck_b");
+    loadSimplePath(NeckC, "neck_c");
+    loadSimplePath(NeckD, "neck_d");
+    loadSimplePath(NeckE, "neck_e");
+    loadSimplePath(NeckX, "neck_x");
+    loadSimplePath(NeckF, "neck_f");
+    loadSimplePath(Pants, "pants");
+    loadSimplePath(PantsB, "pants_b");
+    loadSimplePath(PantsD, "pants_d");
+    loadSimplePath(PantsF, "pants_f");
+    loadSimplePath(Shoes, "shoes");
+    loadSimplePath(ShoesB, "shoes_b");
+    loadSimplePath(ShoesF, "shoes_f");
+    loadSimplePath(Skin, "skin");
+    loadSimplePath(Weapon, "weapon");
+    loadSimplePath(WeaponB, "weapon_b");
+    loadSimplePath(WeaponB1, "weapon_b1");
+    loadSimplePath(WeaponB2, "weapon_b2");
+    loadSimplePath(WeaponC1, "weapon_c1");
+    loadSimplePath(WeaponC2, "weapon_c2");
+
+    return info;
+}
+
+InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &path)
+{
+    InstanceInfoStruct info;
+
+    QFile f(path);
+    if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        qCritical() << Q_FUNC_INFO << path << "open failed!";
+        return info;
+    }
+
+    QString contentStr = f.readAll().trimmed();
+    f.close();
+
+    QStringList tagPathList = tag.split("/");
+    tagPathList.pop_back();
+    const QString tagParentPath = tagPathList.join("/");
+
+    const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
+    //// aspect
+    const QJsonObject &aspectJsonObj = jsonObj.value("aspect").toObject();
+    AspectInfoStruct &aspectInfo = info.AspectInfo;
+    aspectInfo.Type = aspectJsonObj.value("type").toString();
+    aspectInfo.Path = aspectJsonObj.value("path").toString();
+    aspectInfo.Path = aspectInfo.Path.replace("$0", tagParentPath);
+    aspectInfo.Path = aspectInfo.Path.replace("$A", tag);
+    aspectInfo.Order = aspectJsonObj.value("order").toInt();
+    aspectInfo.HasShadow = aspectJsonObj.value("hasShadow").toBool();
+
+    aspectInfo.Avatar = aspectJsonObj.value("avatar").toString();
+    aspectInfo.Avatar = aspectInfo.Avatar.replace("$0", tagParentPath);
+    aspectInfo.Avatar = aspectInfo.Avatar.replace("$A", tag);
+    const QJsonObject &aspectCfgJsonObj = aspectJsonObj.value("config").toObject();
+    if (aspectCfgJsonObj.keys().contains("skin")) {
+        const QString &simplePath = aspectCfgJsonObj.value("skin").toString();
+        aspectInfo.MapOfAvatarTypeToSimplePath.insert(Skin, simplePath);
+    }
+    if (aspectCfgJsonObj.keys().contains("eyes")) {
+        const QString &simplePath = aspectCfgJsonObj.value("eyes").toString();
+        aspectInfo.MapOfAvatarTypeToSimplePath.insert(Eyes, simplePath);
+    }
+    if (aspectCfgJsonObj.keys().contains("hat")) {
+        const QString &simplePath = aspectCfgJsonObj.value("hat").toString();
+        aspectInfo.MapOfAvatarTypeToSimplePath.insert(Hat, simplePath);
+    }
+    if (aspectCfgJsonObj.keys().contains("weapon")) {
+        const QString &simplePath = aspectCfgJsonObj.value("weapon").toString();
+        aspectInfo.MapOfAvatarTypeToSimplePath.insert(Weapon, simplePath);
+    }
+
+    // layer
+    if (aspectJsonObj.keys().contains("layer")) {
+        const QJsonValue &layerJsonValue = aspectJsonObj.value("layer");
+        if (layerJsonValue.isArray()) {
+            const QJsonArray &layersJsonArray = aspectJsonObj.value("layer").toArray();
+            QList<AspectLayerInfoStruct> &layers = aspectInfo.LayerInfoList;
+            for (const QJsonValue &jsonValue : layersJsonArray) {
+                const QJsonObject &aspectLayerJsonObj = jsonValue.toObject();
+
+                AspectLayerInfoStruct layerInfo;
+                layerInfo.Name = aspectLayerJsonObj.value("name").toString();
+                layerInfo.Type = aspectLayerJsonObj.value("type").toString();
+                layerInfo.Path = aspectLayerJsonObj.value("path").toString();
+                layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
+                layerInfo.Path = layerInfo.Path.replace("$A", tag);
+
+                layers.append(layerInfo);
+            }
+        } else if (layerJsonValue.isObject()) {
+            AspectLayerInfoStruct &layerInfo = aspectInfo.LayerInfo;
+            const QJsonObject &layerJsonObj = aspectJsonObj.value("layer").toObject();
+            layerInfo.Name = layerJsonObj.value("name").toString();
+            layerInfo.Type = layerJsonObj.value("type").toString();
+            layerInfo.Path = layerJsonObj.value("path").toString();
+            layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
+            layerInfo.Path = layerInfo.Path.replace("$A", tag);
+        }
+    }
+
+    //// equipments
+    if (jsonObj.keys().contains("equipments")) {
+        QMap<AvatarType, QString> &mapOfAvatarTypeToEquTag = info.MapOfAvatarTypeToEquTag;
+        const QJsonObject &equsJsonObj = jsonObj.value("equipments").toObject();
+
+        QString tag = equsJsonObj.value("defaultWeapon").toString();
+        mapOfAvatarTypeToEquTag.insert(DefaultWeapon, tag);
+
+        tag = equsJsonObj.value("weapon").toString();
+        mapOfAvatarTypeToEquTag.insert(Weapon, tag);
+
+        tag = equsJsonObj.value("belt").toString();
+        mapOfAvatarTypeToEquTag.insert(Belt, tag);
+
+        tag = equsJsonObj.value("cap").toString();
+        mapOfAvatarTypeToEquTag.insert(Cap, tag);
+
+        tag = equsJsonObj.value("coat").toString();
+        mapOfAvatarTypeToEquTag.insert(Coat, tag);
+
+        tag = equsJsonObj.value("face").toString();
+        mapOfAvatarTypeToEquTag.insert(Face, tag);
+
+        tag = equsJsonObj.value("hair").toString();
+        mapOfAvatarTypeToEquTag.insert(Hair, tag);
+
+        tag = equsJsonObj.value("neck").toString();
+        mapOfAvatarTypeToEquTag.insert(Neck, tag);
+
+        tag = equsJsonObj.value("pants").toString();
+        mapOfAvatarTypeToEquTag.insert(Pants, tag);
+
+        tag = equsJsonObj.value("shoes").toString();
+        mapOfAvatarTypeToEquTag.insert(Shoes, tag);
+    }
+
+    return info;
+}
+
+Model::Model(QObject *parent)
+    : QObject(parent)
+{
+}
+
+
+void Model::loadSpriteInfosFromImgDir(const QString &imgDirRelativePath)
 {
     const QString &imgRootDirPath = QString("%1/%2").arg(GameRootPath).arg("asset/image");
     const QString &imgRootDirAbsPath = QFileInfo(imgRootDirPath).absoluteFilePath();
     const int imgRootDirAbsPathStrLength = imgRootDirAbsPath.length();
-    const QString &imgDirAbsPath = QString("%1/%2").arg(imgRootDirAbsPath).arg(imgFileRelativePath);
+    const QString &imgDirAbsPath = QString("%1/%2").arg(imgRootDirAbsPath).arg(imgDirRelativePath);
 
     const QString &ImgFileSuffixStr = ".png";
     const int ImgFileSuffixStrLength = ImgFileSuffixStr.length();
@@ -107,12 +383,12 @@ void Model::loadSpriteInfosFromeImgFile(const QString &imgFileRelativePath)
     }
 }
 
-void Model::loadSpriteInfosFromeCfgFile(const QString &spriteConfigFileRelativePath)
+void Model::loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath)
 {
     const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
     const QString &spriteRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/asset/sprite");
     const int spriteRootDirAbsPathStrLength = spriteRootDirAbsPath.length();
-    const QString &spriteDirAbsPath = QString("%1/%2").arg(spriteRootDirAbsPath).arg(spriteConfigFileRelativePath);
+    const QString &spriteDirAbsPath = QString("%1/%2").arg(spriteRootDirAbsPath).arg(spriteConfigDirRelativePath);
 
     const QString &SpriteCfgFileSuffixStr = ".cfg";
     const int SpriteCfgFileSuffixStrLength = SpriteCfgFileSuffixStr.length();
@@ -130,16 +406,126 @@ void Model::loadSpriteInfosFromeCfgFile(const QString &spriteConfigFileRelativeP
 
     QMap<QString, QString>::const_iterator cIt = mapOfTagToSpriteCfgFilePath.constBegin();
     for (; cIt != mapOfTagToSpriteCfgFilePath.constEnd(); cIt++) {
-        SpriteInfoStruct spriteInfo = getSpriteInfoFromFile(cIt.value());
-        spriteInfo.Tag = cIt.key();
-        spriteInfo.ImgPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
+        SpriteInfoStruct spriteInfo = getSpriteInfoFromFile(cIt.key(), cIt.value());
+        if (spriteInfo.ImgPath.isEmpty()) {
+            spriteInfo.ImgPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
                                 .arg("asset/image").arg(cIt.key());
+        } else {
+            spriteInfo.ImgPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
+                                .arg("asset/image").arg(spriteInfo.ImgPath);
+        }
         QFileInfo fInfo(spriteInfo.ImgPath);
-        if(!fInfo.exists()) {
+        // if(!fInfo.exists()) {
+        //     continue;
+        // }
+
+       m_mapOfTagToSpriteInfo.insert(cIt.key(), spriteInfo);
+    }
+
+    // load link sprite info
+    QMap<QString, SpriteInfoStruct>::iterator iter2 = m_mapOfTagToSpriteInfo.begin();
+    for (; iter2 != m_mapOfTagToSpriteInfo.end(); iter2++) {
+        SpriteInfoStruct &info = iter2.value();
+        if (info.LinkTag.isEmpty()) {
             continue;
         }
 
-       m_mapOfTagToSpriteInfo.insert(cIt.key(), spriteInfo);
+        while(1) {
+            info = m_mapOfTagToSpriteInfo.value(info.LinkTag);
+            if (info.LinkTag.isEmpty()) {
+                break;
+            }
+        }
+    }
+
+}
+
+void Model::loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelativePath)
+{
+    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &frameAniCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/asset/frameani");
+    const int frameAniCfgRootDirAbsPathStrLength = frameAniCfgRootDirAbsPath.length();
+    const QString &frameAniCfgDirAbsPath = QString("%1/%2").arg(frameAniCfgRootDirAbsPath).arg(frameAniConfigDirRelativePath);
+
+    const QString &FrameAniCfgFileSuffixStr = ".cfg";
+    const int FrameAniCfgFileSuffixStrLength = FrameAniCfgFileSuffixStr.length();
+
+    QMap<QString, QString> mapOfTagToFrameAniCfgFilePath;
+    const QFileInfoList &frameAniCfgFileInfoList = listDirFilePath(frameAniCfgDirAbsPath);
+    for (const QFileInfo &info : frameAniCfgFileInfoList) {
+        // 提取出 tag
+        QString tag = info.absoluteFilePath();
+        tag = tag.mid(frameAniCfgRootDirAbsPathStrLength + 1,
+                     tag.length() - frameAniCfgRootDirAbsPathStrLength - FrameAniCfgFileSuffixStrLength - 1);
+
+        mapOfTagToFrameAniCfgFilePath.insert(tag, info.absoluteFilePath());
+    }
+
+    QMap<QString, QString>::const_iterator cIt = mapOfTagToFrameAniCfgFilePath.constBegin();
+    for (; cIt != mapOfTagToFrameAniCfgFilePath.constEnd(); cIt++) {
+        const FrameAniInfoList &infoList = getFrameAniInfoListFromFile(cIt.key(), cIt.value());
+
+        m_mapOfTagToFrameAniInfoList.insert(cIt.key(), infoList);
+    }
+}
+
+void Model::loadEquInfosFromCfgDir(const QString &equInfoCfgDirRelativePath)
+{
+    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &equCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/actor/equipment");
+    const int equCfgRootDirAbsPathStrLength = equCfgRootDirAbsPath.length();
+    const QString &equCfgDirAbsPath = QString("%1/%2").arg(equCfgRootDirAbsPath).arg(equInfoCfgDirRelativePath);
+
+    const QString &EquCfgFileSuffixStr = ".cfg";
+    const int EquCfgFileSuffixStrLength = EquCfgFileSuffixStr.length();
+
+    QMap<QString, QString> mapOfTagToEquCfgFilePath;
+    const QFileInfoList &equCfgFileInfoList = listDirFilePath(equCfgDirAbsPath);
+    for (const QFileInfo &info : equCfgFileInfoList) {
+        // 提取出 tag
+        QString tag = info.absoluteFilePath();
+        tag = tag.mid(equCfgRootDirAbsPathStrLength + 1,
+                      tag.length() - equCfgRootDirAbsPathStrLength - EquCfgFileSuffixStrLength - 1);
+
+        mapOfTagToEquCfgFilePath.insert(tag, info.absoluteFilePath());
+    }
+
+    QMap<QString, QString>::const_iterator cIt = mapOfTagToEquCfgFilePath.constBegin();
+    for (; cIt != mapOfTagToEquCfgFilePath.constEnd(); cIt++) {
+        const EquInfoStruct &equInfo = getEquInfoFromFile(cIt.key(), cIt.value());
+
+        m_mapOfTagToEquInfo.insert(cIt.key(), equInfo);
+    }
+}
+
+void Model::loadInstaceInfosFromCfgDir(const QString &instanceCfgDirRelativePath)
+{
+    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &instanceCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath)
+                                                   .arg("config/actor/instance");
+    const int instanceCfgRootDirAbsPathStrLength = instanceCfgRootDirAbsPath.length();
+    const QString &instanceCfgDirAbsPath = QString("%1/%2").arg(instanceCfgRootDirAbsPath)
+                                               .arg(instanceCfgDirRelativePath);
+
+    const QString &InstanceCfgFileSuffixStr = ".cfg";
+    const int InstanceCfgFileSuffixStrLength = InstanceCfgFileSuffixStr.length();
+
+    QMap<QString, QString> mapOfTagToInstanceCfgFilePath;
+    const QFileInfoList &instanceCfgFileInfoList = listDirFilePath(instanceCfgDirAbsPath);
+    for (const QFileInfo &info : instanceCfgFileInfoList) {
+        // 提取出 tag
+        QString tag = info.absoluteFilePath();
+        tag = tag.mid(instanceCfgRootDirAbsPathStrLength + 1,
+                      tag.length() - instanceCfgRootDirAbsPathStrLength - InstanceCfgFileSuffixStrLength - 1);
+
+        mapOfTagToInstanceCfgFilePath.insert(tag, info.absoluteFilePath());
+    }
+
+    QMap<QString, QString>::const_iterator cIt = mapOfTagToInstanceCfgFilePath.constBegin();
+    for (; cIt != mapOfTagToInstanceCfgFilePath.constEnd(); cIt++) {
+        const InstanceInfoStruct &info = getInstanceInfoFromFile(cIt.key(), cIt.value());
+
+        m_mapOfTagToInstanceInfo.insert(cIt.key(), info);
     }
 }
 
@@ -314,9 +700,22 @@ QString Model::getMapFilePathByFileDlg()
 void Model::LoadItems()
 {
     // 1. 静态图片 config\asset\sprite 或 asset\image\map
-    loadSpriteInfosFromeImgFile("map");
-    loadSpriteInfosFromeCfgFile("actor/article");
-    loadSpriteInfosFromeCfgFile("map");
+    loadSpriteInfosFromImgDir("./");
+    //    loadSpriteInfosFromeCfgFile("actor/article");
+    loadSpriteInfosFromCfgDir("./");
+
+    // 2. 帧动画，config/asset/frameani
+    // tag: 文件路径中“config/asset/frameani/”之后的字符串
+    loadFrameAniInfosFromCfgDir("./");
+
+
+    // 3. 装备，config/actor/equipment
+    // tag: 文件路径中“config/actor/equipment/”之后的字符串
+    loadEquInfosFromCfgDir("./");
+
+    // 4. 人物实例，config/actor/instance
+    // tag: 文件路径中“config/actor/instance/”之后的字符串
+    loadInstaceInfosFromCfgDir("./");
 }
 
 void Model::LoadMap(const QString &mapFilePath)
