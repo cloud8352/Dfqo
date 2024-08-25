@@ -50,15 +50,13 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
     m_menu->addAction(deleteAction);
 
     // connect
+    connect(m_model, &Model::MapLoaded, this, &MapWidget::Reload);
     connect(m_menu, &QMenu::triggered, this, [=](QAction *action) {
         if (action == deleteAction) {
             removeDrawingObj({m_hoveringDrawingObj});
             update();
         }
     });
-
-    // post init
-    loadAllDrawingObj();
 }
 
 MapWidget::~MapWidget()
@@ -76,11 +74,65 @@ void MapWidget::SetPlacingViewType(ViewTypeEnum type)
     m_placingViewType = type;
 }
 
-void MapWidget::SetPlacingSpriteInfo(SpriteInfoStruct info)
+void MapWidget::SetPlacingSpriteInfoTag(const QString &tag)
 {
+    if (tag.isEmpty()) {
+        m_placingDrawingObj.Id = 0;
+        return;
+    }
+
     MapLayerSpriteInfoStruct layerInfo;
-    layerInfo.SpriteTag = info.Tag;
+    layerInfo.SpriteTag = tag;
     m_placingDrawingObj = createDrawingObjFromLayerSpriteInfo(m_placingViewType, layerInfo);
+}
+
+void MapWidget::SetPlacingInstanceInfoTag(const QString &tag)
+{
+    if (tag.isEmpty()) {
+        m_placingDrawingObj.Id = 0;
+        return;
+    }
+
+    MapActorInfoStruct actorInfo;
+    actorInfo.Path = tag;
+    m_placingDrawingObj = createDrawingObjFromMapActorInfo(actorInfo);
+}
+
+void MapWidget::SaveMap()
+{
+    const MapInfoStruct &mapInfo = toMapInfo();
+    m_model->SaveMap(mapInfo);
+}
+
+void MapWidget::Reload()
+{
+    m_isMovingMap = false;
+    m_lastXOffset = 0;
+    m_lastYOffset = 0;
+    m_xOffset = 0;
+    m_yOffset = 0;
+    m_lastHoveringDrawingObj.Id = 0;
+    m_hoveringDrawingObj.Id = 0;
+    m_viewTypeList = {Far, Near, Floor, Obj, Effect, Actor};
+    m_placingViewType = Floor;
+    m_placingDrawingObj.Id = 0;
+
+    loadAllDrawingObj();
+
+    update();
+}
+
+void MapWidget::NewMap()
+{
+    m_model->NewMap();
+
+    Reload();
+}
+
+void MapWidget::SaveMapAs()
+{
+    const MapInfoStruct &mapInfo = toMapInfo();
+    m_model->SaveMapAs(mapInfo);
 }
 
 void MapWidget::mousePressEvent(QMouseEvent *event)
@@ -632,13 +684,39 @@ void MapWidget::findHoveringDrawingObjInAll(const QPoint &curserPos)
 
 void MapWidget::addDrawingObj(const QPoint &cursorPos)
 {
+    if (m_placingDrawingObj.ViewType == Actor and
+        m_placingViewType != Actor) {
+        const QString &msg = "角色实例项 只能放置为 角色项，请将“放置为”设置为：角色项";
+        qWarning() << Q_FUNC_INFO << msg;
+        QMessageBox::warning(this, "放置错误", msg);
+        return;
+    }
+
+    if (m_placingDrawingObj.ViewType != Actor and
+        m_placingViewType == Actor) {
+        const QString &msg = "精灵项 不可放置为 角色项，请将“放置为”设置为非角色项";
+        qWarning() << Q_FUNC_INFO << msg;
+        QMessageBox::warning(this, "放置错误", msg);
+        return;
+    }
+
+    DrawingObjStruct drawingObj;
     QList<DrawingObjStruct> &drawingObjList =
         m_mapOfTypeToDrawingObjList[m_placingViewType];
+    int x = cursorPos.x() - m_xOffset;
+    int y = cursorPos.y() - m_yOffset;
 
-    MapLayerSpriteInfoStruct layerSpriteInfo = m_placingDrawingObj.LayerSpriteInfo;
-    layerSpriteInfo.X = cursorPos.x() - m_xOffset;
-    layerSpriteInfo.Y = cursorPos.y() - m_yOffset;
-    DrawingObjStruct drawingObj = createDrawingObjFromLayerSpriteInfo(m_placingViewType, layerSpriteInfo);
+    if (m_placingDrawingObj.ViewType == Actor) {
+        MapActorInfoStruct actorInfo = m_placingDrawingObj.MapActorInfo;
+        actorInfo.X = x;
+        actorInfo.Y = y;
+        drawingObj = createDrawingObjFromMapActorInfo(actorInfo);
+    } else {
+        MapLayerSpriteInfoStruct layerSpriteInfo = m_placingDrawingObj.LayerSpriteInfo;
+        layerSpriteInfo.X = x;
+        layerSpriteInfo.Y = y;
+        drawingObj = createDrawingObjFromLayerSpriteInfo(m_placingViewType, layerSpriteInfo);
+    }
 
     drawingObj.UpdateRects(m_xOffset, m_yOffset);
     drawingObjList.append(drawingObj);
@@ -723,8 +801,13 @@ void MapWidget::setDrawingObjPos(uint id, int x, int y)
         return;
     }
 
-    obj->LayerSpriteInfo.X = x;
-    obj->LayerSpriteInfo.Y = y;
+    if (obj->ViewType == Actor) {
+        obj->MapActorInfo.X = x;
+        obj->MapActorInfo.Y = y;
+    } else {
+        obj->LayerSpriteInfo.X = x;
+        obj->LayerSpriteInfo.Y = y;
+    }
     obj->X = x;
     obj->Y = y;
     obj->UpdateRects(m_xOffset, m_yOffset);
@@ -733,6 +816,58 @@ void MapWidget::setDrawingObjPos(uint id, int x, int y)
 void MapWidget::finishMovingDrawingObj(const QPoint &cursorPos)
 {
     setDrawingObjPos(m_movingDrawingObj.Id, cursorPos.x() - m_xOffset,
-                    cursorPos.y() - m_yOffset);
+                     cursorPos.y() - m_yOffset);
+}
+
+MapInfoStruct MapWidget::toMapInfo()
+{
+    MapInfoStruct mapInfo = m_mapInfo;
+
+    // map Layer Info
+    QMap<ViewTypeEnum, QList<DrawingObjStruct>>::Iterator iter =
+        m_mapOfTypeToDrawingObjList.begin();
+    for (; iter != m_mapOfTypeToDrawingObjList.end(); iter++) {
+        QList<MapLayerSpriteInfoStruct> *layerSpriteInfoListPtr = nullptr;
+        ViewTypeEnum viewType = iter.key();
+        switch (viewType) {
+        case Far:
+            layerSpriteInfoListPtr = &mapInfo.LayerInfo.FarLayerSpriteInfoList;
+            break;
+        case Near:
+            layerSpriteInfoListPtr = &mapInfo.LayerInfo.NearLayerSpriteInfoList;
+            break;
+        case Floor:
+            layerSpriteInfoListPtr = &mapInfo.LayerInfo.FloorLayerSpriteInfoList;
+            break;
+        case Obj:
+            layerSpriteInfoListPtr = &mapInfo.LayerInfo.ObjLayerSpriteInfoList;
+            break;
+        case Effect:
+            layerSpriteInfoListPtr = &mapInfo.LayerInfo.EffectLayerSpriteInfoList;
+            break;
+        case Actor:
+            break;
+        default:
+            break;
+        }
+        if (layerSpriteInfoListPtr == nullptr) {
+            continue;
+        }
+
+        layerSpriteInfoListPtr->clear();
+        QList<DrawingObjStruct> &drawingObjList = *iter;
+        for (DrawingObjStruct &drawingObj : drawingObjList) {
+            layerSpriteInfoListPtr->append(drawingObj.LayerSpriteInfo);
+        }
+    }
+
+    // map actor info
+    mapInfo.ActorInfoList.clear();
+    QList<DrawingObjStruct> &ActorDrawingObjList = m_mapOfTypeToDrawingObjList[Actor];
+    for (DrawingObjStruct &drawingObj : ActorDrawingObjList) {
+        mapInfo.ActorInfoList.append(drawingObj.MapActorInfo);
+    }
+
+    return mapInfo;
 }
 

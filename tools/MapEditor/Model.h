@@ -5,13 +5,16 @@
 
 #include <QObject>
 #include <QMap>
-
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QStandardPaths>
 #include <QFileDialog>
+#include <QApplication>
 
+enum FileDialogType {
+    Save, Open
+};
 
 struct ColorInfoStruct {
     uchar R = 255;
@@ -244,7 +247,7 @@ struct PosStruct {
 };
 
 struct DulistInfoStruct {
-    bool IsEnemy = false;
+    bool IsEnemy = true;
 };
 
 struct MapActorInfoStruct
@@ -260,7 +263,7 @@ struct MapActorInfoStruct
 
     // dulist info
     int Direction = 1;
-    int Camp = 1; // 1=we, 2=enemy
+    int Camp = 2; // 1=we, 2=enemy
     DulistInfoStruct DulistInfo;
 
     MapActorInfoStruct() {}
@@ -281,6 +284,7 @@ struct MapInfoStruct
 
 class Model : public QObject
 {
+    Q_OBJECT
 public:
     explicit Model(QObject *parent = nullptr);
     void LoadItems();
@@ -303,9 +307,15 @@ public:
         return m_mapOfTagToInstanceInfo;
     };
 
+    void SetMapFilePath(const QString &filePath);
+    void NewMap();
     void OpenMap();
-    void SaveMap();
-    void SaveMapAs();
+    void SaveMap(const MapInfoStruct &mapInfo = MapInfoStruct());
+    void SaveMapAs(const MapInfoStruct &mapInfo = MapInfoStruct());
+
+Q_SIGNALS:
+    void MapFilePathChanged(const QString &filePath);
+    void MapLoaded();
 
 private:
     void loadSpriteInfosFromImgDir(const QString &imgDirRelativePath);
@@ -314,7 +324,7 @@ private:
     void loadEquInfosFromCfgDir(const QString &equInfoCfgDirRelativePath);
     void loadInstaceInfosFromCfgDir(const QString &instanceCfgDirRelativePath);
     void saveMapInfoToFile(const QString &filePath);
-    QString getMapFilePathByFileDlg();
+    QString getMapFilePathByFileDlg(FileDialogType dlgType);
 
 private:
     QString m_mapFilePath;

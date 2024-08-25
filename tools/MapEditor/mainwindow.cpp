@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     // pre data init
     Model *model = new Model();
     model->LoadItems();
-    model->LoadMapBySimplePath("TestMap");
+    // model->LoadMapBySimplePath("TestMap");
 
     // ui init
     QMenuBar *menuBar = this->menuBar();
@@ -70,6 +70,11 @@ MainWindow::MainWindow(QWidget *parent)
     QStandardItemModel *itemTreeViewModel = new QStandardItemModel(this);
     itemTreeView->setModel(itemTreeViewModel);
 
+    QStandardItem *spriteTreeItem = new QStandardItem("精灵");
+    itemTreeViewModel->appendRow(spriteTreeItem);
+    QStandardItem *actorInstanceTreeItem = new QStandardItem("角色实例");
+    itemTreeViewModel->appendRow(actorInstanceTreeItem);
+
     // right content
     contentLayout->addSpacing(3);
     QVBoxLayout *rightContentLayout = new QVBoxLayout;
@@ -112,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent)
     effectViewAction->setCheckable(true);
     effectViewAction->setChecked(true);
     viewTypeBtnMenu->addAction(effectViewAction);
-    QAction *actorViewAction = new QAction("人物", this);
+    QAction *actorViewAction = new QAction("角色", this);
     actorViewAction->setCheckable(true);
     actorViewAction->setChecked(true);
     viewTypeBtnMenu->addAction(actorViewAction);
@@ -142,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction *effectViewItemAction = new QAction("效果项", this);
     effectViewItemAction->setCheckable(true);
     placeAsBtnMenu->addAction(effectViewItemAction);
-    QAction *actorViewItemAction = new QAction("人物项", this);
+    QAction *actorViewItemAction = new QAction("角色项", this);
     actorViewItemAction->setCheckable(true);
     placeAsBtnMenu->addAction(actorViewItemAction);
     placeAsBtn->setMenu(placeAsBtnMenu);
@@ -167,19 +172,26 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addSpacing(5);
 
     // init connections
+    connect(model, &Model::MapFilePathChanged, this, [this](const QString &filePath) {
+        this->setWindowTitle("MapEditor [" + filePath + " ]");
+    });
+
     connect(fileMenu, &QMenu::triggered, this, [=](QAction *action) {
+        if (action == newMapAction) {
+            mapWidget->NewMap();
+        }
         if (action == openFileAction) {
             model->OpenMap();
         }
         if (action == saveFileAction) {
-            model->SaveMap();
+            mapWidget->SaveMap();
         }
         if (action == saveAsAction) {
-            model->SaveMapAs();
+            mapWidget->SaveMapAs();
         }
     });
 
-
+    // connections
     connect(mapWidget, &MapWidget::SendMousePosInMap, this, [=](int x, int y) {
         posLabel->setText(QString("坐标：(%1, %2)").arg(x).arg(y));
     });
@@ -237,20 +249,28 @@ MainWindow::MainWindow(QWidget *parent)
         mapWidget->SetPlacingViewType(placingViewType);
     });
 
-    // itemTreeView->customContextMenuRequested()
+    // connection
     connect(itemTreeView, &QTreeView::clicked, this, [=](QModelIndex index) {
+        QStandardItem *item = itemTreeViewModel->itemFromIndex(index);
+        if (item->hasChildren()) {
+            itemTreeView->setCurrentIndex(QModelIndex());
+            return;
+        }
+
         if (m_lastSelectedIndex == index) {
             itemTreeView->setCurrentIndex(QModelIndex());
 
-            mapWidget->SetPlacingSpriteInfo({});
+            mapWidget->SetPlacingSpriteInfoTag("");
             m_lastSelectedIndex = QModelIndex();
             return;
         }
-        const QString &tag = itemTreeViewModel->itemFromIndex(index)->text();
-        const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = model->GetMapOfTagToSpriteInfo();
-        const SpriteInfoStruct &spriteInfo = mapOfTagToSpriteInfo.value(tag);
+        const QString &tag = item->text();
+        if (spriteTreeItem == item->parent()) {
 
-        mapWidget->SetPlacingSpriteInfo(spriteInfo);
+            mapWidget->SetPlacingSpriteInfoTag(tag);
+        } else if (actorInstanceTreeItem == item->parent()) {
+            mapWidget->SetPlacingInstanceInfoTag(tag);
+        }
 
         m_lastSelectedIndex = index;
     });
@@ -259,7 +279,8 @@ MainWindow::MainWindow(QWidget *parent)
     // select placing view type
     Q_EMIT placeAsBtnMenu->triggered(floorViewItemAction);
 
-    // load to tree view
+    //// load to tree view
+    // map sprite tree
     const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = model->GetMapOfTagToSpriteInfo();
     QMap<QString, SpriteInfoStruct>::const_iterator cIt = mapOfTagToSpriteInfo.constBegin();
     for (; cIt != mapOfTagToSpriteInfo.constEnd(); cIt++) {
@@ -271,8 +292,28 @@ MainWindow::MainWindow(QWidget *parent)
         // item->setData("")
         item->setSizeHint(QSize(30, 50));
         item->setIcon(QIcon(cIt.value().ImgPath));
-        itemTreeViewModel->appendRow(item);
+
+        spriteTreeItem->appendRow(item);
     }
+
+    // instance tree
+    const QMap<QString, InstanceInfoStruct> &mapOfTagToInstanceInfo = model->GetMapOfTagToInstanceInfo();
+    QMap<QString, InstanceInfoStruct>::const_iterator cIt2 = mapOfTagToInstanceInfo.constBegin();
+    for (; cIt2 != mapOfTagToInstanceInfo.constEnd(); cIt2++) {
+        if (cIt2.key().startsWith("effect") and !cIt2.key().startsWith("effect/weather")) {
+            continue;
+        }
+        if (cIt2.key().startsWith("bullet")) {
+            continue;
+        }
+        QStandardItem *item = new QStandardItem(cIt2.key());
+        item->setCheckable(false);
+        // item->setData("")
+        item->setSizeHint(QSize(30, 50));
+
+        actorInstanceTreeItem->appendRow(item);
+    }
+
 }
 
 MainWindow::~MainWindow()

@@ -6,6 +6,7 @@
 #include <QPaintEvent>
 #include <QPainter>
 #include <QMenu>
+#include <QMessageBox>
 
 enum ViewTypeEnum {
     Far,
@@ -87,10 +88,17 @@ public:
 
     void SetViewTypeList(QList<ViewTypeEnum> viewTypeList);
     void SetPlacingViewType(ViewTypeEnum type);
-    void SetPlacingSpriteInfo(SpriteInfoStruct info);
+    void SetPlacingSpriteInfoTag(const QString &tag);
+    void SetPlacingInstanceInfoTag(const QString &tag);
 
 Q_SIGNALS:
     void SendMousePosInMap(int x, int y);
+
+public slots:
+    void Reload();
+    void NewMap();
+    void SaveMap();
+    void SaveMapAs();
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -116,6 +124,7 @@ private:
     void updateToDrawingObj(const DrawingObjStruct &drawingObj);
     void setDrawingObjPos(uint id, int x, int y);
     void finishMovingDrawingObj(const QPoint &cursorPos);
+    MapInfoStruct toMapInfo();
 
 private:
     Model *m_model;

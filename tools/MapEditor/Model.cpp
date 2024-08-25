@@ -252,9 +252,33 @@ InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &pa
     tagPathList.pop_back();
     const QString tagParentPath = tagPathList.join("/");
 
+    // function
+    auto jsonObjToAspectLayerInfo = [&tagParentPath, &tag](const QJsonObject &jsonObj) {
+        AspectLayerInfoStruct layerInfo;
+        layerInfo.Name = jsonObj.value("name").toString();
+        layerInfo.Type = jsonObj.value("type").toString();
+        layerInfo.Path = jsonObj.value("path").toString();
+        layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
+        layerInfo.Path = layerInfo.Path.replace("$A", tag);
+
+        return layerInfo;
+    };
+
     const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
     //// aspect
-    const QJsonObject &aspectJsonObj = jsonObj.value("aspect").toObject();
+    const QJsonValue &aspectJsonValue = jsonObj.value("aspect");
+    // 如果 aspectJsonValue 为json数组
+    const QJsonArray &layersJsonArray = aspectJsonValue.toArray();
+    QList<AspectLayerInfoStruct> &layers = info.AspectInfo.LayerInfoList;
+    for (const QJsonValue &jsonValue : layersJsonArray) {
+        const QJsonObject &aspectLayerJsonObj = jsonValue.toObject();
+
+        AspectLayerInfoStruct layerInfo = jsonObjToAspectLayerInfo(aspectLayerJsonObj);
+        layers.append(layerInfo);
+    }
+
+    // 如果 aspectJsonValue 为json对象
+    const QJsonObject &aspectJsonObj = aspectJsonValue.toObject();
     AspectInfoStruct &aspectInfo = info.AspectInfo;
     aspectInfo.Type = aspectJsonObj.value("type").toString();
     aspectInfo.Path = aspectJsonObj.value("path").toString();
@@ -293,23 +317,13 @@ InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &pa
             for (const QJsonValue &jsonValue : layersJsonArray) {
                 const QJsonObject &aspectLayerJsonObj = jsonValue.toObject();
 
-                AspectLayerInfoStruct layerInfo;
-                layerInfo.Name = aspectLayerJsonObj.value("name").toString();
-                layerInfo.Type = aspectLayerJsonObj.value("type").toString();
-                layerInfo.Path = aspectLayerJsonObj.value("path").toString();
-                layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
-                layerInfo.Path = layerInfo.Path.replace("$A", tag);
-
+                AspectLayerInfoStruct layerInfo = jsonObjToAspectLayerInfo(aspectLayerJsonObj);
                 layers.append(layerInfo);
             }
         } else if (layerJsonValue.isObject()) {
             AspectLayerInfoStruct &layerInfo = aspectInfo.LayerInfo;
             const QJsonObject &layerJsonObj = aspectJsonObj.value("layer").toObject();
-            layerInfo.Name = layerJsonObj.value("name").toString();
-            layerInfo.Type = layerJsonObj.value("type").toString();
-            layerInfo.Path = layerJsonObj.value("path").toString();
-            layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
-            layerInfo.Path = layerInfo.Path.replace("$A", tag);
+            layerInfo = jsonObjToAspectLayerInfo(layerJsonObj);
         }
     }
 
@@ -681,7 +695,7 @@ void Model::saveMapInfoToFile(const QString &filePath)
     f.close();
 }
 
-QString Model::getMapFilePathByFileDlg()
+QString Model::getMapFilePathByFileDlg(FileDialogType dlgType)
 {
     const QString &localDataDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::GenericDataLocation);
 
@@ -693,7 +707,12 @@ QString Model::getMapFilePathByFileDlg()
        dir.mkpath(dir.absolutePath());
     }
 
-    QString filePath = QFileDialog::getSaveFileName(nullptr, "保存地图", defaultFilePath, "*.cfg");
+    QString filePath;
+    if (dlgType == Open) {
+       filePath = QFileDialog::getOpenFileName(nullptr, "打开地图", defaultFilePath, "*.cfg");
+    } else {
+       filePath = QFileDialog::getSaveFileName(nullptr, "保存地图", defaultFilePath, "*.cfg");
+    }
     return filePath;
 }
 
@@ -737,6 +756,7 @@ void Model::LoadMap(const QString &mapFilePath)
        qCritical() << Q_FUNC_INFO << "map data is error";
        return;
     }
+    m_mapInfo = MapInfoStruct();
     const QJsonObject &scopeJsonObj = jsonObj.value("scope").toObject();
     MapScopeInfoStruct &scopeInfo = m_mapInfo.ScopeInfo;
     scopeInfo.WV = scopeJsonObj.value("wv").toInt();
@@ -874,7 +894,8 @@ void Model::LoadMap(const QString &mapFilePath)
         actorInfoList.append(actorInfo);
     }
 
-    m_mapFilePath = mapFilePath;
+    SetMapFilePath(mapFilePath);
+    Q_EMIT MapLoaded();
 }
 
 void Model::LoadMapBySimplePath(const QString &simplePath)
@@ -886,9 +907,40 @@ void Model::LoadMapBySimplePath(const QString &simplePath)
     LoadMap(mapFileAbsPath);
 }
 
+void Model::SetMapFilePath(const QString &filePath)
+{
+    m_mapFilePath = filePath;
+
+    Q_EMIT MapFilePathChanged(filePath);
+}
+
+void Model::NewMap()
+{
+    MapInfoStruct mapInfo;
+    mapInfo.BaseInfo.Width = 1500;
+    mapInfo.BaseInfo.Height = 600;
+    mapInfo.BaseInfo.Horizon = 327;
+    mapInfo.BaseInfo.Bgm = "lorien";
+    mapInfo.BaseInfo.Name = "lorien";
+    mapInfo.BaseInfo.Theme = "lorien";
+    mapInfo.BaseInfo.Bgs = "forest1";
+    mapInfo.BaseInfo.IsTown = false;
+
+    mapInfo.ScopeInfo.WV = -240;
+    mapInfo.ScopeInfo.X = 240;
+    mapInfo.ScopeInfo.UV = -50;
+    mapInfo.ScopeInfo.W = 1024;
+    mapInfo.ScopeInfo.Y = 368;
+    mapInfo.ScopeInfo.HV = -8;
+    mapInfo.ScopeInfo.H = 224;
+    mapInfo.ScopeInfo.DV = -40;
+
+    SaveMapAs(mapInfo);
+}
+
 void Model::OpenMap()
 {
-    QString mapFilePath = getMapFilePathByFileDlg();
+    QString mapFilePath = getMapFilePathByFileDlg(Open);
     if (mapFilePath.isEmpty()) {
         qDebug() << Q_FUNC_INFO << "not select map file path";
         return;
@@ -897,19 +949,28 @@ void Model::OpenMap()
     LoadMap(mapFilePath);
 }
 
-void Model::SaveMap()
+void Model::SaveMap(const MapInfoStruct &mapInfo)
 {
+    // 如果需要设置地图信息
+    if (mapInfo.BaseInfo.Width != 0 and mapInfo.BaseInfo.Height != 0) {
+        SetMapInfo(mapInfo);
+    }
+
     saveMapInfoToFile(m_mapFilePath);
 }
 
-void Model::SaveMapAs()
+void Model::SaveMapAs(const MapInfoStruct &mapInfo)
 {
-    QString savingFilePath = getMapFilePathByFileDlg();
+    QString savingFilePath = getMapFilePathByFileDlg(Save);
     if (savingFilePath.isEmpty()) {
         qDebug() << Q_FUNC_INFO << "not select saving file path";
         return;
     }
 
+    // 如果需要设置地图信息
+    if (mapInfo.BaseInfo.Width != 0 and mapInfo.BaseInfo.Height != 0) {
+        SetMapInfo(mapInfo);
+    }
     saveMapInfoToFile(savingFilePath);
-    m_mapFilePath = savingFilePath;
+    SetMapFilePath(savingFilePath);
 }
