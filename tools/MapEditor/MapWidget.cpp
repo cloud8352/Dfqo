@@ -3,6 +3,9 @@
 #include <QPainter>
 #include <QDebug>
 
+// 精灵图片指针 资源池
+static QMap<QString, QImage*> SpriteImgPtrPool;
+
 void adjustImgByColor(QImage &image, const ColorInfoStruct &color) {
     float rPercent = float(color.R) / 255;
     float gPercent = float(color.G) / 255;
@@ -29,6 +32,7 @@ void adjustImgByColor(QImage &image, const ColorInfoStruct &color) {
 MapWidget::MapWidget(QWidget *parent, Model *model)
     : QWidget(parent)
     , m_model(model)
+    , m_currentMaxId(0)
     , m_isMovingMap(false)
     , m_lastXOffset(0)
     , m_lastYOffset(0)
@@ -349,13 +353,21 @@ DrawingObjStruct MapWidget::createDrawingObjFromLayerSpriteInfo(const ViewTypeEn
     drawingObj.Y = layerSpriteInfo.Y;
 
     // load drawing unit
+    const QString &tag = layerSpriteInfo.SpriteTag;
     DrawingUnitStruct drawingUnit;
-    const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(layerSpriteInfo.SpriteTag);
+
+    const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(tag);
     drawingUnit.OX = spriteInfo.OX;
     drawingUnit.OY = spriteInfo.OY;
-    QImage img(spriteInfo.ImgPath);
-    adjustImgByColor(img, spriteInfo.ColorInfo);
-    drawingUnit.Img = img;
+    if (SpriteImgPtrPool.contains(tag)) {
+        drawingUnit.Img = SpriteImgPtrPool.value(tag);
+    } else {
+        QImage *img = new QImage(spriteInfo.ImgPath);
+        adjustImgByColor(*img, spriteInfo.ColorInfo);
+        drawingUnit.Img = img;
+
+        SpriteImgPtrPool.insert(tag, img);
+    }
 
     // load drawing avatar
     DrawingAvatarStruct drawingAvatar;
@@ -386,11 +398,11 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
             const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(spriteTag);
             drawingUnit.OX = spriteInfo.OX;
             drawingUnit.OY = spriteInfo.OY;
-            QImage img(spriteInfo.ImgPath);
-            adjustImgByColor(img, spriteInfo.ColorInfo);
+            QImage *img = new QImage(spriteInfo.ImgPath);
+            adjustImgByColor(*img, spriteInfo.ColorInfo);
             if (actorInfo.Direction == -1) {
-                img = img.mirrored(true, false);
-                drawingUnit.OX = img.width() - drawingUnit.OX;
+                *img = img->mirrored(true, false);
+                drawingUnit.OX = img->width() - drawingUnit.OX;
             }
             drawingUnit.Img = img;
 
@@ -733,8 +745,30 @@ void MapWidget::removeDrawingObj(QList<DrawingObjStruct> drawingObjList)
             drawingObjListTmp.removeAll(drawingObj);
         }
     }
+
+    // id list
+    for (const DrawingObjStruct &drawingObj : drawingObjList) {
+        if (m_canUsedIdList.contains(drawingObj.Id)) {
+            continue;
+        }
+        m_canUsedIdList.append(drawingObj.Id);
+    }
 }
 
+uint MapWidget::createId()
+{
+    uint id;
+    if (m_canUsedIdList.size()) {
+        id = m_canUsedIdList.first();
+        m_canUsedIdList.pop_front();
+    } else {
+        id = m_currentMaxId++;
+    }
+
+    return id;
+}
+
+/*
 uint MapWidget::createId()
 {
     uint id = 1;
@@ -766,6 +800,7 @@ uint MapWidget::createId()
 
     return id;
 }
+*/
 
 DrawingObjStruct *MapWidget::getDrawingObjById(uint id)
 {

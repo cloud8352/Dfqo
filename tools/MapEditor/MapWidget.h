@@ -21,7 +21,7 @@ enum ViewTypeEnum {
 struct DrawingUnitStruct {
     int OX = 0;
     int OY = 0;
-    QImage Img;
+    const QImage *Img;
     QRect Rect;
     // todo: colliders ...
 };
@@ -58,7 +58,7 @@ struct DrawingObjStruct {
         for (DrawingAvatarStruct &avatar : DrawingAvatarList) {
             for (DrawingUnitStruct &unit : avatar.DrawingUnitList) {
                 unit.Rect = QRect(X - unit.OX + mapXOffset, Y - unit.OY + mapYOffset,
-                                unit.Img.width(), unit.Img.height());
+                                  unit.Img->width(), unit.Img->height());
             }
 
             // 更新主区域
@@ -73,7 +73,7 @@ struct DrawingObjStruct {
     void Draw(QPainter *painter) const {
         for (const DrawingAvatarStruct &avatar : DrawingAvatarList) {
             for (const DrawingUnitStruct &unit : avatar.DrawingUnitList) {
-                painter->drawImage(unit.Rect, unit.Img);
+                painter->drawImage(unit.Rect, *unit.Img);
             }
         }
     }
@@ -128,6 +128,8 @@ private:
 
 private:
     Model *m_model;
+    QList<uint> m_canUsedIdList;
+    uint m_currentMaxId;
     MapInfoStruct m_mapInfo;
     QMap<QString, SpriteInfoStruct> m_mapOfTagToSpriteInfo;
     QMap<QString, FrameAniInfoList> m_mapOfTagToFrameAniInfoList;
