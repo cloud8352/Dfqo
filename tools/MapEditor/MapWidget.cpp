@@ -53,6 +53,8 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
     deleteAction->setText("删除");
     m_menu->addAction(deleteAction);
 
+    m_mapSettingsDlg.setVisible(false);
+
     // connect
     connect(m_model, &Model::MapLoaded, this, &MapWidget::Reload);
     connect(m_menu, &QMenu::triggered, this, [=](QAction *action) {
@@ -60,6 +62,14 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
             removeDrawingObj({m_hoveringDrawingObj});
             update();
         }
+    });
+
+    // map settings dlg
+    connect(&m_mapSettingsDlg, &MapSettingsDlg::MapBaseInfoChanged, this, [=](const MapBaseInfoStruct &info) {
+        m_mapInfo.BaseInfo = info;
+    });
+    connect(&m_mapSettingsDlg, &MapSettingsDlg::MapScopeInfoChanged, this, [=](const MapScopeInfoStruct &info) {
+        m_mapInfo.ScopeInfo = info;
     });
 }
 
@@ -100,6 +110,17 @@ void MapWidget::SetPlacingInstanceInfoTag(const QString &tag)
     MapActorInfoStruct actorInfo;
     actorInfo.Path = tag;
     m_placingDrawingObj = createDrawingObjFromMapActorInfo(actorInfo);
+}
+
+void MapWidget::OpenMapSettingsDlg()
+{
+    if (m_mapSettingsDlg.isVisible()) {
+        return;
+    }
+
+    m_mapSettingsDlg.SetMapBaseInfo(m_mapInfo.BaseInfo);
+    m_mapSettingsDlg.SetMapScopeInfo(m_mapInfo.ScopeInfo);
+    m_mapSettingsDlg.show();
 }
 
 void MapWidget::SaveMap()

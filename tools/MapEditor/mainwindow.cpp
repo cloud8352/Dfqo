@@ -21,17 +21,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     QMenu *fileMenu = new QMenu(this);
     fileMenu->setTitle("文件");
-    QAction *newMapAction = new QAction("创建新地图");
+    QAction *newMapAction = new QAction("创建新地图", this);
     fileMenu->addAction(newMapAction);
-    QAction *openFileAction = new QAction("打开");
+    QAction *openFileAction = new QAction("打开", this);
     fileMenu->addAction(openFileAction);
-    QAction *saveFileAction = new QAction("保存");
+    QAction *saveFileAction = new QAction("保存", this);
     fileMenu->addAction(saveFileAction);
-    QAction *saveAsAction = new QAction("另存为");
+    QAction *saveAsAction = new QAction("另存为", this);
     fileMenu->addAction(saveAsAction);
     menuBar->addMenu(fileMenu);
 
-    menuBar->addAction("地图设置");
+    QAction *mapSettingsAction = new QAction("地图设置", this);
+    menuBar->addAction(mapSettingsAction);
     menuBar->addAction("软件设置");
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
@@ -173,7 +174,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // init connections
     connect(model, &Model::MapFilePathChanged, this, [this](const QString &filePath) {
-        this->setWindowTitle("MapEditor [" + filePath + " ]");
+        this->setWindowTitle("MapEditor [" + filePath + "]");
     });
 
     connect(fileMenu, &QMenu::triggered, this, [=](QAction *action) {
@@ -191,7 +192,12 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    // connections
+    connect(menuBar, &QMenuBar::triggered, this, [=](QAction *action) {
+        if (action == mapSettingsAction) {
+            mapWidget->OpenMapSettingsDlg();
+        }
+    });
+
     connect(mapWidget, &MapWidget::SendMousePosInMap, this, [=](int x, int y) {
         posLabel->setText(QString("坐标：(%1, %2)").arg(x).arg(y));
     });
@@ -249,7 +255,7 @@ MainWindow::MainWindow(QWidget *parent)
         mapWidget->SetPlacingViewType(placingViewType);
     });
 
-    // connection
+    // 项目树
     connect(itemTreeView, &QTreeView::clicked, this, [=](QModelIndex index) {
         QStandardItem *item = itemTreeViewModel->itemFromIndex(index);
         if (item->hasChildren()) {
@@ -266,7 +272,6 @@ MainWindow::MainWindow(QWidget *parent)
         }
         const QString &tag = item->text();
         if (spriteTreeItem == item->parent()) {
-
             mapWidget->SetPlacingSpriteInfoTag(tag);
         } else if (actorInstanceTreeItem == item->parent()) {
             mapWidget->SetPlacingInstanceInfoTag(tag);

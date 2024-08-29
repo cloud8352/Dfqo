@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Model.h"
+#include "MapSettingsDlg.h"
 
 #include <QWidget>
 #include <QPaintEvent>
@@ -90,6 +91,7 @@ public:
     void SetPlacingViewType(ViewTypeEnum type);
     void SetPlacingSpriteInfoTag(const QString &tag);
     void SetPlacingInstanceInfoTag(const QString &tag);
+    void OpenMapSettingsDlg();
 
 Q_SIGNALS:
     void SendMousePosInMap(int x, int y);
@@ -149,4 +151,5 @@ private:
     DrawingObjStruct m_placingDrawingObj;
     QMenu *m_menu;
     DrawingObjStruct m_movingDrawingObj;
+    MapSettingsDlg m_mapSettingsDlg;
 };

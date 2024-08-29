@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     Calculator.cpp \
     LuaCommon.cpp \
+    MapSettingsDlg.cpp \
     MapWidget.cpp \
     Model.cpp \
     main.cpp \
@@ -26,6 +27,7 @@ SOURCES += \
 HEADERS += \
     Calculator.h \
     LuaCommon.h \
+    MapSettingsDlg.h \
     MapWidget.h \
     Model.h \
     mainwindow.h

@@ -369,6 +369,8 @@ InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &pa
 Model::Model(QObject *parent)
     : QObject(parent)
 {
+    // qRegisterMetaType
+    qRegisterMetaType<MapInfoStruct>("MapInfoStruct");
 }
 
 
