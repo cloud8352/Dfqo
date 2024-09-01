@@ -172,6 +172,7 @@ struct MapBaseInfoStruct
     QString Name;
     QString Theme;
     QString Bgs;
+    double NearBgTranslateRate = 0.0;
 
     MapBaseInfoStruct() {}
 };

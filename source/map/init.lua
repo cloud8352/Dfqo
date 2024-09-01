@@ -281,6 +281,12 @@ local function _Load(path)
     _layerGroup.object:ClearAllSprite()
     _layerGroup.effect:DelAll()
 
+    if (data.info.NearBgTranslateRate) then
+        _layerGroup.near:SetTranslateRate(data.info.NearBgTranslateRate)
+    else
+        _layerGroup.near:SetTranslateRate(_const.backgroundRate.near)
+    end
+
     for k, v in pairs(_layerGroup) do
         if (data.layer[k]) then
             if (k == "effect") then
@@ -542,11 +548,6 @@ function _MAP.Make(path, entry)
     -- 创建背景
     _MakeBackground(data.layer.far, config.far, data.info.width)
 
-    if (config.nearBgTranslateRate) then
-        _layerGroup.near:SetTranslateRate(config.nearBgTranslateRate)
-    else
-        _layerGroup.near:SetTranslateRate(_const.backgroundRate.near)
-    end
     if (config.near) then
         _MakeBackground(data.layer.near, config.near, data.info.width)
     elseif (config.nearBgPathList) then

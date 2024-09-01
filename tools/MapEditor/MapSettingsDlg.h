@@ -42,6 +42,7 @@ private:
     QLineEdit *m_bgsLineEdit;
     QLineEdit *m_themeLineEdit;
     QCheckBox *m_isTownCheckBox;
+    QLineEdit *m_nearBgTranslateRateLineEdit;
 
     // scope info
     QLineEdit *m_xLineEdit;

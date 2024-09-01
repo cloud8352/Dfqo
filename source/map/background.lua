@@ -88,7 +88,7 @@ function _Background:Update(dt)
         local h = info.H
         if x + w > cameraXPos - cameraVisibleAreaW / 2 and x < cameraXPos + cameraVisibleAreaW / 2 and
             y + h > cameraYPos - cameraVisibleAreaH / 2 and y < cameraYPos + cameraVisibleAreaH / 2
-            then
+        then
             table.insert(self.needDrawList, info)
         end
     end

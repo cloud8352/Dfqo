@@ -586,6 +586,7 @@ void Model::saveMapInfoToFile(const QString &filePath)
     baseInfoJsonObj.insert("name", baseInfo.Name);
     baseInfoJsonObj.insert("theme", baseInfo.Theme);
     baseInfoJsonObj.insert("bgs", baseInfo.Bgs);
+    baseInfoJsonObj.insert("NearBgTranslateRate", baseInfo.NearBgTranslateRate);
     jsonObj.insert("info", baseInfoJsonObj);
 
     // map path gate inf list
@@ -807,6 +808,7 @@ void Model::LoadMap(const QString &mapFilePath)
     baseInfo.Name = baseInfoJsonObj.value("name").toString();
     baseInfo.Theme = baseInfoJsonObj.value("theme").toString();
     baseInfo.Bgs = baseInfoJsonObj.value("bgs").toString();
+    baseInfo.NearBgTranslateRate = baseInfoJsonObj.value("NearBgTranslateRate").toDouble();
 
     if (!jsonObj.contains("pathGateInfoList")) {
         qCritical() << Q_FUNC_INFO << "map data is error";
@@ -943,6 +945,7 @@ void Model::NewMap()
     mapInfo.BaseInfo.Theme = "lorien";
     mapInfo.BaseInfo.Bgs = "forest1";
     mapInfo.BaseInfo.IsTown = false;
+    mapInfo.BaseInfo.NearBgTranslateRate = 0.0;
 
     mapInfo.ScopeInfo.WV = -240;
     mapInfo.ScopeInfo.X = 240;

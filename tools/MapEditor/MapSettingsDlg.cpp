@@ -13,6 +13,7 @@ MapSettingsDlg::MapSettingsDlg(QWidget *parent)
     ,m_bgsLineEdit(nullptr)
     ,m_themeLineEdit(nullptr)
     ,m_isTownCheckBox(nullptr)
+    ,m_nearBgTranslateRateLineEdit(nullptr)
 
     // scope info
     ,m_xLineEdit(nullptr)
@@ -77,42 +78,46 @@ MapSettingsDlg::MapSettingsDlg(QWidget *parent)
     layout = createKeyValueLayout("isTown", m_isTownCheckBox);
     mainLayout->addLayout(layout, 4, 1, Qt::AlignLeft);
 
+    m_nearBgTranslateRateLineEdit = new QLineEdit(this);
+    layout = createKeyValueLayout("NearBgTranslateRate", m_nearBgTranslateRateLineEdit);
+    mainLayout->addLayout(layout, 5, 0, Qt::AlignLeft);
+
     /// scope info
     QLabel *scopeInfoTitleLabel = new QLabel(this);
     scopeInfoTitleLabel->setText("范围信息");
-    mainLayout->addWidget(scopeInfoTitleLabel, 5, 0);
+    mainLayout->addWidget(scopeInfoTitleLabel, 6, 0);
 
     m_xLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("x", m_xLineEdit);
-    mainLayout->addLayout(layout, 6, 0);
+    mainLayout->addLayout(layout, 7, 0);
 
     m_yLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("y", m_yLineEdit);
-    mainLayout->addLayout(layout, 6, 1);
+    mainLayout->addLayout(layout, 7, 1);
 
     m_wvLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("wv", m_wvLineEdit);
-    mainLayout->addLayout(layout, 7, 0);
+    mainLayout->addLayout(layout, 8, 0);
 
     m_uvLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("uv", m_uvLineEdit);
-    mainLayout->addLayout(layout, 7, 1);
+    mainLayout->addLayout(layout, 8, 1);
 
     m_wLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("w", m_wLineEdit);
-    mainLayout->addLayout(layout, 8, 0);
+    mainLayout->addLayout(layout, 9, 0);
 
     m_hvLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("hv", m_hvLineEdit);
-    mainLayout->addLayout(layout, 8, 1);
+    mainLayout->addLayout(layout, 9, 1);
 
     m_hLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("h", m_hLineEdit);
-    mainLayout->addLayout(layout, 9, 0);
+    mainLayout->addLayout(layout, 10, 0);
 
     m_dvLineEdit = new QLineEdit(this);
     layout = createKeyValueLayout("dv", m_dvLineEdit);
-    mainLayout->addLayout(layout, 9, 1);
+    mainLayout->addLayout(layout, 10, 1);
 
     //// init connections
     // base info
@@ -124,6 +129,7 @@ MapSettingsDlg::MapSettingsDlg(QWidget *parent)
     connect(m_bgsLineEdit, &QLineEdit::textEdited, this, &MapSettingsDlg::onBaseInfoUiDataChanged);
     connect(m_themeLineEdit, &QLineEdit::textEdited, this, &MapSettingsDlg::onBaseInfoUiDataChanged);
     connect(m_isTownCheckBox, &QCheckBox::stateChanged, this, &MapSettingsDlg::onBaseInfoUiDataChanged);
+    connect(m_nearBgTranslateRateLineEdit, &QLineEdit::textEdited, this, &MapSettingsDlg::onBaseInfoUiDataChanged);
 
     // scope info
     connect(m_xLineEdit, &QLineEdit::textEdited, this, &MapSettingsDlg::onScopeInfoUiDataChanged);
@@ -153,6 +159,7 @@ void MapSettingsDlg::SetMapBaseInfo(const MapBaseInfoStruct &mapBaseInfo)
     m_bgsLineEdit->setText(QString(mapBaseInfo.Bgs));
     m_themeLineEdit->setText(QString(mapBaseInfo.Theme));
     m_isTownCheckBox->setChecked(mapBaseInfo.IsTown);
+    m_nearBgTranslateRateLineEdit->setText(QString::number(mapBaseInfo.NearBgTranslateRate));
 }
 
 void MapSettingsDlg::SetMapScopeInfo(const MapScopeInfoStruct &mapScopeInfo)
@@ -203,6 +210,7 @@ MapBaseInfoStruct MapSettingsDlg::getMapBaseInfoFromUi()
     info.Bgs = m_bgsLineEdit->text();
     info.Theme = m_themeLineEdit->text();
     info.IsTown = m_isTownCheckBox->isChecked();
+    info.NearBgTranslateRate = m_nearBgTranslateRateLineEdit->text().toDouble();
 
     return info;
 }
