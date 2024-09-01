@@ -1,14 +1,10 @@
 #include "Model.h"
 
-//静态图片	config\asset\sprite
-//          asset\image\map
-//动态图片	config\asset\frameani
-//人物    config\actor\instance
-
 #include <QtDebug>
 #include <QDir>
 #include <QFileInfo>
 
+const QString &AppName = "com.ccc.dfqo.MapEditor";
 const QString &GameRootPath = "../..";
 
 QFileInfoList listDirFilePath(const QString &path)
@@ -371,12 +367,26 @@ Model::Model(QObject *parent)
 {
     // qRegisterMetaType
     qRegisterMetaType<MapInfoStruct>("MapInfoStruct");
+
+    m_gameRootPath = QFileInfo(GameRootPath).absoluteFilePath();
+    loadAppSettings();
+}
+
+void Model::SetGameRootPath(const QString &path)
+{
+    if (m_gameRootPath == path) {
+        return;
+    }
+    m_gameRootPath = path;
+    saveAppSettings();
+
+    LoadItems();
 }
 
 
 void Model::loadSpriteInfosFromImgDir(const QString &imgDirRelativePath)
 {
-    const QString &imgRootDirPath = QString("%1/%2").arg(GameRootPath).arg("asset/image");
+    const QString &imgRootDirPath = QString("%1/%2").arg(m_gameRootPath).arg("asset/image");
     const QString &imgRootDirAbsPath = QFileInfo(imgRootDirPath).absoluteFilePath();
     const int imgRootDirAbsPathStrLength = imgRootDirAbsPath.length();
     const QString &imgDirAbsPath = QString("%1/%2").arg(imgRootDirAbsPath).arg(imgDirRelativePath);
@@ -401,7 +411,7 @@ void Model::loadSpriteInfosFromImgDir(const QString &imgDirRelativePath)
 
 void Model::loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath)
 {
-    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &GameRootDirAbsPath = QFileInfo(m_gameRootPath).absoluteFilePath();
     const QString &spriteRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/asset/sprite");
     const int spriteRootDirAbsPathStrLength = spriteRootDirAbsPath.length();
     const QString &spriteDirAbsPath = QString("%1/%2").arg(spriteRootDirAbsPath).arg(spriteConfigDirRelativePath);
@@ -458,7 +468,7 @@ void Model::loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath
 
 void Model::loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelativePath)
 {
-    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &GameRootDirAbsPath = QFileInfo(m_gameRootPath).absoluteFilePath();
     const QString &frameAniCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/asset/frameani");
     const int frameAniCfgRootDirAbsPathStrLength = frameAniCfgRootDirAbsPath.length();
     const QString &frameAniCfgDirAbsPath = QString("%1/%2").arg(frameAniCfgRootDirAbsPath).arg(frameAniConfigDirRelativePath);
@@ -487,7 +497,7 @@ void Model::loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelative
 
 void Model::loadEquInfosFromCfgDir(const QString &equInfoCfgDirRelativePath)
 {
-    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &GameRootDirAbsPath = QFileInfo(m_gameRootPath).absoluteFilePath();
     const QString &equCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/actor/equipment");
     const int equCfgRootDirAbsPathStrLength = equCfgRootDirAbsPath.length();
     const QString &equCfgDirAbsPath = QString("%1/%2").arg(equCfgRootDirAbsPath).arg(equInfoCfgDirRelativePath);
@@ -516,7 +526,7 @@ void Model::loadEquInfosFromCfgDir(const QString &equInfoCfgDirRelativePath)
 
 void Model::loadInstaceInfosFromCfgDir(const QString &instanceCfgDirRelativePath)
 {
-    const QString &GameRootDirAbsPath = QFileInfo(GameRootPath).absoluteFilePath();
+    const QString &GameRootDirAbsPath = QFileInfo(m_gameRootPath).absoluteFilePath();
     const QString &instanceCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath)
                                                    .arg("config/actor/instance");
     const int instanceCfgRootDirAbsPathStrLength = instanceCfgRootDirAbsPath.length();
@@ -718,25 +728,38 @@ QString Model::getMapFilePathByFileDlg(FileDialogType dlgType)
     return filePath;
 }
 
+void Model::setMapFilePath(const QString &filePath)
+{
+    m_mapFilePath = filePath;
+
+    Q_EMIT MapFilePathChanged(filePath);
+}
+
 void Model::LoadItems()
 {
     // 1. 静态图片 config\asset\sprite 或 asset\image\map
+    m_mapOfTagToSpriteInfo.clear();
     loadSpriteInfosFromImgDir("./");
     //    loadSpriteInfosFromeCfgFile("actor/article");
     loadSpriteInfosFromCfgDir("./");
 
     // 2. 帧动画，config/asset/frameani
     // tag: 文件路径中“config/asset/frameani/”之后的字符串
+    m_mapOfTagToFrameAniInfoList.clear();
     loadFrameAniInfosFromCfgDir("./");
 
 
     // 3. 装备，config/actor/equipment
     // tag: 文件路径中“config/actor/equipment/”之后的字符串
+    m_mapOfTagToEquInfo.clear();
     loadEquInfosFromCfgDir("./");
 
     // 4. 人物实例，config/actor/instance
     // tag: 文件路径中“config/actor/instance/”之后的字符串
+    m_mapOfTagToInstanceInfo.clear();
     loadInstaceInfosFromCfgDir("./");
+
+    Q_EMIT ItemsLoaded();
 }
 
 void Model::LoadMap(const QString &mapFilePath)
@@ -896,24 +919,17 @@ void Model::LoadMap(const QString &mapFilePath)
         actorInfoList.append(actorInfo);
     }
 
-    SetMapFilePath(mapFilePath);
+    setMapFilePath(mapFilePath);
     Q_EMIT MapLoaded();
 }
 
 void Model::LoadMapBySimplePath(const QString &simplePath)
 {
-    const QString &mapRootDirPath = QString("%1/%2").arg(GameRootPath).arg("config/map/instance");
+    const QString &mapRootDirPath = QString("%1/%2").arg(m_gameRootPath).arg("config/map/instance");
     const QString &mapRootDirAbsPath = QFileInfo(mapRootDirPath).absoluteFilePath();
     const QString &mapFileAbsPath = QString("%1/%2.cfg").arg(mapRootDirAbsPath).arg(simplePath);
 
     LoadMap(mapFileAbsPath);
-}
-
-void Model::SetMapFilePath(const QString &filePath)
-{
-    m_mapFilePath = filePath;
-
-    Q_EMIT MapFilePathChanged(filePath);
 }
 
 void Model::NewMap()
@@ -974,5 +990,57 @@ void Model::SaveMapAs(const MapInfoStruct &mapInfo)
         SetMapInfo(mapInfo);
     }
     saveMapInfoToFile(savingFilePath);
-    SetMapFilePath(savingFilePath);
+    setMapFilePath(savingFilePath);
+}
+
+void Model::loadAppSettings()
+{
+    const QString &localDataDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::GenericDataLocation);
+    QString appSettingsFilePath = QString("%1/%2/%3").arg(localDataDirPath).arg(AppName).arg("Settings.json");
+
+    QFile f(appSettingsFilePath);
+    if (!f.exists()) {
+        return;
+    }
+    if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        qCritical() << Q_FUNC_INFO << appSettingsFilePath << "open failed!";
+        return;
+    }
+    const QByteArray &contentBa = f.readAll();
+    f.close();
+
+    QJsonParseError parseErr;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(contentBa, &parseErr);
+    if (parseErr.error != QJsonParseError::ParseError::NoError) {
+        qCritical() << Q_FUNC_INFO << parseErr.errorString() << parseErr.error;
+        return;
+    }
+
+    const QJsonObject &jsonObj = jsonDoc.object();
+    m_gameRootPath = jsonObj.value("GameRootPath").toString();
+}
+
+void Model::saveAppSettings()
+{
+    QJsonObject jsonObj;
+    jsonObj.insert("GameRootPath", m_gameRootPath);
+
+    QJsonDocument jsonDoc(jsonObj);
+
+    const QString &localDataDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::GenericDataLocation);
+    QString appSettingsFilePath = QString("%1/%2/%3").arg(localDataDirPath).arg(AppName).arg("Settings.json");
+
+    QFileInfo fInfo(appSettingsFilePath);
+    QDir dir = fInfo.dir();
+    if (!dir.exists()) {
+        dir.mkpath(dir.absolutePath());
+    }
+
+    QFile f(appSettingsFilePath);
+    if (!f.open(QIODevice::OpenModeFlag::WriteOnly)) {
+        qCritical() << Q_FUNC_INFO << appSettingsFilePath << "open failed!";
+        return;
+    }
+    f.write(jsonDoc.toJson());
+    f.close();
 }

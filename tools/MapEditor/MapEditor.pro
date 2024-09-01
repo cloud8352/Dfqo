@@ -21,6 +21,7 @@ SOURCES += \
     MapSettingsDlg.cpp \
     MapWidget.cpp \
     Model.cpp \
+    SettingsDlg.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -30,6 +31,7 @@ HEADERS += \
     MapSettingsDlg.h \
     MapWidget.h \
     Model.h \
+    SettingsDlg.h \
     mainwindow.h
 
 # Default rules for deployment.

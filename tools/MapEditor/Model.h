@@ -287,6 +287,10 @@ class Model : public QObject
     Q_OBJECT
 public:
     explicit Model(QObject *parent = nullptr);
+
+    inline QString GetGameRootPath() { return m_gameRootPath; }
+    void SetGameRootPath(const QString &path);
+
     void LoadItems();
     void LoadMap(const QString &mapFilePath);
     void LoadMapBySimplePath(const QString &simplePath);
@@ -307,17 +311,19 @@ public:
         return m_mapOfTagToInstanceInfo;
     };
 
-    void SetMapFilePath(const QString &filePath);
     void NewMap();
     void OpenMap();
     void SaveMap(const MapInfoStruct &mapInfo = MapInfoStruct());
     void SaveMapAs(const MapInfoStruct &mapInfo = MapInfoStruct());
 
 Q_SIGNALS:
+    void ItemsLoaded();
     void MapFilePathChanged(const QString &filePath);
     void MapLoaded();
 
 private:
+    void loadAppSettings();
+    void saveAppSettings();
     void loadSpriteInfosFromImgDir(const QString &imgDirRelativePath);
     void loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath);
     void loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelativePath);
@@ -325,8 +331,10 @@ private:
     void loadInstaceInfosFromCfgDir(const QString &instanceCfgDirRelativePath);
     void saveMapInfoToFile(const QString &filePath);
     QString getMapFilePathByFileDlg(FileDialogType dlgType);
+    void setMapFilePath(const QString &filePath);
 
 private:
+    QString m_gameRootPath;
     QString m_mapFilePath;
     QMap<QString, SpriteInfoStruct> m_mapOfTagToSpriteInfo;
     QMap<QString, FrameAniInfoList> m_mapOfTagToFrameAniInfoList;

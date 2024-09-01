@@ -377,6 +377,9 @@ DrawingObjStruct MapWidget::createDrawingObjFromLayerSpriteInfo(const ViewTypeEn
     const QString &tag = layerSpriteInfo.SpriteTag;
     DrawingUnitStruct drawingUnit;
 
+    if (!m_mapOfTagToSpriteInfo.contains(tag)) {
+        return drawingObj;
+    }
     const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(tag);
     drawingUnit.OX = spriteInfo.OX;
     drawingUnit.OY = spriteInfo.OY;
@@ -436,6 +439,9 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
         drawingObj.DrawingAvatarList.append(drawingAvatar);
     };
 
+    if (!m_mapOfTagToInstanceInfo.contains(actorInfo.Path)) {
+        return drawingObj;
+    }
     const InstanceInfoStruct &instanceInfo = m_mapOfTagToInstanceInfo.value(actorInfo.Path);
     if (instanceInfo.AspectInfo.Type == "sprite") {
         const QString &spriteTag = "actor/" + instanceInfo.AspectInfo.Path;

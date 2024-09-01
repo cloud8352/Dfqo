@@ -10,11 +10,17 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , m_model(nullptr)
+    , m_settingsDlg(nullptr)
+    , m_spriteTreeItem(nullptr)
+    , m_actorInstanceTreeItem(nullptr)
 {
     // pre data init
-    Model *model = new Model();
-    model->LoadItems();
+    m_model = new Model();
     // model->LoadMapBySimplePath("TestMap");
+
+    m_settingsDlg = new SettingsDlg(m_model, this);
+    m_settingsDlg->setVisible(false);
 
     // ui init
     QMenuBar *menuBar = this->menuBar();
@@ -33,7 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     QAction *mapSettingsAction = new QAction("地图设置", this);
     menuBar->addAction(mapSettingsAction);
-    menuBar->addAction("软件设置");
+    QAction *appSettingsAction = new QAction("软件设置", this);
+    menuBar->addAction(appSettingsAction);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -71,10 +78,10 @@ MainWindow::MainWindow(QWidget *parent)
     QStandardItemModel *itemTreeViewModel = new QStandardItemModel(this);
     itemTreeView->setModel(itemTreeViewModel);
 
-    QStandardItem *spriteTreeItem = new QStandardItem("精灵");
-    itemTreeViewModel->appendRow(spriteTreeItem);
-    QStandardItem *actorInstanceTreeItem = new QStandardItem("角色实例");
-    itemTreeViewModel->appendRow(actorInstanceTreeItem);
+    m_spriteTreeItem = new QStandardItem("精灵");
+    itemTreeViewModel->appendRow(m_spriteTreeItem);
+    m_actorInstanceTreeItem = new QStandardItem("角色实例");
+    itemTreeViewModel->appendRow(m_actorInstanceTreeItem);
 
     // right content
     contentLayout->addSpacing(3);
@@ -157,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
     mapTitleLayout->addStretch(1);
 
     rightContentLayout->addSpacing(5);
-    MapWidget *mapWidget = new MapWidget(this, model);
+    MapWidget *mapWidget = new MapWidget(this, m_model);
     // mapWidget->setStyleSheet("background-color:blue");
     rightContentLayout->addWidget(mapWidget, 1);
 
@@ -173,7 +180,9 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addSpacing(5);
 
     // init connections
-    connect(model, &Model::MapFilePathChanged, this, [this](const QString &filePath) {
+    connect(m_model, &Model::ItemsLoaded, this, &MainWindow::OnModelItemsLoaded);
+
+    connect(m_model, &Model::MapFilePathChanged, this, [this](const QString &filePath) {
         this->setWindowTitle("MapEditor [" + filePath + "]");
     });
 
@@ -182,7 +191,7 @@ MainWindow::MainWindow(QWidget *parent)
             mapWidget->NewMap();
         }
         if (action == openFileAction) {
-            model->OpenMap();
+            m_model->OpenMap();
         }
         if (action == saveFileAction) {
             mapWidget->SaveMap();
@@ -195,6 +204,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(menuBar, &QMenuBar::triggered, this, [=](QAction *action) {
         if (action == mapSettingsAction) {
             mapWidget->OpenMapSettingsDlg();
+        }
+        if (action == appSettingsAction && !m_settingsDlg->isVisible()) {
+            m_settingsDlg->Reset();
+            m_settingsDlg->setVisible(true);
         }
     });
 
@@ -271,9 +284,9 @@ MainWindow::MainWindow(QWidget *parent)
             return;
         }
         const QString &tag = item->text();
-        if (spriteTreeItem == item->parent()) {
+        if (m_spriteTreeItem == item->parent()) {
             mapWidget->SetPlacingSpriteInfoTag(tag);
-        } else if (actorInstanceTreeItem == item->parent()) {
+        } else if (m_actorInstanceTreeItem == item->parent()) {
             mapWidget->SetPlacingInstanceInfoTag(tag);
         }
 
@@ -281,12 +294,29 @@ MainWindow::MainWindow(QWidget *parent)
     });
 
     //// post data init
+    // load items
+    m_model->LoadItems();
+
     // select placing view type
     Q_EMIT placeAsBtnMenu->triggered(floorViewItemAction);
+}
 
+MainWindow::~MainWindow()
+{
+}
+
+void MainWindow::OnModelItemsLoaded()
+{
+    loadTreeItems();
+}
+
+void MainWindow::loadTreeItems()
+{
     //// load to tree view
     // map sprite tree
-    const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = model->GetMapOfTagToSpriteInfo();
+    int itemChildCount = m_spriteTreeItem->rowCount();
+    m_spriteTreeItem->removeRows(0, itemChildCount);
+    const QMap<QString, SpriteInfoStruct> &mapOfTagToSpriteInfo = m_model->GetMapOfTagToSpriteInfo();
     QMap<QString, SpriteInfoStruct>::const_iterator cIt = mapOfTagToSpriteInfo.constBegin();
     for (; cIt != mapOfTagToSpriteInfo.constEnd(); cIt++) {
         if (!cIt.key().startsWith("map")) {
@@ -298,11 +328,13 @@ MainWindow::MainWindow(QWidget *parent)
         item->setSizeHint(QSize(30, 50));
         item->setIcon(QIcon(cIt.value().ImgPath));
 
-        spriteTreeItem->appendRow(item);
+        m_spriteTreeItem->appendRow(item);
     }
 
     // instance tree
-    const QMap<QString, InstanceInfoStruct> &mapOfTagToInstanceInfo = model->GetMapOfTagToInstanceInfo();
+    itemChildCount = m_actorInstanceTreeItem->rowCount();
+    m_actorInstanceTreeItem->removeRows(0, itemChildCount);
+    const QMap<QString, InstanceInfoStruct> &mapOfTagToInstanceInfo = m_model->GetMapOfTagToInstanceInfo();
     QMap<QString, InstanceInfoStruct>::const_iterator cIt2 = mapOfTagToInstanceInfo.constBegin();
     for (; cIt2 != mapOfTagToInstanceInfo.constEnd(); cIt2++) {
         if (cIt2.key().startsWith("effect") and !cIt2.key().startsWith("effect/weather")) {
@@ -316,12 +348,8 @@ MainWindow::MainWindow(QWidget *parent)
         // item->setData("")
         item->setSizeHint(QSize(30, 50));
 
-        actorInstanceTreeItem->appendRow(item);
+        m_actorInstanceTreeItem->appendRow(item);
     }
 
-}
-
-MainWindow::~MainWindow()
-{
 }
 
