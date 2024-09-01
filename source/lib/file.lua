@@ -103,4 +103,10 @@ function _FILE.NewFileData(path, decoder)
     return love.filesystem.newFileData(_FILE.ReadFile(path), path, decoder)
 end
 
+---@param dirPath string
+---@return table<int, string> fileNameList
+function _FILE.ListDirectoryItems(dirPath)
+    return love.filesystem.getDirectoryItems(dirPath)
+end
+
 return _FILE

@@ -8,9 +8,6 @@
 
 local Common = require("UI.ui_common")
 
-local _TABLE = require("lib.table")
-local _RESOURCE = require("lib.resource")
-
 -- service
 local SkillSrv = require("actor.service.skill")
 local _CONFIG = require("config")
@@ -23,6 +20,11 @@ local InputSrv = require("actor.service.input")
 local InputLib = require("lib.input")
 local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
+
+local Table = require("lib.table")
+local _RESOURCE = require("lib.resource")
+local File = require("lib.file")
+local String = require("lib.string")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -104,6 +106,11 @@ function UiModel:Ctor()
     self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
     -- 复活音效
     self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
+
+    -- map simple path list
+    ---@type table<int, string>
+    self.mapSimplePathList = {}
+    self:loadMapSimplePathList()
 end
 
 --- public function
@@ -535,11 +542,8 @@ end
 
 ---@param mapID number
 function UiModel:SelectGameMap(mapID)
-    if 1 == mapID then
-        _MAP.Load(_MAP.Make("lorien"))
-    elseif 2 == mapID then
-        _MAP.Load(_MAP.Make("whitenight"))
-    end
+    local simplePath = self.mapSimplePathList[mapID]
+    _MAP.Load(simplePath)
 end
 
 ---@param type ActorAttributeType
@@ -712,12 +716,9 @@ function UiModel:SavePlayerData()
     end
 
     -- 4. 序列化数据
-    local Table = require("lib.table")
     local dataStr = Table.Deserialize(data)
 
     -- 5. 保存数据
-    local File = require("lib.file")
-
     local dirPath = "config/actor/instance/duelist/"
     local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
@@ -731,7 +732,6 @@ function UiModel:GetPlayerInstanceCfgSimplePath()
     local simplePath = "duelist/" .. PlayerCfgSavedFileName
     local pathPrefix = "config/actor/instance/"
     local path = pathPrefix .. simplePath .. ".cfg"
-    local File = require("lib.file")
 
     if not File.Exists(path) then
         simplePath = "duelist/swordman"
@@ -751,7 +751,6 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     end
 
     -- 1、获取设置文件路径
-    local File = require("lib.file")
     local settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.SettingsFileName
     if not File.Exists(settingsFilePath) then
         settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.DefaultSettingsFileName
@@ -766,12 +765,9 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     configData.code = _CONFIG.code
 
     -- 4. 序列化数据
-    local Table = require("lib.table")
     local dataStr = Table.Deserialize(configData)
 
     -- 5. 保存数据
-    local File = require("lib.file")
-
     local dirPath = _CONFIG.ConfigDirPath
     local fileName = _CONFIG.SettingsFileName
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
@@ -781,6 +777,10 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     end
 
     self:Signal_PlayerMountedSkillsChanged()
+end
+
+function UiModel:GetMapSimplePathList()
+    return self.mapSimplePathList
 end
 
 --- signals
@@ -1426,6 +1426,14 @@ function UiModel:unloadPlayerSkill(skillInfo)
         then
             SkillSrv.Set(self.player, tagTmp, nil)
         end
+    end
+end
+
+function UiModel:loadMapSimplePathList()
+    local fileNameList = File.ListDirectoryItems("config/map/instance")
+    for _, fileName in pairs(fileNameList) do
+        local fileNameWithoutSuffix = String.RmExtSuffix(fileName)
+        table.insert(self.mapSimplePathList, fileNameWithoutSuffix)
     end
 end
 

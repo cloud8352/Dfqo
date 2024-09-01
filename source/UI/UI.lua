@@ -210,9 +210,10 @@ function UI.Init()
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.mapSelectComboBox)
 
-    UI.mapSelectComboBox:AppendItemWithText("格兰")
-    UI.mapSelectComboBox:AppendItemWithText("极昼")
-    UI.mapSelectComboBox:SetCurrentIndex(2)
+    -- load Map Simple Path List
+    for _, simplePath in pairs(UI.model:GetMapSimplePathList()) do
+        UI.mapSelectComboBox:AppendItemWithText(simplePath)
+    end
 
     -- article dock
     UI.articleDockFrame = ArticleDockFrame.New(bottomWindow, UI.model)

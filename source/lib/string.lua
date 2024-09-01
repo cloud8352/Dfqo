@@ -107,6 +107,13 @@ function _STRING.ToFileName(str)
 	return re
 end
 
+---@param str string
+---@return string
+function _STRING.RmExtSuffix(str)
+    local re = str:gsub("%.[^.]+$", "")
+    return re
+end
+
 ---@param path string
 ---@param directory string
 ---@param isDirectory boolean @default=false
