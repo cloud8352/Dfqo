@@ -220,7 +220,9 @@ local function _Load(path)
                 values.bgm.path = data.info.bgm
             end
 
-            _MUSIC.Play(musicData)
+            if (musicData) then
+                _MUSIC.Play(musicData)
+            end
         end
 
         if (values.bgs.path ~= data.info.bgs) then
@@ -230,7 +232,7 @@ local function _Load(path)
 
             values.bgs.path = data.info.bgs
 
-            if (values.bgs.path) then
+            if (values.bgs.path and values.bgs.path ~= "") then
                 local fullBgsPath = "asset/sound/map/" .. values.bgs.path .. ".ogg"
                 if false == _FILE.Exists(fullBgsPath) then
                     fullBgsPath = "asset/sound/map/" .. values.bgs.path .. ".mp3"
@@ -528,7 +530,7 @@ function _MAP.Make(path, entry)
         true)
 
     local bossProcess = 0
-    if ( roomCountNeedToPassToGetToBossRoom == 1 ) then
+    if (roomCountNeedToPassToGetToBossRoom == 1) then
         bossProcess = 1
     end
     require("map.assigner." .. data.info.theme)(config, data, _MAP.matrixGroup, entry, bossProcess)

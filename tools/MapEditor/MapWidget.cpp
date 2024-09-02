@@ -789,7 +789,7 @@ uint MapWidget::createId()
         id = m_canUsedIdList.first();
         m_canUsedIdList.pop_front();
     } else {
-        id = m_currentMaxId++;
+        id = ++m_currentMaxId;
     }
 
     return id;
@@ -918,15 +918,17 @@ MapInfoStruct MapWidget::toMapInfo()
 
         layerSpriteInfoListPtr->clear();
         QList<DrawingObjStruct> &drawingObjList = *iter;
-        for (DrawingObjStruct &drawingObj : drawingObjList) {
-            layerSpriteInfoListPtr->append(drawingObj.LayerSpriteInfo);
+        for (const DrawingObjStruct &drawingObj : drawingObjList) {
+            MapLayerSpriteInfoStruct layerSpriteInfo = drawingObj.LayerSpriteInfo;
+            layerSpriteInfo.Id = drawingObj.Id;
+            layerSpriteInfoListPtr->append(layerSpriteInfo);
         }
     }
 
     // map actor info
     mapInfo.ActorInfoList.clear();
     QList<DrawingObjStruct> &ActorDrawingObjList = m_mapOfTypeToDrawingObjList[Actor];
-    for (DrawingObjStruct &drawingObj : ActorDrawingObjList) {
+    for (const DrawingObjStruct &drawingObj : ActorDrawingObjList) {
         mapInfo.ActorInfoList.append(drawingObj.MapActorInfo);
     }
 

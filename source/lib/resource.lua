@@ -88,6 +88,10 @@ end
 ---@param path string
 ---@return Lib.RESOURCE.MusicData
 function _RESOURCE.NewMusic(path)
+    if (path == nil or path == "") then
+        return nil
+    end
+
     ---@class Lib.RESOURCE.MusicData
     ---@field source Source
     ---@field name string
