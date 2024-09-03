@@ -79,10 +79,11 @@ end
 function _Background:Update(dt)
     local cameraVisibleAreaW, cameraVisibleAreaH = self.map.camera:GetVisibleArea()
     local cameraXPos, cameraYPos = self.map.camera:GetPosition()
+    local xShift = -self.map.camera:GetShift() * self.rate
 
     self.needDrawList = {}
     for _, info in pairs(self.list) do
-        local x = info.X
+        local x = info.X + xShift
         local y = info.Y
         local w = info.W
         local h = info.H
