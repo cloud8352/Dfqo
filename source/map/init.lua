@@ -495,7 +495,8 @@ function _MAP.Make(path, entry)
             isTown = config.info.isTown or false,
             horizon = config.floor.horizon, -- 背景与地图的分界y坐标
             bgm = pathGate.isBoss and config.info.bossBgm or config.info.bgm,
-            bgs = config.info.bgs
+            bgs = config.info.bgs,
+            NearBgTranslateRate = config.info.NearBgTranslateRate
         },
         init = {},
         scope = {

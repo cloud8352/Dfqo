@@ -91,11 +91,11 @@ function ComboBox:Update(dt)
     if self.isCurrentItemUpdated then
         local currentText = ""
         if nil == self.currentItem then
-            local itemList = self.dropDownListView:GetItemList()
-            if 0 < #itemList then
-                self.currentItem = itemList[1]
-                currentText = self.currentItem:GetText()
-            end
+            -- local itemList = self.dropDownListView:GetItemList()
+            -- if 0 < #itemList then
+            --     self.currentItem = itemList[1]
+            --     currentText = self.currentItem:GetText()
+            -- end
         else
             currentText = self.currentItem:GetText()
         end
