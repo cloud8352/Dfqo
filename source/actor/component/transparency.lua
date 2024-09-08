@@ -22,7 +22,7 @@ function _Transparency:Ctor(data)
     end
 
     self.y = self.y or 0
-    self.rate = self.rate or 0.2
+    self.rate = self.rate or 0.9
     self.motionTime = self.motionTime or 500
     self.isTransparent = false
 end
