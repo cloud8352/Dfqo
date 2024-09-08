@@ -57,6 +57,7 @@ function _FACTORY.New(data, param)
     _count = _count + 1
 
     ---@class Actor.Entity
+    ---@field public Data Actor.RESMGR.InstanceData
     ---@field public aspect Actor.Component.Aspect
     ---@field public attributes Actor.Component.Attributes
     ---@field public identity Actor.Component.Identity
@@ -109,6 +110,7 @@ function _FACTORY.New(data, param)
         _ECSMGR.AddComponent(entity, "attacker", _Attacker.New())
     end
 
+    entity.Data = data
     _pool[path] = entity
 
     return entity

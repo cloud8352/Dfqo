@@ -15,12 +15,17 @@ local _INPUT = require("actor.service.input")
 local _MOTION = require("actor.service.motion")
 local _EQUIPMENT = require("actor.service.equipment")
 local _ATTRIBUTE = require("actor.service.attribute")
+local _INPUT = require("actor.service.input")
 
 local _Easemove = require("actor.gear.easemove")
 local _Attack = require("actor.gear.attack")
 local _BattleJudge = require("actor.ai.battleJudge")
+local Timer = require("util.gear.timer")
 
 local _Base = require("actor.state.base")
+
+-- const
+local SkillKeyPressCheckIntervalMs = 150
 
 ---@class Actor.State.Duelist.Swordman.NormalAttack:Actor.State
 ---@field protected _process int
@@ -45,6 +50,8 @@ function _NormalAttack:Ctor(data, ...)
     self._ticks = data.ticks
     self._hitstopMap = data.hitstop
     self._coolDown = data.coolDown
+
+    self.skillKeyPressCheckTimer = Timer.New()
 end
 
 function _NormalAttack:Init(entity)
@@ -87,6 +94,7 @@ function _NormalAttack:NormalUpdate(dt, rate)
     local frame = main:GetFrame()
     local tick = main:GetTick()
 
+    self.skillKeyPressCheckTimer:Update(dt)
     self._easemove:Update(rate)
 
     if (self:HasTick()) then
@@ -114,6 +122,14 @@ function _NormalAttack:NormalUpdate(dt, rate)
         end
     end
 
+    if _INPUT.IsPressed(self._entity.input, self._skill:GetKey()) then
+        self._hasPressed = true
+        self.skillKeyPressCheckTimer:Enter(SkillKeyPressCheckIntervalMs)
+    end
+    if self._hasPressed and not self.skillKeyPressCheckTimer.isRunning then
+        self._hasPressed = false
+    end
+
     if (not isEnd and self._hasPressed and frame > keyFrame) then
         self:SetProcess(self._process + 1)
     elseif (main:TickEnd()) then
@@ -133,8 +149,6 @@ function _NormalAttack:Enter(lateState, skill)
 
         self._easemove:Exit()
         self:SetProcess(1)
-    else
-        self._hasPressed = true
     end
 end
 
@@ -149,7 +163,6 @@ end
 ---@param process int
 function _NormalAttack:SetProcess(process)
     self._process = process
-    self._hasPressed = false
     self._skill:Reset()
     _MOTION.TurnDirection(self._entity.transform, self._entity.input)
 

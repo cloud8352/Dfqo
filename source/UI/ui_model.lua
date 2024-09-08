@@ -682,7 +682,7 @@ end
 
 function UiModel:SavePlayerData()
     -- 1. 读取原始实例配置
-    local playerInstanceCfgSimplePath = self:GetPlayerInstanceCfgSimplePath()
+    local playerInstanceCfgSimplePath = self.player.Data.path
     local data, path = _RESOURCE.ReadConfig(playerInstanceCfgSimplePath, "config/actor/instance/%s.cfg", nil)
     if data == nil then
         print("UiModel:SavePlayerData()", "origin instance cfg read failed!")

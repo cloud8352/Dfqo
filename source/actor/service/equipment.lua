@@ -19,7 +19,11 @@ function _EQUIPMENT.Set(entity, key, data)
     local edata
 
     if (not data and key == "weapon") then
-        data = entity.equipments.container:Get("defaultWeapon"):GetData()
+        ---@type Actor.Equipment
+        local defaultWeaponEqu = entity.equipments.container:Get("defaultWeapon")
+        if defaultWeaponEqu then
+            data = defaultWeaponEqu:GetData()
+        end
     end
 
     if (equ) then
