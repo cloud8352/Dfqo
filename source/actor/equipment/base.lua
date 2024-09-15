@@ -26,24 +26,7 @@ function _Equipment:Ctor(entity, key, data)
     self._attributeMarks = {}
     self._data = data
 
-    if (data.add) then
-        for k, v in pairs(data.add) do
-            local mark = _ATTRIBUTE.Add(entity.attributes, "+", k, v)
-            table.insert(self._attributeMarks, mark)
-        end
-    end
-    
-    if (data.passMap) then
-        for k, v in pairs(data.passMap) do
-            _ASPECT.SetAvatarPass(entity.aspect, k, v)
-        end
-    end
-
-    if (data.avatar) then
-        for k, v in pairs(data.avatar) do
-            _ASPECT.SetPartAvatar(entity.aspect, k, v)
-        end
-    end
+    self:LoadFromData()
 end
 
 function _Equipment:Exit()
@@ -91,6 +74,31 @@ end
 
 function _Equipment:Break()
     _EQUIPMENT.Del(self._entity, self._key)
+end
+
+function _Equipment:LoadFromData()
+    local data = self._data
+    local entity = self._entity
+    self:Exit()
+
+    if (data.add) then
+        for k, v in pairs(data.add) do
+            local mark = _ATTRIBUTE.Add(entity.attributes, "+", k, v)
+            table.insert(self._attributeMarks, mark)
+        end
+    end
+    
+    if (data.passMap) then
+        for k, v in pairs(data.passMap) do
+            _ASPECT.SetAvatarPass(entity.aspect, k, v)
+        end
+    end
+
+    if (data.avatar) then
+        for k, v in pairs(data.avatar) do
+            _ASPECT.SetPartAvatar(entity.aspect, k, v)
+        end
+    end
 end
 
 return _Equipment

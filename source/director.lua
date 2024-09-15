@@ -97,7 +97,7 @@ end
 
 function _DIRECTOR.StartGame()
     local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
-    -- playerInstanceCfgSimplePath = "duelist/Fighter"
+    playerInstanceCfgSimplePath = "duelist/Fighter"
     local player = _FACTORY.New(playerInstanceCfgSimplePath, {
         x = 700,
         y = 500,

@@ -18,18 +18,18 @@ function _EQUIPMENT.Set(entity, key, data)
     local equ = container:Get(key) ---@type Actor.Equipment
     local edata
 
+    if (equ) then
+        edata = equ:GetData()
+        equ:Exit()
+        container:Del(key)
+    end
+
     if (not data and key == "weapon") then
         ---@type Actor.Equipment
         local defaultWeaponEqu = entity.equipments.container:Get("defaultWeapon")
         if defaultWeaponEqu then
             data = defaultWeaponEqu:GetData()
         end
-    end
-
-    if (equ) then
-        edata = equ:GetData()
-        equ:Exit()
-        container:Del(key)
     end
 
     if (data) then
@@ -39,6 +39,13 @@ function _EQUIPMENT.Set(entity, key, data)
         -- 隐藏默认武器装扮
         if "defaultWeapon" == key then
             equ:Exit()
+
+            -- 默认武器创建后，重新加载武器
+            ---@type Actor.Equipment
+            local weaponEqu = container:Get("weapon")
+            if weaponEqu then
+                weaponEqu:LoadFromData()
+            end
         end
     end
 
