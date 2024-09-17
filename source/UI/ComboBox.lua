@@ -64,8 +64,13 @@ function ComboBox:Ctor(parentWindow)
     self.dropDownBtnBottomMargin = 10
 
     -- 下拉窗口
-    self.dropDownListView = ListView.New(self.parentWindow)
+    self.dropDownListViewWindow = Window.New()
+    self.dropDownListViewWindow:SetIsWindowStayOnTopHint(true)
+    self.dropDownListViewWindow:SetVisible(false)
+
+    self.dropDownListView = ListView.New(self.dropDownListViewWindow)
     self.dropDownListView:SetVisible(false)
+    WindowManager.AppendWindowWidget(self.dropDownListViewWindow, self.dropDownListView)
 
     ---@type StandardItem
     self.currentItem = nil
@@ -84,8 +89,6 @@ function ComboBox:Update(dt)
     self.textLabel:Update(dt)
 
     self.dropDownBtn:Update(dt)
-
-    self.dropDownListView:Update(dt)
 
     -- 检查是否需要更新当前显示项
     if self.isCurrentItemUpdated then
@@ -115,7 +118,6 @@ function ComboBox:Draw()
     self.frameSprite:Draw()
     self.textLabel:Draw()
     self.dropDownBtn:Draw()
-    self.dropDownListView:Draw()
 end
 
 function ComboBox:MouseEvent()
@@ -137,6 +139,7 @@ function ComboBox:MouseEvent()
 
         -- 如果点击了框架，则显示或隐藏下拉列表
         self.dropDownListView:SetVisible(not self.dropDownListView:IsVisible())
+        self.dropDownListViewWindow:SetVisible(self.dropDownListView:IsVisible())
         break
     end
 end
@@ -170,6 +173,7 @@ function ComboBox:SetPosition(x, y)
     self.dropDownBtn:SetPosition(x + self.width - self.dropDownBtnRightMargin - self.dropDownBtn:GetWidth(),
         y + self.dropDownBtnTopMargin)
     self.dropDownListView:SetPosition(x, y + self.height - 5)
+    self.dropDownListViewWindow:SetPosition(self.dropDownListView:GetPosition())
 end
 
 ---@param width int
@@ -188,6 +192,7 @@ function ComboBox:SetSize(width, height)
         self.height - self.dropDownBtnLeftMargin - self.dropDownBtnRightMargin)
 
     self.dropDownListView:SetSize(width, 300)
+    self.dropDownListViewWindow:SetSize(self.dropDownListView:GetSize())
 end
 
 function ComboBox:SetEnable(enable)
@@ -202,14 +207,19 @@ function ComboBox:SetVisible(isVisible)
 
     self.dropDownBtn:SetVisible(isVisible)
     self.dropDownListView:SetVisible(isVisible)
+    self.dropDownListViewWindow:SetVisible(isVisible)
 end
 
 function ComboBox:InsertItemWithText(i, text)
     self.dropDownListView:InsertItemWithText(i, text)
+    -- 更新下拉框窗口大小
+    self.dropDownListViewWindow:SetSize(self.dropDownListView:GetSize())
 end
 
 function ComboBox:AppendItemWithText(text)
     self.dropDownListView:AppendItemWithText(text)
+    -- 更新下拉框窗口大小
+    self.dropDownListViewWindow:SetSize(self.dropDownListView:GetSize())
 end
 
 function ComboBox:SetCurrentIndex(index)
@@ -217,9 +227,17 @@ function ComboBox:SetCurrentIndex(index)
     self:SetCurrentItem(item)
 end
 
+function ComboBox:GetCurrentIndex()
+    if self.currentItem then
+        return self.currentItem:GetIndex()
+    end
+    return 0
+end
+
 ---@param item StandardItem
 function ComboBox:SetCurrentItem(item)
     self.dropDownListView:SetVisible(false)
+    self.dropDownListViewWindow:SetVisible(false)
     self.currentItem = item
     self.isCurrentItemUpdated = true
 

@@ -197,6 +197,12 @@ function SkillMountDialog:SetNeedMountingSkillInfo(info)
     self:SetTitleBarIconPath(info.iconPath)
 end
 
+--- 设置窗口为普通控件，脱离窗管管理
+---@param is boolean
+function SkillMountDialog:SetIsNormalWidget(is)
+    Window.SetIsNormalWidget(self, is)
+end
+
 --- slots
 
 ---@param x int

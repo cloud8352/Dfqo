@@ -9,9 +9,7 @@
 local WindowManager = require("UI.WindowManager")
 local PushButton = require("UI.PushButton")
 local Window = require("UI.Window")
-local ScrollBar = require("UI.ScrollBar")
-local ScrollArea = require("UI.ScrollArea")
-local ListView = require("UI.ListView")
+local StartGameWindow = require("UI.StartGame.StartGameWindow")
 local Label = require("UI.Label")
 local ComboBox = require("UI.ComboBox")
 local SkillDockViewFrame = require("UI.SkillDockViewFrame")
@@ -38,24 +36,34 @@ local Util = require("util.Util")
 local _TIME = require("lib.time")
 local System = require("lib.system")
 local Keyboard = require("lib.keyboard")
+local ResourceLib = require("lib.resource")
+local MusicLib = require("lib.music")
+local TableLib = require("lib.table")
 
 local IsShowFps = true
 
 ---@class UI
 local UI = {}
 
-function UI.Init()
+---@param director DIRECTOR
+function UI.Init(director)
     WindowManager.Init()
 
     -- 统一显示对象
     UI.totalSprite = _Sprite.New()
     UI.totalSpriteCanvas = _Graphics.NewCanvas(Util.GetWindowWidth(), Util.GetWindowHeight())
+
+    UI.gameState = Common.GameState.ActorSelect
     -- model
-    UI.model = UiModel.New()
+    UI.model = UiModel.New(director)
 
     -- 创建悬浮提示窗口
     local toolTipWindow = Window.New()
     toolTipWindow:SetIsTipToolWindow(true)
+
+    ---@type StartGameWindow
+    UI.startGameWindow = StartGameWindow.New(UI.model)
+    UI.appendWindowWidget(UI.startGameWindow, UI.startGameWindow)
 
     -- 角色概况
     local bottomWindow = Window.New()
@@ -203,7 +211,7 @@ function UI.Init()
         UI.partnerHpRectBarList[i] = hpRectBar
     end
 
-    -- comboBox test
+    -- mapSelectComboBox
     UI.mapSelectComboBox = ComboBox.New(bottomWindow)
     UI.mapSelectComboBox:SetSize(200, 45)
     UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 210, 10)
@@ -277,6 +285,8 @@ function UI.Init()
     UI.appendWindowWidget(UI.playerRebornDialog, UI.playerRebornDialog)
 
     ---- connect
+    -- StartGameWindow
+    UI.startGameWindow:MocConnectSignal(StartGameWindow.Signal_GameStarted, UI)
     -- characterTopBtn
     UI.characterTopBtn:MocConnectSignal(UI.characterTopBtn.Signal_BtnClicked, UI)
     -- skillManagementBtn
@@ -306,16 +316,10 @@ function UI.Init()
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
 
     --- post init
+    UI.updateWindowVisibilityByGameState()
+
     -- 首次显示前，排序所有窗口
     WindowManager.SortWindowList()
-
-    if (System.IsMobile()) then
-        UI.skillDockViewFrame:SetVisible(false)
-        UI.articleDockFrame:SetVisible(false)
-    else
-        UI.dirKeyGroupWidget:SetVisible(false)
-        UI.itemKeyGroup:SetVisible(false)
-    end
 end
 
 function UI.Update(dt)
@@ -325,25 +329,17 @@ function UI.Update(dt)
         UI.fpsLabel:SetText("fps: " .. tostring(_TIME.GetFPS()))
     end
 
-    UI.hpRectBar:SetHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.Hp))
-    UI.hpRectBar:SetMaxHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp))
-
-    local hitEnemyHp = UI.model:GetHitEnemyHp()
-    if hitEnemyHp > 0 then
-        UI.hitEnemyHpRectBar:SetHp(hitEnemyHp)
-    else
-        UI.hitEnemyHpRectBar:SetVisible(false)
-    end
-
-    -- partner
-    for i, rectBar in pairs(UI.partnerHpRectBarList) do
-        rectBar:SetHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.Hp))
-    end
+    UI.updateAllHpRectBar()
 
     -- 更新所有控件
     local windowWidgetList = WindowManager.GetWindowWidgetList()
+    -- 使用浅拷贝的原因：在窗口更新的过程中，可能会重新排序窗管的窗口控件列表（windowWidgetList），
+    -- 此时使用窗管的窗口控件列表进行更新，会使更新紊乱（更新过的，排序到列表后面，造成重复更新）
+    windowWidgetList = TableLib.LightClone(windowWidgetList)
     for _, windowWidget in pairs(windowWidgetList) do
-        windowWidget.Widget:Update(dt)
+        if windowWidget.Window:IsVisible() then
+            windowWidget.Widget:Update(dt)
+        end
     end
 
     -- UI.mergeTotalSprite()
@@ -353,7 +349,9 @@ function UI.Draw()
     -- UI.totalSprite:Draw()
     local windowWidgetList = WindowManager.GetWindowWidgetList()
     for _, windowWidget in pairs(windowWidgetList) do
-        windowWidget.Widget:Draw()
+        if windowWidget.Window:IsVisible() then
+            windowWidget.Widget:Draw()
+        end
     end
 end
 
@@ -365,6 +363,15 @@ function UI.GetPlayerInstanceCfgSimplePath()
 end
 
 --- slots
+
+---@param my Obj 对象自身，这里指UI自身
+---@param sender Obj 被电击的按钮对象
+function UI.Slot_GameStarted(my, sender)
+    if UI.startGameWindow == sender then
+        UI.gameState = Common.GameState.Started
+        UI.updateWindowVisibilityByGameState()
+    end
+end
 
 ---@param my Obj 对象自身，这里指UI自身
 ---@param sender PushButton 被电击的按钮对象
@@ -647,6 +654,49 @@ function UI.keyboardEvent()
             UI.model:IsPressedPlayerKey(Common.InputKeyValueStruct.NormalAttack)
         ) then
         UI.model:RebornPlayer()
+    end
+end
+
+function UI.updateWindowVisibilityByGameState()
+    UI.startGameWindow:SetVisible(false)
+    UI.bottomWindow:SetVisible(false)
+    UI.characterInfoWindow:SetVisible(false)
+    UI.skillManagementWindow:SetVisible(false)
+
+    if UI.gameState == Common.GameState.ActorSelect then
+        UI.startGameWindow:SetVisible(true)
+    end
+    if UI.gameState == Common.GameState.Started then
+        UI.bottomWindow:SetVisible(true)
+
+        if (System.IsMobile()) then
+            UI.skillDockViewFrame:SetVisible(false)
+            UI.articleDockFrame:SetVisible(false)
+        else
+            UI.dirKeyGroupWidget:SetVisible(false)
+            UI.itemKeyGroup:SetVisible(false)
+        end
+    end
+end
+
+function UI.updateAllHpRectBar()
+    if nil == UI.model:GetPlayer() then
+        return
+    end
+
+    UI.hpRectBar:SetHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.Hp))
+    UI.hpRectBar:SetMaxHp(UI.model:GetPlayerAttribute(Common.ActorAttributeType.MaxHp))
+
+    local hitEnemyHp = UI.model:GetHitEnemyHp()
+    if hitEnemyHp > 0 then
+        UI.hitEnemyHpRectBar:SetHp(hitEnemyHp)
+    else
+        UI.hitEnemyHpRectBar:SetVisible(false)
+    end
+
+    -- partner
+    for i, rectBar in pairs(UI.partnerHpRectBarList) do
+        rectBar:SetHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.Hp))
     end
 end
 

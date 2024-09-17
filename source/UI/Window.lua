@@ -35,7 +35,7 @@ function Window:Ctor()
     WindowManager.AppendToWindowList(self)
 
     self.isTipToolWindow = false
-    self.isWindowStaysOnTopHint = false
+    self.isWindowStayOnTopHint = false
     self.isInMoving = false
 
     -- 背景图片数据
@@ -149,6 +149,8 @@ function Window:SetPosition(x, y)
     self.titleBar:SetPosition(x, y)
 end
 
+---@param w int
+---@param h int
 function Window:SetSize(w, h)
     local width = math.floor(w)
     local height = math.floor(h)
@@ -266,7 +268,7 @@ end
 ---@return boolean
 function Window:CheckPoint(x, y)
     if self.isTipToolWindow and
-        self.isWindowStaysOnTopHint == false
+        self.isWindowStayOnTopHint == false
     then
         return false
     end
@@ -318,12 +320,12 @@ end
 
 ---@param is boolean
 function Window:SetIsWindowStayOnTopHint(is)
-    self.isWindowStaysOnTopHint = is
+    self.isWindowStayOnTopHint = is
 end
 
 ---@return boolean isWindowStayOnTopHint
 function Window:IsWindowStayOnTopHint()
-    return self.isWindowStaysOnTopHint
+    return self.isWindowStayOnTopHint
 end
 
 ---@param widget Widget
@@ -349,6 +351,21 @@ end
 ---@param path string
 function Window:SetTitleBarIconPath(path)
     self.titleBar:SetIconSpriteDataPath(path)
+end
+
+--- 设置窗口为普通控件，脱离窗管管理
+---@param is boolean
+function Window:SetIsNormalWidget(is)
+    if is then
+        WindowManager.RemoveFromWindowList(self)
+        self.windowLayerIndex = -1
+    else
+        local maxLayerIndex = WindowManager.GetMaxLayerIndex()
+        self.windowLayerIndex = maxLayerIndex
+        WindowManager.AppendToWindowList(self)
+    end
+
+    WindowManager.SortWindowList()
 end
 
 --- slots

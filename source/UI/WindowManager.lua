@@ -104,6 +104,10 @@ function WindowManager.IsMouseCapturedAboveLayer(layerIndex)
     end
 
     for _, window in pairs(WindowManager.windowList) do
+        if window:IsVisible() == false then
+            goto continue
+        end
+
         local layerIndexTmp = window:GetWindowLayerIndex()
         if layerIndex >= layerIndexTmp then
             goto continue
@@ -147,6 +151,9 @@ function WindowManager.GetWindowCapturedTouchIdList(w)
         local whetherPointIsCapturedByUpperWindow = false
         local point = Touch.GetPoint(id)
         for _, window in pairs(WindowManager.windowList) do
+            if window:IsVisible() == false then
+                goto continue
+            end
             if nil == window.GetWindowLayerIndex then
                 goto continue
             end
@@ -181,37 +188,26 @@ function WindowManager.SetWindowToTopLayer(window)
     local topHintWindowList = {}
     ---@type table<number, Window>
     local toolTipWindowList = {}
-    while (#WindowManager.windowList > 0) do
-        local bottomLayerWindowIndex = 1
-        ---@type Window
-        local bottomLayerWindow = WindowManager.windowList[1]
+    for i, windowTmp in pairs(WindowManager.windowList) do
         -- 拆分出 置顶窗口
-        if bottomLayerWindow:IsWindowStayOnTopHint() then
-            table.insert(topHintWindowList, bottomLayerWindow)
-            table.remove(WindowManager.windowList, bottomLayerWindowIndex)
+        if windowTmp:IsWindowStayOnTopHint() then
+            table.insert(topHintWindowList, windowTmp)
             goto dispatchLoopContinue
         end
         -- 拆分出 提示工具窗口
-        if bottomLayerWindow:IsTipToolWindow() then
-            table.insert(toolTipWindowList, bottomLayerWindow)
-            table.remove(WindowManager.windowList, bottomLayerWindowIndex)
+        if windowTmp:IsTipToolWindow() then
+            table.insert(toolTipWindowList, windowTmp)
             goto dispatchLoopContinue
         end
 
-        for i, windowTmp in pairs(WindowManager.windowList) do
-            if bottomLayerWindow:GetWindowLayerIndex() > windowTmp:GetWindowLayerIndex() then
-                bottomLayerWindowIndex = i
-                bottomLayerWindow = windowTmp
-            end
-        end
-
-        table.insert(bottomToTopWindowList, bottomLayerWindow)
-        table.remove(WindowManager.windowList, bottomLayerWindowIndex)
+        -- 拆分出 普通窗口
+        table.insert(bottomToTopWindowList, windowTmp)
 
         ::dispatchLoopContinue::
     end
 
     -- 重新设置层索引，使入参window的索引为最大值
+    WindowManager.windowList = {}
     local layerIndex = 1
     for i, windowTmp in pairs(bottomToTopWindowList) do
         if windowTmp ~= window then
@@ -222,7 +218,9 @@ function WindowManager.SetWindowToTopLayer(window)
         end
     end
 
-    if window ~= nil then
+    if window ~= nil and window:IsWindowStayOnTopHint() == false and
+        window:IsTipToolWindow() == false
+    then
         window:SetWindowLayerIndex(layerIndex)
         table.insert(WindowManager.windowList, window)
         layerIndex = layerIndex + 1

@@ -297,4 +297,11 @@ local InputKeyValueStruct = {
 }
 UiCommon.InputKeyValueStruct = InputKeyValueStruct
 
+---@enum GameState
+local GameState = {
+    ActorSelect = 1,
+    Started = 2,
+}
+UiCommon.GameState = GameState
+
 return UiCommon

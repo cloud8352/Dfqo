@@ -24,7 +24,7 @@ local playerInstanceCfgSimplePath = ""
 
 function _DIRECTOR.Init()
     -- ui
-    UI.Init()
+    UI.Init(_DIRECTOR)
 
     ---@type Graphics.Curtain
     _curtain = _Curtain.New()
@@ -32,7 +32,7 @@ function _DIRECTOR.Init()
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
 
-    _DIRECTOR.StartGame()
+    -- _DIRECTOR.StartGame()
 end
 
 function _DIRECTOR.Update(dt)
@@ -95,10 +95,11 @@ function _DIRECTOR.IsTweening()
     return _speedTweener.isRunning
 end
 
-function _DIRECTOR.StartGame()
-    local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
-    playerInstanceCfgSimplePath = "duelist/Fighter"
-    local player = _FACTORY.New(playerInstanceCfgSimplePath, {
+---@param actorSimplePath string
+function _DIRECTOR.StartGame(actorSimplePath)
+    -- local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
+    -- playerInstanceCfgSimplePath = "duelist/Fighter"
+    local player = _FACTORY.New(actorSimplePath, {
         x = 700,
         y = 500,
         direction = 1,
@@ -125,7 +126,7 @@ function _DIRECTOR.StartGame()
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
     -- 加载地图
     -- _MAP.Load(_MAP.Make("whitenight")) -- lorien, whitenight
-    _MAP.Load("Lorien")
+    _MAP.Load("WestCoast")
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
 end

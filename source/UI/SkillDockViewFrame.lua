@@ -492,7 +492,13 @@ function SkillDockViewFrame:reloadSkillsViewData()
     for tag, item in pairs(self.mapOfTagToSkillViewItem) do
         local actorSkillObj = self.model:GetPlayerActorSkillObj(tag)
         if actorSkillObj then
-            item:SetIconSpriteDataPath("icon/skill/" .. actorSkillObj:GetData().icon)
+            ---@type Actor.RESMGR.SkillData
+            local skillData = actorSkillObj:GetData()
+            local iconPath = "icon/skill/NormalAttack"
+            if skillData.icon then
+                iconPath = "icon/skill/" .. skillData.icon
+            end
+            item:SetIconSpriteDataPath(iconPath)
         else
             item:SetIconSpriteDataPath("")
         end

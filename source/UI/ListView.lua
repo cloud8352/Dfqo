@@ -123,7 +123,7 @@ function ListView:MouseEvent()
         end
 
         -- 是否点击
-        if _Mouse.IsPressed(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
+        if _Mouse.IsReleased(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
             self:SetCurrentItem(hoveringItem)
             break
         end
@@ -164,7 +164,15 @@ function ListView:SetPosition(x, y)
     self:updateAllItemsPosition()
 end
 
+---@return int, int x, y
+function ListView:GetPosition()
+    return ScrollArea.GetPosition(self)
+end
+
 function ListView:SetSize(width, height)
+    if (width <= 0 or height <= 0) then
+        return
+    end
     ScrollArea.SetSize(self, width, height)
 
     local displayContentWidth = ScrollArea.GetDisplayContentWidth(self)

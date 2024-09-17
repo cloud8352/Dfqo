@@ -54,7 +54,11 @@ end
 ---@param path string
 ---@return Image
 function _RESOURCE.NewImage(path)
-    local fileData = _FILE.NewFileData("asset/image/" .. path .. ".png")
+    local sourceFullPath = "asset/image/" .. path .. ".png"
+    if false == _FILE.Exists(sourceFullPath) then
+        sourceFullPath = "asset/image/" .. path .. ".jpg"
+    end
+    local fileData = _FILE.NewFileData(sourceFullPath)
     local imageData = love.image.newImageData(fileData)
 
     return love.graphics.newImage(imageData)

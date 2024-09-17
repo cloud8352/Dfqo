@@ -22,7 +22,8 @@ local _tweener = _Tweener.New({process = 1}, _target, _, function (tweener)
 end)
 
 ---@param data Lib.RESOURCE.MusicData
-function _MUSIC.Play(data)
+---@param immediately boolean
+function _MUSIC.Play(data, immediately)
     if (data and ((_data and _data.path == data.path))) then
         return
     end
@@ -30,7 +31,11 @@ function _MUSIC.Play(data)
     _data = data
     _nextSource = data and data.source
     _target.process = 0
-    _tweener:Enter(_MUSIC.time)
+    local delayTimeMs = _MUSIC.time
+    if immediately then
+        delayTimeMs = 0
+    end
+    _tweener:Enter(delayTimeMs)
 
     _command = "play"
 end

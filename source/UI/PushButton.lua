@@ -337,6 +337,11 @@ function PushButton:EnableClickedSound(enable)
     self.whetherEnableClickedSound = enable
 end
 
+---@param path string
+function PushButton:SetClickedSoundSourceByPath(path)
+    self.clickedSoundSource = _RESOURCE.NewSource(path)
+end
+
 --- 连接信号
 ---@param signal function
 ---@param obj Object

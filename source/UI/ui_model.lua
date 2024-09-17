@@ -36,10 +36,13 @@ local DotAreaBulletInstanceData = ResMgr.GetInstanceData("bullet/swordman/dotare
 local PlayerCfgSavedFileName = "player"
 local PlayerCfgSavedFileSuffix = ".cfg"
 
-function UiModel:Ctor()
+---@param director DIRECTOR
+function UiModel:Ctor(director)
     --- 信号到接收者的映射表
     ---@type table<function, table<number, Object>>
     self.mapOfSignalToReceiverList = {}
+
+    self.director = director
 
     ---@type Actor.Entity
     self.player = nil
@@ -106,6 +109,11 @@ function UiModel:Ctor()
     self.changedArticlePosSoundSource = _RESOURCE.NewSource("asset/sound/ui/changed_article_pos.ogg")
     -- 复活音效
     self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
+
+    -- actor simple path list
+    ---@type table<int, string>
+    self.actorSimplePathList = {}
+    self:loadActorSimplePathList()
 
     -- map simple path list
     ---@type table<int, string>
@@ -233,127 +241,129 @@ function UiModel:SetPlayer(player)
     articleInfo.equInfo.resMgrEquData = resMgrEquData
 
     -- equ
-    local itemDataFromContainer = self.player.equipments.container:Get("belt")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Belt]
-        articleInfo.id = 5
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name or ""
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Belt
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+    if self.player.equipments then
+        local itemDataFromContainer = self.player.equipments.container:Get("belt")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Belt]
+            articleInfo.id = 5
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name or ""
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Belt
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
-    itemDataFromContainer = self.player.equipments.container:Get("cap")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Cap]
-        articleInfo.id = 6
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Cap
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+        itemDataFromContainer = self.player.equipments.container:Get("cap")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Cap]
+            articleInfo.id = 6
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Cap
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
-    itemDataFromContainer = self.player.equipments.container:Get("coat")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Coat]
-        articleInfo.id = 7
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Coat
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
-
-
-    itemDataFromContainer = self.player.equipments.container:Get("face")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Face]
-        articleInfo.id = 7
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Face
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+        itemDataFromContainer = self.player.equipments.container:Get("coat")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Coat]
+            articleInfo.id = 7
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Coat
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
 
-    itemDataFromContainer = self.player.equipments.container:Get("hair")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Hair]
-        articleInfo.id = 8
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Hair
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+        itemDataFromContainer = self.player.equipments.container:Get("face")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Face]
+            articleInfo.id = 7
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Face
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
-    itemDataFromContainer = self.player.equipments.container:Get("neck")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Neck]
-        articleInfo.id = 9
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Neck
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
 
-    itemDataFromContainer = self.player.equipments.container:Get("pants")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Pants]
-        articleInfo.id = 10
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Pants
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+        itemDataFromContainer = self.player.equipments.container:Get("hair")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Hair]
+            articleInfo.id = 8
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Hair
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
-    itemDataFromContainer = self.player.equipments.container:Get("shoes")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Shoes]
-        articleInfo.id = 11
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Shoes
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-    end
+        itemDataFromContainer = self.player.equipments.container:Get("neck")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Neck]
+            articleInfo.id = 9
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Neck
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
 
-    itemDataFromContainer = self.player.equipments.container:Get("weapon")
-    if itemDataFromContainer then
-        resMgrEquData = itemDataFromContainer:GetData()
-        articleInfo = self.mountedEquInfoList[Common.EquType.Weapon]
-        articleInfo.id = 12
-        articleInfo.type = Common.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-        articleInfo.equInfo.type = Common.EquType.Weapon
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-        -- articleInfo.equInfo.hpExtent = 100
-        -- articleInfo.equInfo.hpExtentRate = 0.1
-        -- articleInfo.equInfo.mpExtent = 100
-        -- articleInfo.equInfo.mpExtentRate = 0.1
+        itemDataFromContainer = self.player.equipments.container:Get("pants")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Pants]
+            articleInfo.id = 10
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Pants
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
+
+        itemDataFromContainer = self.player.equipments.container:Get("shoes")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Shoes]
+            articleInfo.id = 11
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Shoes
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+        end
+
+        itemDataFromContainer = self.player.equipments.container:Get("weapon")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Weapon]
+            articleInfo.id = 12
+            articleInfo.type = Common.ArticleType.Equipment
+            articleInfo.name = resMgrEquData.name
+            articleInfo.desc = resMgrEquData.comment or ""
+            articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+            articleInfo.equInfo.type = Common.EquType.Weapon
+            articleInfo.equInfo.resMgrEquData = resMgrEquData
+            -- articleInfo.equInfo.hpExtent = 100
+            -- articleInfo.equInfo.hpExtentRate = 0.1
+            -- articleInfo.equInfo.mpExtent = 100
+            -- articleInfo.equInfo.mpExtentRate = 0.1
+        end
     end
 
     -- aricle dock
@@ -540,9 +550,18 @@ function UiModel:DropArticleDockItem()
     self:RequestSetDraggingItemVisibility(false)
 end
 
----@param mapID number
-function UiModel:SelectGameMap(mapID)
-    local simplePath = self.mapSimplePathList[mapID]
+---@param actorIndex int
+function UiModel:StartGame(actorIndex)
+    if actorIndex <= 0 then
+        return
+    end
+    local actorSimplePath = self.actorSimplePathList[actorIndex]
+    self.director.StartGame(actorSimplePath)
+end
+
+---@param mapId number
+function UiModel:SelectGameMap(mapId)
+    local simplePath = self.mapSimplePathList[mapId]
     _MAP.Load(simplePath)
 end
 
@@ -777,6 +796,10 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     end
 
     self:Signal_PlayerMountedSkillsChanged()
+end
+
+function UiModel:GetActorSimplePathList()
+    return self.actorSimplePathList
 end
 
 function UiModel:GetMapSimplePathList()
@@ -1426,6 +1449,25 @@ function UiModel:unloadPlayerSkill(skillInfo)
         then
             SkillSrv.Set(self.player, tagTmp, nil)
         end
+    end
+end
+
+function UiModel:loadActorSimplePathList()
+    local actorSimplePathList = {
+        "duelist/atswordman",
+        "duelist/Fighter",
+        "duelist/goblin",
+        "duelist/goblinThrower",
+        "duelist/lugaru",
+        "duelist/swordman",
+        "duelist/tauArmy",
+    }
+    local playerCfgFilePath = "config/actor/instance/duelist/player.cfg"
+    if File.Exists(playerCfgFilePath) then
+        table.insert(self.actorSimplePathList, "duelist/player")
+    end
+    for _, path in pairs(actorSimplePathList) do
+        table.insert(self.actorSimplePathList, path)
     end
 end
 
