@@ -143,105 +143,19 @@ function UiModel:SetPlayer(player)
     self.player = player
 
     -- 设置物品数据
-    local articleInfo = self.articleInfoList[1]
-    articleInfo.id = 1
-    articleInfo.type = Common.ArticleType.Consumable
-    articleInfo.name = "消耗1"
-    articleInfo.desc = "desc 消耗1"
-    articleInfo.iconPath = "icon/Consumption/64"
-    articleInfo.count = 10
-    articleInfo.consumableInfo.hpRecovery = 100
-    articleInfo.consumableInfo.hpRecoveryRate = 0.1
-    articleInfo.consumableInfo.mpRecovery = 150
-    articleInfo.consumableInfo.mpRecoveryRate = 0.1
-
-
-    -- 创建裤子装备资源
-    local resMgrEquData = ResMgr.NewEquipmentData("clothes/swordman/pants/renewal",
-        {}, {}, nil)
-
-    articleInfo = self.articleInfoList[2]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 2
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Pants
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    -- articleInfo.equInfo.hpExtent = 100
-
-    articleInfo = self.articleInfoList[3]
-    articleInfo.id = 3
-    articleInfo.type = Common.ArticleType.Consumable
-    articleInfo.name = "消耗3"
-    articleInfo.desc = "desc 消耗3"
-    articleInfo.iconPath = "icon/Consumption/58"
-    articleInfo.count = 15
-    articleInfo.consumableInfo.hpRecovery = 50
-
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd0200",
-        {}, {}, nil)
-    articleInfo = self.articleInfoList[4]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 4
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapon
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd5700",
-        {}, {}, nil)
-    articleInfo = self.articleInfoList[5]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 5
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapon
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/lswd9600",
-        {}, {}, nil)
-    articleInfo = self.articleInfoList[6]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 6
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapon
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/beamswd2800",
-        {}, {}, nil)
-    articleInfo = self.articleInfoList[7]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 7
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapon
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-
-    resMgrEquData = ResMgr.NewEquipmentData("weapon/swordman/katana",
-        {}, {}, nil)
-    articleInfo = self.articleInfoList[8]
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
-    articleInfo.id = 8
-    articleInfo.type = Common.ArticleType.Equipment
-    articleInfo.name = resMgrEquData.name
-    articleInfo.desc = resMgrEquData.comment or ""
-    articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-    articleInfo.equInfo.type = Common.EquType.Weapon
-    articleInfo.equInfo.resMgrEquData = resMgrEquData
+    local inventoryItemsComponent = self.player.InventoryItems
+    if inventoryItemsComponent then
+        for i, item in pairs(inventoryItemsComponent:GetList()) do
+            self.articleInfoList[item.Index] = item
+        end
+    end
 
     -- equ
     if self.player.equipments then
+        ---@type Actor.RESMGR.EquipmentData
+        local resMgrEquData
+        ---@type ArticleInfo
+        local articleInfo
         local itemDataFromContainer = self.player.equipments.container:Get("belt")
         if itemDataFromContainer then
             resMgrEquData = itemDataFromContainer:GetData()
@@ -374,28 +288,10 @@ function UiModel:SetPlayer(player)
     self.articleDockInfoList[5] = self.articleInfoList[5]
 
     -- 技能资源数据列表
+    local masteredSkills = self.player.MasteredSkills
     self.skillResMgrDataList = {}
-    local skillResMgrData = ResMgr.GetSkillData("swordman/normalAttack")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/upperSlash")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/onigiri")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("counterattack")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("flashStep")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/jumonji")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/bloodFrenzyAttack")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/hopsmash")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    skillResMgrData = ResMgr.GetSkillData("swordman/ashen_fork")
-    table.insert(self.skillResMgrDataList, skillResMgrData)
-    -- test
-    for i = 1, 15 do
-        table.insert(self.skillResMgrDataList, ResMgr.GetSkillData("swordman/ashen_fork"))
+    if masteredSkills then
+        self.skillResMgrDataList = self.player.MasteredSkills:GetList()
     end
 
     -- connection

@@ -305,6 +305,8 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
         equTypeStr = "装备类型：" .. "Face"
     elseif equType == Common.EquType.Hair then
         equTypeStr = "装备类型：" .. "Hair"
+    elseif equType == Common.EquType.Neck then
+        equTypeStr = "装备类型：" .. "Neck"
     elseif equType == Common.EquType.Pants then
         equTypeStr = "装备类型：" .. "Pants"
     elseif equType == Common.EquType.Shoes then

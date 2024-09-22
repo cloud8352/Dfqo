@@ -227,7 +227,7 @@ function RoleEquTableWidget:SetPosition(x, y)
     self.portraitBgLabel:SetPosition(portraitBgLabelXPos, y + 0 * Util.GetWindowSizeScale())
 
     local capItemBgLabel = self.viewItemBgList[Common.EquType.Cap]
-    local capItem = self.viewItemList[Common.EquType.Hair]
+    local capItem = self.viewItemList[Common.EquType.Cap]
     local capItemBgLabelWidth, _ = capItemBgLabel:GetSize()
     local capItemXPos = x + (self.width - capItemBgLabelWidth) / 2 - 41 * Util.GetWindowSizeScale()
     local capItemYPos = y + 45 * Util.GetWindowSizeScale()

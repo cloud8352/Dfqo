@@ -74,6 +74,8 @@ function _FACTORY.New(data, param)
     ---@field public obstacle Actor.Component.Obstacle
     ---@field public transparency Actor.Component.Transparency
     ---@field public buffs Actor.Component.Buffs
+    ---@field public InventoryItems Actor.Component.InventoryItems
+    ---@field public MasteredSkills Actor.Component.MasteredSkills
     ---@field public equipments Actor.Component.Equipments
     ---@field public dropItem Actor.Component.DropItem
     ---@field public bullet Actor.Component.Bullet

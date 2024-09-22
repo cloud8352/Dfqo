@@ -27,10 +27,10 @@ end
 
 ---@enum ArticleType
 UiCommon.ArticleType = {
-    Empty = 0x0001,
-    Consumable = 0x0002,
-    Equipment = 0x0004,
-    Material = 0x0008,
+    Empty = 1,
+    Consumable = 2,
+    Equipment = 3,
+    Material = 4,
 }
 --- 消耗品属性类型
 ---@enum ConsumablePropType
@@ -56,6 +56,14 @@ UiCommon.EquType = {
     Title = 11,
 }
 
+---@enum WeaponSubType
+UiCommon.WeaponSubType = {
+    HSword = 1, -- 武器 - 巨剑
+    Katana = 2, -- 武器 - 太刀
+    BeamSwd = 3, -- 武器 - 光剑
+}
+
+---@type table<int, string>
 local mapOfEquTypeToTag = {}
 mapOfEquTypeToTag[UiCommon.EquType.Belt] = "belt"
 mapOfEquTypeToTag[UiCommon.EquType.Cap] = "cap"
@@ -70,6 +78,13 @@ mapOfEquTypeToTag[UiCommon.EquType.Weapon] = "weapon"
 mapOfEquTypeToTag[UiCommon.EquType.Title] = "title"
 --- 装备类型到标签的映射表
 UiCommon.MapOfEquTypeToTag = mapOfEquTypeToTag
+
+---@type table<string, int>
+local mapOfTagToEquType = {}
+for k, v in pairs(mapOfEquTypeToTag) do
+    mapOfTagToEquType[v] = k
+end
+UiCommon.MapOfTagToEquType = mapOfTagToEquType
 
 --- 装备属性类型
 ---@enum EquPropType
@@ -115,22 +130,27 @@ local EquInfo = {
 
 ---@class ArticleInfo 物品项信息
 ---@field id number
+---@field Index int
 ---@field type ArticleType
 ---@field name string
 ---@field desc string
 ---@field iconPath string
 ---@field count number
 ---@field maxCount number
+---@field UsableJob table<int, JobEnum>
 ---@field consumableInfo ConsumableInfo
 ---@field equInfo EquInfo
 local ArticleInfo = {
     id = 0,
+    Index = -1,
     type = UiCommon.ArticleType.Empty,
     name = "",
     desc = "",
     iconPath = "",
     count = 1,
     maxCount = 100,
+    ---@type table<int, JobEnum>
+    UsableJob = {},
     ---@type ConsumableInfo
     consumableInfo = _TABLE.DeepClone(ConsumableInfo),
     ---@type EquInfo
@@ -229,7 +249,7 @@ function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     if data.mp then
         skillInfo.mp = data.mp
     end
-    if data.attackValues.isPhysical then
+    if data.attackValues and data.attackValues.isPhysical then
         skillInfo.physicalDamageEnhanceRate = 0 or data.attackValues.damageRate
     else
         skillInfo.magicDamageEnhanceRate = 0 or data.attackValues.damageRate
@@ -303,5 +323,21 @@ local GameState = {
     Started = 2,
 }
 UiCommon.GameState = GameState
+
+---@enum JobEnum
+local JobEnum = {
+    Other = 0,
+    SwordMan = 1,
+    Fighter = 2,
+}
+UiCommon.JobEnum = JobEnum
+
+---@class ActorInstanceInventoryItemInfo
+local ActorInstanceInventoryItemInfo = {
+    Index = 1,
+    Count = 1,
+    Path = ""
+}
+UiCommon.ActorInstanceInventoryItemInfo = ActorInstanceInventoryItemInfo
 
 return UiCommon

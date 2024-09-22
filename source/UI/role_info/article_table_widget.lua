@@ -219,16 +219,16 @@ function ArticleTableWidget:SetPosition(x, y)
 
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
-        local itemXpos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
+        local itemXPos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
         local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
 
         -- item background
-        label:SetPosition(itemXpos, itemYPos)
+        label:SetPosition(itemXPos, itemYPos)
 
         -- item
         local item = self.viewItemList[i]
-        item:SetPosition(itemXpos, itemYPos)
+        item:SetPosition(itemXPos, itemYPos)
     end
 end
 
@@ -270,7 +270,7 @@ end
 function ArticleTableWidget:updateData()
     for i, label in pairs(self.viewItemBgList) do
         local col = math.fmod(i - 1, ColCount) 
-        local itemXpos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
+        local itemXPos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
         local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
 
