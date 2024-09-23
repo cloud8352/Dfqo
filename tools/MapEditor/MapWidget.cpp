@@ -92,6 +92,7 @@ void MapWidget::SetPlacingSpriteInfoTag(const QString &tag)
 {
     if (tag.isEmpty()) {
         m_placingDrawingObj.Id = 0;
+        m_movingDrawingObj.Id = 0;
         return;
     }
 
@@ -104,6 +105,7 @@ void MapWidget::SetPlacingInstanceInfoTag(const QString &tag)
 {
     if (tag.isEmpty()) {
         m_placingDrawingObj.Id = 0;
+        m_movingDrawingObj.Id = 0;
         return;
     }
 
@@ -298,7 +300,7 @@ void MapWidget::paintEvent(QPaintEvent *event)
     }
 
     // 画 待移动的元素
-    if (m_movingDrawingObj.Id != 0) {
+    if (m_movingDrawingObj.Id > 0 && m_placingDrawingObj.Id == 0) {
         m_movingDrawingObj.Draw(&painter);
     }
 
@@ -759,6 +761,9 @@ void MapWidget::addDrawingObj(const QPoint &cursorPos)
 
     drawingObj.UpdateRects(m_xOffset, m_yOffset);
     drawingObjList.append(drawingObj);
+
+    // 设置新添加的绘画对象为正在移动对象，以便使用方向键调整其位置
+    m_movingDrawingObj = drawingObj;
 }
 
 void MapWidget::removeDrawingObj(QList<DrawingObjStruct> drawingObjList)
