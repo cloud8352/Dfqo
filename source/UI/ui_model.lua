@@ -1350,6 +1350,7 @@ end
 
 function UiModel:loadActorSimplePathList()
     local actorSimplePathList = {
+        "duelist/Kyo",
         "duelist/atswordman",
         "duelist/Fighter",
         "duelist/goblin",
