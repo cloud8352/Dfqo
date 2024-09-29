@@ -3,6 +3,7 @@
 
 #include "MapWidget.h"
 #include "SettingsDlg.h"
+#include "SpriteTrim/SpriteTrimDlg.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -26,6 +27,7 @@ private:
     Model *m_model;
     QModelIndex m_lastSelectedIndex;
     SettingsDlg *m_settingsDlg;
+    SpriteTrimDlg *m_spriteTrimDlg;
 
     QStandardItem *m_spriteTreeItem;
     QStandardItem *m_actorInstanceTreeItem;

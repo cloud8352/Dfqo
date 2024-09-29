@@ -1,6 +1,6 @@
 local npk = require("npk")
 
-npk.extractNPK("NpkResource/Fighter/sprite_character_fighter_equipment_weapon_gauntlet.NPK")
+npk.extractNPK("NpkResource/Swordman/sprite_character_swordman_equipment_weapon_lswd.NPK")
 
 
 --[[

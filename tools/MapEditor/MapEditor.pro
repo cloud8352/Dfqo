@@ -22,6 +22,7 @@ SOURCES += \
     MapWidget.cpp \
     Model.cpp \
     SettingsDlg.cpp \
+    SpriteTrim/SpriteTrimDlg.cpp \
     main.cpp \
     mainwindow.cpp
 
@@ -32,6 +33,7 @@ HEADERS += \
     MapWidget.h \
     Model.h \
     SettingsDlg.h \
+    SpriteTrim/SpriteTrimDlg.h \
     mainwindow.h
 
 # Default rules for deployment.

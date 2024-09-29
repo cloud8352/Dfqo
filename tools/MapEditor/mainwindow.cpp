@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , m_model(nullptr)
     , m_settingsDlg(nullptr)
+    , m_spriteTrimDlg(nullptr)
     , m_spriteTreeItem(nullptr)
     , m_actorInstanceTreeItem(nullptr)
 {
@@ -21,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_settingsDlg = new SettingsDlg(m_model, this);
     m_settingsDlg->setVisible(false);
+
+    m_spriteTrimDlg = new SpriteTrimDlg(m_model, this);
+    m_spriteTrimDlg->setVisible(false);
 
     // ui init
     QMenuBar *menuBar = this->menuBar();
@@ -41,6 +45,8 @@ MainWindow::MainWindow(QWidget *parent)
     menuBar->addAction(mapSettingsAction);
     QAction *appSettingsAction = new QAction("软件设置", this);
     menuBar->addAction(appSettingsAction);
+    QAction *spriteTrimDlgAction = new QAction("素材修剪工具", this);
+    menuBar->addAction(spriteTrimDlgAction);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -208,6 +214,9 @@ MainWindow::MainWindow(QWidget *parent)
         if (action == appSettingsAction && !m_settingsDlg->isVisible()) {
             m_settingsDlg->Reset();
             m_settingsDlg->setVisible(true);
+        }
+        if (action == spriteTrimDlgAction && !m_spriteTrimDlg->isVisible()) {
+            m_spriteTrimDlg->setVisible(true);
         }
     });
 
