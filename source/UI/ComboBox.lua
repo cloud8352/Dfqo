@@ -10,6 +10,8 @@ local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
+local TouchLib = require("lib.touch")
+local SysLib = require("lib.system")
 
 local WindowManager = require("UI.WindowManager")
 
@@ -84,7 +86,11 @@ function ComboBox:Update(dt)
     if false == self.isVisible then
         return
     end
-    self:MouseEvent()
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
 
     self.textLabel:Update(dt)
 
@@ -134,6 +140,48 @@ function ComboBox:MouseEvent()
 
         local mouseX, mouseY = _Mouse.GetPosition(1, 1)
         if false == self.frameSprite:CheckPoint(mouseX, mouseY) then
+            break
+        end
+
+        -- 如果点击了框架，则显示或隐藏下拉列表
+        self.dropDownListView:SetVisible(not self.dropDownListView:IsVisible())
+        self.dropDownListViewWindow:SetVisible(self.dropDownListView:IsVisible())
+        break
+    end
+end
+
+function ComboBox:TouchEvent()
+    -- 检查是否有上层窗口遮挡
+    local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.parentWindow)
+    if #capturedTouchIdList == 0
+        or self.parentWindow:IsInMoving() then
+        return
+    end
+
+    while true do
+        ---@param sprite Graphics.Drawable.Sprite
+        ---@param idList table<number, string>
+        ---@return id string
+        local function getSpriteTouchedId(sprite, idList)
+            for _, id in pairs(idList) do
+                local point = TouchLib.GetPoint(id)
+                if (sprite:CheckPoint(point.x, point.y)) then
+                    return id
+                end
+            end
+
+            return ""
+        end
+
+        -- 确保触控点在按钮上
+        local touchedId = getSpriteTouchedId(self.frameSprite, capturedTouchIdList)
+        if "" == touchedId then
+            break
+        end
+
+        -- 是否处于按压中
+        local point = TouchLib.GetPoint(touchedId)
+        if (not TouchLib.WhetherPointIsPressed(point)) then
             break
         end
 

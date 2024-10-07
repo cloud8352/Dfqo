@@ -623,6 +623,8 @@ function UI.keyboardEvent()
         UI.characterInfoWindow:SetVisible(false)
         UI.skillManagementWindow:SetVisible(false)
         UI.settingsWindow:SetVisible(false)
+        UI.hoveringArticleItemTipWindow:SetVisible(false)
+        UI.hoveringSkillItemTipWindow:SetVisible(false)
     end
 
     --- 判断物品托盘快捷键

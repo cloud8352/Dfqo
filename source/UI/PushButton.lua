@@ -12,6 +12,7 @@ local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
 local Touch = require("lib.touch")
+local SysLib = require("lib.system")
 
 local WindowManager = require("UI.WindowManager")
 local Label = require("UI.Label")
@@ -87,8 +88,11 @@ function PushButton:Update(dt)
     if false == self.isVisible then
         return
     end
-    self:MouseEvent()
-    self:TouchEvent()
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
     self:judgeSignals()
 
     if (self.isBgSpriteUpdated

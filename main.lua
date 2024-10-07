@@ -84,40 +84,63 @@ end
 if (not _SYSTEM.IsMobile()) then
     function love.mousemoved(x, y, dx, dy, istouch)
         _MOUSE.Moved(x, y, dx, dy)
-        _TOUCH.Moved(0, x, y, dx, dy, 1)
+        -- _TOUCH.Moved(0, x, y, dx, dy, 1)
     end
 
     function love.mousepressed(x, y, button, istouch)
         _MOUSE.Pressed(button)
 
-        local dx, dy = _MOUSE.GetMoving()
-        _TOUCH.Pressed(0, x, y, dx, dy, 1)
+        -- local dx, dy = _MOUSE.GetMoving()
+        -- _TOUCH.Pressed(0, x, y, dx, dy, 1)
     end
 
     function love.mousereleased(x, y, button, istouch)
         _MOUSE.Released(button)
 
-        local dx, dy = _MOUSE.GetMoving()
-        _TOUCH.Released(0, x, y, dx, dy, 1)
+        -- local dx, dy = _MOUSE.GetMoving()
+        -- _TOUCH.Released(0, x, y, dx, dy, 1)
     end
 else
     -- todo 
     function love.touchmoved(id, x, y, dx, dy, pressure)
-        print("touchmoved", "id", id, "x", x, "y", y,
-            "dx", dx, "dy", dy)
+        -- print("touchmoved", "id", id, "x", x, "y", y,
+        --     "dx", dx, "dy", dy)
         _TOUCH.Moved(id, x, y, dx, dy, pressure)
     end
 
     function love.touchpressed(id, x, y, dx, dy, pressure)
-        print("touchpressed", "id", id, "x", x, "y", y,
-            "dx", dx, "dy", dy)
+        -- print("touchpressed", "id", id, "x", x, "y", y,
+        --     "dx", dx, "dy", dy)
         _TOUCH.Pressed(id, x, y, dx, dy, pressure)
     end
 
     function love.touchreleased(id, x, y, dx, dy, pressure)
-        print("touchreleased", "id", id, "x", x, "y", y,
-            "dx", dx, "dy", dy)
+        -- print("touchreleased", "id", id, "x", x, "y", y,
+        --     "dx", dx, "dy", dy)
         _TOUCH.Released(id, x, y, dx, dy, pressure)
+    end
+
+    function love.mousemoved(x, y, dx, dy, isTouch)
+        if isTouch then
+            return
+        end
+        _TOUCH.Moved(0, x, y, dx, dy, 1)
+    end
+
+    function love.mousepressed(x, y, button, isTouch)
+        if isTouch then
+            return
+        end
+        local dx, dy = _MOUSE.GetMoving()
+        _TOUCH.Pressed(0, x, y, dx, dy, 1)
+    end
+
+    function love.mousereleased(x, y, button, isTouch)
+        if isTouch then
+            return
+        end
+        local dx, dy = _MOUSE.GetMoving()
+        _TOUCH.Released(0, x, y, dx, dy, 1)
     end
 
     -- function love.mousemoved(x, y, dx, dy, istouch)

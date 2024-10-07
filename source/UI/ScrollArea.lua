@@ -227,6 +227,11 @@ function ScrollArea:SetNeedUpdateContentSprite(need)
     self.needUpdateContentSprite = need
 end
 
+---@param yDistance int
+function ScrollArea:MoveContent(yDistance)
+    self.scrollBar:MoveSlider(yDistance)
+end
+
 --- slot
 ---
 ---@param sender Obj

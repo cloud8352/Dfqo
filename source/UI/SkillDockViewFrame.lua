@@ -9,7 +9,8 @@ local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _MATH = require("lib.math")
-local _Graphics = require("lib.graphics")
+local TouchLib = require("lib.touch")
+local SysLib = require("lib.system")
 
 local Widget = require("UI.Widget")
 local WindowManager = require("UI.WindowManager")
@@ -118,7 +119,11 @@ function SkillDockViewFrame:Update(dt)
     if (not self:IsVisible()) then
         return
     end
-    self:MouseEvent()
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
 
     if (self:IsSizeChanged()
         )
@@ -205,6 +210,68 @@ function SkillDockViewFrame:MouseEvent()
 
         -- 判断是否点击某一个技能项
         if hoveringItemTag ~= "" and _Mouse.IsPressed(1) then
+            self:Signal_ItemClicked(hoveringItemTag)
+        end
+
+        if hoveringItemTag == self.hoveringItemTag then
+            break
+        end
+
+        if "" == hoveringItemTag then
+            self.hoveringItemTag = ""
+            self.itemHoveringTimer:Exit()
+        else
+            self.hoveringItemTag = hoveringItemTag
+
+            -- 开启计时鼠标悬浮时间
+            self.itemHoveringTimer:Enter(TimeOfWaiteToShowItemTip)
+        end
+
+        break
+    end
+end
+
+function SkillDockViewFrame:TouchEvent()
+    -- 判断鼠标
+    while true do        
+        -- 检查是否有上层窗口遮挡
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.parentWindow)
+        if #capturedTouchIdList == 0
+            or self.parentWindow:IsInMoving()
+        then
+            self.hoveringItemTag = ""
+            self.itemHoveringTimer:Exit()
+            break
+        end
+
+        ---@param item SkillDockViewItem
+        ---@param idList table<number, string>
+        ---@return id string
+        local function getItemTouchedId(item, idList)
+            for _, id in pairs(idList) do
+                local point = TouchLib.GetPoint(id)
+                if (item:CheckPoint(point.x, point.y)) then
+                    return id
+                end
+            end
+
+            return ""
+        end
+
+        -- 寻找鼠标悬停处的显示项标签
+        local hoveringItemTag = ""
+        local touchedId = ""
+        for tag, item in pairs(self.mapOfTagToSkillViewItem) do
+            touchedId = getItemTouchedId(item, capturedTouchIdList)
+            if "" ~= touchedId then
+                hoveringItemTag = tag
+                break
+            end
+        end
+
+        -- 判断是否点击某一个技能项
+        local point = TouchLib.GetPoint(touchedId)
+        if hoveringItemTag ~= "" and TouchLib.WhetherPointIsPressed(point) then
             self:Signal_ItemClicked(hoveringItemTag)
         end
 

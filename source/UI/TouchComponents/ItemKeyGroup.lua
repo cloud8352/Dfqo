@@ -124,7 +124,11 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.skill7Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill7] = self.skill7Btn
 
-    -- connect
+
+    -- connection
+    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
+    self.model:MocConnectSignal(self.model.Signal_PlayerMountedSkillsChanged, self)
+
     self.normalAttackBtn:MocConnectSignal(self.normalAttackBtn.Signal_BtnClicked, self)
     self.jumpBtn:MocConnectSignal(self.jumpBtn.Signal_BtnClicked, self)
     self.counterAttackBtn:MocConnectSignal(self.counterAttackBtn.Signal_BtnClicked, self)
@@ -234,7 +238,12 @@ function ItemKeyGroup:reloadSkillBtnsIcon()
     for k, v in pairs(self.mapOfTagToSkillBtn) do
         local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
         if actorSkillObj then
-            local iconPath = "icon/skill/" .. actorSkillObj:GetData().icon
+            ---@type Actor.RESMGR.SkillData
+            local skillData = actorSkillObj:GetData()
+            local iconPath = "icon/skill/NormalAttack"
+            if skillData.icon then
+                iconPath = "icon/skill/" .. skillData.icon
+            end
             v:SetNormalSpriteDataPath(iconPath)
             v:SetHoveringSpriteDataPath(iconPath)
             v:SetDisabledSpriteDataPath(iconPath)
@@ -292,6 +301,18 @@ function ItemKeyGroup:UpdatePosition()
     -- skill7
     self.skill7Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
         windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+end
+
+--- slots
+
+---@param sender Obj
+function ItemKeyGroup:Slot_PlayerChanged(sender)
+    self:reloadSkillBtnsIcon()
+end
+
+---@param sender Obj
+function ItemKeyGroup:Slot_PlayerMountedSkillsChanged(sender)
+    self:reloadSkillBtnsIcon()
 end
 
 --- 信号槽 - 当有按钮被点击时

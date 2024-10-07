@@ -188,6 +188,24 @@ https://gitee.com/ct243768648/DFQ-Original/commit/bd381e11461b2d5471c8409f32a86e
 
 ## 安卓调试方法
 
+匹配无线设备：
+
+```
+adb pair 192.168.1.9:37957
+```
+
+连接无线设备：
+
+```
+adb connect 192.168.1.9:41277
+```
+
+安装apk：
+
+```
+adb install path_to_your_apk_file.apk
+```
+
 查看游戏输出命令：
 
 ```shell

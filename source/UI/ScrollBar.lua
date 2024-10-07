@@ -21,8 +21,7 @@ function ScrollBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
     
     self.isMovingSlider = false -- 是否请求移动滑动条
-    self.originMouseYPosWhenReqMvSlider = 0 -- 当请求移动滑动条时原始鼠标位置，用于计算滑动条移动偏差
-    self.originYPosWhenReqMvSlider = 0 -- 当请求移动滑动条时原始自身位置，用于计算滑动条移动偏差
+    self.lastMouseYPos = 0
 
     -- 滑道长度
     self.slideLength = 0
@@ -188,6 +187,31 @@ function ScrollBar:SetVisible(visible)
     Widget.SetVisible(self, visible)
 end
 
+function ScrollBar:MoveSlider(yDistance)
+    local xPos, yPos = self:GetPosition()
+    local destYPos = yPos + self.sliderMovedDistance + yDistance
+    -- 滑动条不能移出滑道
+    if yPos > destYPos then
+        destYPos = yPos
+    end
+    if (yPos + self.slideLength - self.sliderLength) < destYPos then
+        destYPos = yPos + self.slideLength - self.sliderLength
+    end
+    self.sliderSprite:SetAttri("position", xPos, destYPos)
+    self.sliderMovedDistance = destYPos - yPos
+
+    -- 滑动条移动距离 换算成 显示内容移动距离 比率
+    ---@type int
+    local sliderMoveDistanceToContentMoveDistanceRate = 1
+    if 0 ~= (self.slideLength - self.sliderLength) then
+        sliderMoveDistanceToContentMoveDistanceRate = (self.ctrlledContentLength - self.slideLength) /
+            (self.slideLength - self.sliderLength)
+    end
+    ---@type int
+    local yDistanceContentNeedMove = -sliderMoveDistanceToContentMoveDistanceRate * self.sliderMovedDistance
+    self:Signal_RequestMoveContent(0, yDistanceContentNeedMove)
+end
+
 ---===================
 --- signals
 ---===================
@@ -261,33 +285,15 @@ function ScrollBar:judgeAndEmitSignalOfRequestMoveContent()
 
         -- 请求移动窗口
         self.isMovingSlider = true
-        self.originMouseYPosWhenReqMvSlider = currentMouseYPos
-        self.originYPosWhenReqMvSlider = yPos + self.sliderMovedDistance
+        self.lastMouseYPos = currentMouseYPos
         break
     end
 
     if self.isMovingSlider then
-        local destYPos = self.originYPosWhenReqMvSlider + currentMouseYPos - self.originMouseYPosWhenReqMvSlider
-        -- 滑动条不能移出滑道
-        if yPos > destYPos then
-            destYPos = yPos
-        end
-        if (yPos + self.slideLength - self.sliderLength) < destYPos then
-            destYPos = yPos + self.slideLength - self.sliderLength
-        end
-        self.sliderSprite:SetAttri("position", xPos, destYPos)
-        self.sliderMovedDistance = destYPos - yPos
+        local yDistance = currentMouseYPos - self.lastMouseYPos
+        self:MoveSlider(yDistance)
 
-        -- 滑动条移动距离 换算成 显示内容移动距离 比率
-        ---@type int
-        local sliderMoveDistanceToContentMoveDistanceRate = 1
-        if 0 ~= (self.slideLength - self.sliderLength) then
-            sliderMoveDistanceToContentMoveDistanceRate = (self.ctrlledContentLength - self.slideLength) /
-                (self.slideLength - self.sliderLength)
-        end
-        ---@type int
-        local yDistanceContentNeedMove = -sliderMoveDistanceToContentMoveDistanceRate * self.sliderMovedDistance
-        self:Signal_RequestMoveContent(0, yDistanceContentNeedMove)
+        self.lastMouseYPos = currentMouseYPos
     end
 end
 

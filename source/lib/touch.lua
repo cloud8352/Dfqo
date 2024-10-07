@@ -95,6 +95,16 @@ function _TOUCH.WhetherPointIsHold(point)
     return _IsHold(point)
 end
 
+---@param point Lib.TOUCH.Point
+function _TOUCH.WhetherPointIsPressed(point)
+    return _IsPressed(point)
+end
+
+---@param point Lib.TOUCH.Point
+function _TOUCH.WhetherPointIsReleased(point)
+    return _IsReleased(point)
+end
+
 ---@param id any
 ---@param x int
 ---@param y int

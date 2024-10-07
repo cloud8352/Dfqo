@@ -10,7 +10,8 @@ local _RESOURCE = require("lib.resource")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _Mouse = require("lib.mouse")
-local _TABLE = require("lib.table")
+local TouchLib = require("lib.touch")
+local SysLib = require("lib.system")
 
 local WindowManager = require("UI.WindowManager")
 local StandardItem = require("UI.StandardItem")
@@ -42,13 +43,19 @@ function ListView:Ctor(parentWindow)
     self.currentItem = nil
 
     self.needUpdateItemListContentWidgetSprite = false
+
+    self.isMovingContent = false
 end
 
 function ListView:Update(dt)
     if false == self.isVisible then
         return
     end
-    self:MouseEvent()
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
 
     self.itemListContentWidget:Update(dt)
 
@@ -136,6 +143,91 @@ function ListView:MouseEvent()
     end
 end
 
+function ListView:TouchEvent()
+    -- 判断鼠标
+    while true do
+        -- 是否处于禁用状态
+        if false == self.enable then
+            for _, item in pairs(self.itemList) do
+                item:SetDisplayState(StandardItem.DisplayState.Disable)
+            end
+            break
+        end
+
+        -- 检查是否有上层窗口遮挡
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.parentWindow)
+        if #capturedTouchIdList == 0
+            or self.parentWindow:IsInMoving()
+        then
+            for _, item in pairs(self.itemList) do
+                if StandardItem.DisplayState.Hovering == item:GetCurrentDisplayState() then
+                    item:SetDisplayState(StandardItem.DisplayState.Normal)
+                end
+            end
+            self.isMovingContent = false
+            break
+        end
+
+        ---@param item StandardItem
+        ---@param idList table<number, string>
+        ---@return id string
+        local function getItemTouchedId(item, idList)
+            for _, id in pairs(idList) do
+                local point = TouchLib.GetPoint(id)
+                if (item:CheckPoint(point.x, point.y)) then
+                    return id
+                end
+            end
+
+            return ""
+        end
+
+        -- 寻找鼠标悬停处的显示项
+        ---@type StandardItem
+        local hoveringItem = nil
+        local touchedId = ""
+        for i, item in pairs(self.itemList) do
+            touchedId = getItemTouchedId(item, capturedTouchIdList)
+            if "" == touchedId then
+                if StandardItem.DisplayState.Hovering == item:GetCurrentDisplayState() then
+                    item:SetDisplayState(StandardItem.DisplayState.Normal)
+                end
+            else
+                hoveringItem = item
+                break
+            end
+        end
+
+        -- 确保触控点在选项上
+        if "" == touchedId then
+            break
+        end
+
+        local point = TouchLib.GetPoint(touchedId)
+        if point.moving and TouchLib.WhetherPointIsHold(point) then
+            self:MoveContent(-point.dy)
+            self.isMovingContent = true
+        end
+
+        -- 触控点是否释放
+        if TouchLib.WhetherPointIsReleased(point)
+        then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
+            if self.isMovingContent then
+                self.isMovingContent = false
+            else
+                self:SetCurrentItem(hoveringItem)
+            end
+            break
+        end
+
+        if StandardItem.DisplayState.Selected == hoveringItem:GetCurrentDisplayState() then
+            break
+        end
+        hoveringItem:SetDisplayState(StandardItem.DisplayState.Hovering)
+        break
+    end
+end
+
 --- 连接信号
 ---@param signal function
 ---@param obj Object
@@ -212,6 +304,38 @@ end
 ---@param y int
 function ListView:CheckPoint(x, y)
     return ScrollArea.CheckPoint(self, x, y)
+end
+
+---@param w Widget
+function ListView:SetContentWidget(w)
+    ScrollArea.SetContentWidget(self, w)
+end
+
+function ListView:GetDisplayContentWidth()
+    return ScrollArea.GetDisplayContentWidth(self)
+end
+
+function ListView:GetDisplayContentHeight()
+    return ScrollArea.GetDisplayContentHeight(self)
+end
+
+---@return int, int, int, int leftMargin, topMargin, rightMargin, bottomMargin
+function ListView:GetMargins()
+    return ScrollArea.GetMargins(self)
+end
+
+function ListView:GetContentYOffset()
+    return ScrollArea.GetContentYOffset(self)
+end
+
+---@param need boolean
+function ListView:SetNeedUpdateContentSprite(need)
+    ScrollArea.SetNeedUpdateContentSprite(self, need)
+end
+
+---@param yDistance int
+function ListView:MoveContent(yDistance)
+    ScrollArea.MoveContent(self, yDistance)
 end
 
 function ListView:ClearAllItems()
