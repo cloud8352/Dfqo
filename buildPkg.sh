@@ -26,7 +26,7 @@ rm -rf .git
 
 fileName=${pkgName}_${pkgVer}.zip
 rm $filePath
-7z a -tzip -r ../$fileName *
+7z a -tzip -r ../$fileName * -x!androidBuildEnv
  
  
 ### 安卓打包
