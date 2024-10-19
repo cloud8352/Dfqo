@@ -39,7 +39,7 @@ function StartGameWindow:Ctor(model)
     bgLabel:SetIconSpriteDataPath("ui/ActorSelect/Bg2")
 
     -- 背景音乐
-    local musicData = ResourceLib.NewMusic("CharacterSelectStage")
+    local musicData = ResourceLib.NewMusic("CharacterSelectStage2")
     MusicLib.Play(musicData, true)
 
     -- 
