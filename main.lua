@@ -54,10 +54,12 @@ function love.load()
 
     _GRAPHICS.Init()
     _DIRECTOR.Init()
-
 end
 
 function love.update(dt)
+    if (dt > 0.1) then
+        return
+    end
     JobsModel.Update()
     _TIME.Update(dt)
 

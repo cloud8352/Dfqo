@@ -1,10 +1,13 @@
 
 function love.conf(t)
     io.stdout:setvbuf("no")
-    -- t.console = true                   -- Attach a console (boolean, Windows only)
+    -- t.console = true -- Attach a console (boolean, Windows only)
 
     t.identity = "com.ccc.dfqo"
-    t.window.title = "Dungeon Fighter Quest"
+    t.version = "0.10.2" -- The LÖVE version this game was made for (string)
+    t.externalstorage = true
+
+    t.window.title = "Dungeon Fighter Quest Original"
     t.window.width = 960
     t.window.height = 540
 
@@ -17,10 +20,12 @@ function love.conf(t)
     t.window.fullscreentype = "desktop" -- Choose between "desktop" fullscreen or "exclusive" fullscreen mode (string)
     -- 标准全屏或者桌面全屏 (string)
     t.window.vsync = false -- 垂直同步 (boolean)
-    t.window.fsaa = 0 -- 采用多样本采样抗锯齿 (number)
+    t.window.msaa = 0 -- 采用多样本采样抗锯齿 (number)
+    t.window.depth = 0 -- The number of bits per sample in the depth buffer
+    t.window.stencil = 0 -- The number of bits per sample in the stencil buffer
     t.window.display = 1 -- 显示器的指示显示窗口 (number)
-    t.window.highdpi = false -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
-    t.window.usedpiscale = false -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
+    t.window.highdpi = true -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
+    t.window.usedpiscale = true -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
     t.window.srgb = false -- 在屏幕上显示时允许使用sRGB伽马校正 (boolean)
 
     t.modules.audio = true -- 加载 audio        模块 (boolean)

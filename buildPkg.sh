@@ -10,7 +10,7 @@ fi
 pkgName=dfqo
 pkgVer=${version}
 buildDirPath=buildDir
-buildBranch=origin/diy
+buildBranch=diy_dev/0.1
 
 rm -rf $buildDirPath
 #mkdir $buildDirPath
