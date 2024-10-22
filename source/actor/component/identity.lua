@@ -5,6 +5,7 @@
 	alter: 2019-7-5
 ]]--
 
+local Common = require("UI.ui_common")
 local _Caller = require("core.caller")
 
 local _STRING = require("lib.string")
@@ -13,6 +14,8 @@ local _STRING = require("lib.string")
 ---@field public data Actor.RESMGR.InstanceData
 ---@field public type string
 ---@field public name string
+---@field public gender int @Common.GenderEnum
+---@field public Job int @Common.JobEnum
 ---@field public path string
 ---@field public isPaused boolean
 ---@field public destroyProcess int @0=alive, 1=ready, 2=destoryed
@@ -45,7 +48,8 @@ function _Identity:Ctor(data, param, type, id)
 
     local identity = data.identity or _emptyTable
     self.name = identity.name or ""
-    self.gender = identity.gender or 1 -- 1 - male, 2 - female
+    self.gender = identity.gender or Common.GenderEnum.Male
+    self.Job = identity.Job or Common.JobEnum.Other
     self.canCross = identity.canCross or param.canCross or false
     self.destroyCaller = _Caller.New()
     self.initCaller = _Caller.New()

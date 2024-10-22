@@ -44,7 +44,9 @@ local function _HeaderHandle(path)
         return path
     end
 
-    if (string.sub(path, 1, 6) ~= "actor/") then
+    if (string.sub(path, 1, 6) ~= "actor/" and
+            string.sub(path, 1, 5) ~= "icon/")
+    then
         path = "actor/" .. path
     end
 
@@ -300,7 +302,8 @@ end
 ---@return Actor.RESMGR.InstanceData
 local function _NewInstanceData(path, keys)
     ---@class Actor.RESMGR.InstanceData
-    local data, path = _RESOURCE.ReadConfig(path, "config/actor/instance/%s.cfg", keys)
+    local data
+    data, path = _RESOURCE.ReadConfig(path, "config/actor/instance/%s.cfg", keys)
 
     if (not data) then
         assert(nil, "config/actor/instance/" .. path)

@@ -124,7 +124,7 @@ _MAP.DirectionStruct = DirectionStruct
 -- 到达领主房间需要经过的房间数
 local roomCountNeedToPassToGetToBossRoom = 1
 --- 到达领主房间需要经过的房间数范围
-_const.roomCountNeedToPassToGetToBossRoomRange = {1, 7}
+_const.roomCountNeedToPassToGetToBossRoomRange = { 1, 7 }
 local bossRoomDirection = _MAP.DirectionStruct.None
 -- ============ end - boss 方向相关变量 =============
 

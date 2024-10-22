@@ -5,6 +5,8 @@
 	alter: 2019-5-11
 ]]--
 
+local Common = require("UI.ui_common")
+
 local _SOUND = require("lib.sound")
 local _RESMGR = require("actor.resmgr")
 local _ECSMGR = require("actor.ecsmgr")
@@ -12,6 +14,7 @@ local _FACTORY = require("actor.factory")
 local _ASPECT = require("actor.service.aspect")
 local _MOTION = require("actor.service.motion")
 local _BATTLE = require("actor.service.battle")
+local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 
 local _Tweener = require("util.gear.tweener")
 local _Base = require("actor.system.base")
@@ -87,6 +90,8 @@ function _Battle:Update(dt)
 
                 if (e.battle.hasDestroy) then
                     e.identity.destroyProcess = 1
+                    -- 从实例中掉落物品
+                    InventoryItemsSrv.DropItemFromEntity(e)
                 end
 
                 e.battle.deadCaller:Call()

@@ -130,6 +130,7 @@ local EquInfo = {
 
 ---@class ArticleInfo 物品项信息
 ---@field id number
+---@field path string
 ---@field Index int
 ---@field type ArticleType
 ---@field name string
@@ -142,6 +143,7 @@ local EquInfo = {
 ---@field equInfo EquInfo
 local ArticleInfo = {
     id = 0,
+    path = "", -- Inventory Item config path
     Index = -1,
     type = UiCommon.ArticleType.Empty,
     name = "",
@@ -292,6 +294,7 @@ UiCommon.ActorAttributeType = {
 ---@field Right string
 ---@field NormalAttack string
 ---@field CounterAttack string
+---@field GetItem string
 ---@field Skill1 string
 ---@field Skill2 string
 ---@field Skill3 string
@@ -307,6 +310,7 @@ local InputKeyValueStruct = {
     NormalAttack = "normalAttack",
     Jump = "jump",
     CounterAttack = "counterAttack",
+    GetItem = "getItem",
     Skill1 = "skill1",
     Skill2 = "skill2",
     Skill3 = "skill3",
@@ -324,11 +328,20 @@ local GameState = {
 }
 UiCommon.GameState = GameState
 
+---@enum GenderEnum
+local GenderEnum = {
+    Other = 0,
+    Male = 1,
+    Female = 2,
+}
+UiCommon.GenderEnum = GenderEnum
+
 ---@enum JobEnum
 local JobEnum = {
     Other = 0,
     SwordMan = 1,
     Fighter = 2,
+    InventoryItem = 3,
 }
 UiCommon.JobEnum = JobEnum
 

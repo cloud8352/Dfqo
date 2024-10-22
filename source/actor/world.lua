@@ -111,6 +111,7 @@ function _WORLD.Init()
         require("actor.system.bullet.throwStone").New(event),
         require("actor.system.trigger").New(event),
         require("actor.system.skills").New(event),
+        require("actor.system.InventoryItemsSys").New(event),
         require("actor.system.equipments").New(event),
         require("actor.system.buffs").New(event),
         require("actor.system.summon").New(event),

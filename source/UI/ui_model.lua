@@ -20,6 +20,7 @@ local InputSrv = require("actor.service.input")
 local InputLib = require("lib.input")
 local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
+local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 
 local Table = require("lib.table")
 local _RESOURCE = require("lib.resource")
@@ -297,6 +298,10 @@ function UiModel:SetPlayer(player)
     -- connection
     self.player.attacker.hitCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
     self.player.identity.destroyCaller:AddListener(self, self.Slot_onRecvSignalOfPlayerDestroyed)
+    if inventoryItemsComponent then
+        inventoryItemsComponent:AddListenerToItemInsertedCaller(self,
+            self.Slot_InventoryItemOfPlayerInserted)
+    end
 
     -- post init
     self:Signal_PlayerChanged()
@@ -408,12 +413,14 @@ function UiModel:DropArticleItem()
 
         -- 移动拖拽项到当前悬停处
         local draggingArticleInfo = self.articleInfoList[self.articleTableDraggingItemIndex]
-        self.articleInfoList[self.articleTableHoveringItemIndex] = draggingArticleInfo
-        self:RequestSetArticleTableItemInfo(self.articleTableHoveringItemIndex, draggingArticleInfo)
+        InventoryItemsSrv.InsertItemToEntity(self.player, self.articleTableHoveringItemIndex,
+            draggingArticleInfo.count, draggingArticleInfo.path)
 
         -- 移动原先悬停处的物品到拖拽之前的位置
-        self.articleInfoList[self.articleTableDraggingItemIndex] = hoveringArticleInfo
-        self:RequestSetArticleTableItemInfo(self.articleTableDraggingItemIndex, hoveringArticleInfo)
+        InventoryItemsSrv.InsertItemToEntity(self.player, self.articleTableDraggingItemIndex,
+            hoveringArticleInfo.count, hoveringArticleInfo.path)
+
+        self:SavePlayerData()
 
         -- 播放物品移动音效
         self:playChangedArticlePosSound()
@@ -630,10 +637,20 @@ function UiModel:SavePlayerData()
         end
     end
 
-    -- 4. 序列化数据
+    -- 4. 装载物品项数据
+    data.InventoryItems = { List = {} }
+    local articleInfoList = self.player.InventoryItems:GetList()
+    for _, info in pairs(articleInfoList) do
+        if info ~= nil and info.type ~= Common.ArticleType.Empty then
+            local item = { Index = info.Index, Count = info.count, Path = info.path }
+            table.insert(data.InventoryItems.List, item)
+        end
+    end
+
+    -- 5. 序列化数据
     local dataStr = Table.Deserialize(data)
 
-    -- 5. 保存数据
+    -- 6. 保存数据
     local dirPath = "config/actor/instance/duelist/"
     local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
@@ -1155,6 +1172,13 @@ function UiModel:Slot_onRecvSignalOfPlayerDestroyed()
     self:Signal_PlayerDestroyed()
 end
 
+---@param articleInfo ArticleInfo
+function UiModel:Slot_InventoryItemOfPlayerInserted(articleInfo)
+    self.articleInfoList[articleInfo.Index] = articleInfo
+
+    self:RequestSetArticleTableItemInfo(articleInfo.Index, articleInfo)
+end
+
 --========== private function ============
 
 --- 使用物品
@@ -1192,8 +1216,8 @@ function UiModel:mountEquipment(articleTableIndex, itemInfo)
 
     local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
     -- 在ui上卸载原有装备到物品栏
-    self.articleInfoList[articleTableIndex] = lastEquItemInfo
-    self:RequestSetArticleTableItemInfo(articleTableIndex, lastEquItemInfo)
+    InventoryItemsSrv.InsertItemToEntity(self.player, articleTableIndex,
+        lastEquItemInfo.count, lastEquItemInfo.path)
 
     -- 待装备的物品是否存在于物品托盘，如存在，则更新物品托盘
     local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
@@ -1224,27 +1248,12 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:unloadEquipment(equTableIndex, itemInfo)
     print("UiModel:unloadEquipment(index, itemInfo)", equTableIndex, itemInfo.name)
-    -- 在ui上找到物品栏中第一个空位置
-    local emptyItemIndex = -1
-    ---@type ArticleInfo
-    local emptyItemInfo = nil
-    for i, info in pairs(self.articleInfoList) do
-        if info.type == Common.ArticleType.Empty then
-            emptyItemIndex = i
-            emptyItemInfo = info
-            break
-        end
-    end
-    if emptyItemInfo == nil then
-        print("UiModel:unloadEquipment(index, itemInfo)", "article table has no empty space")
-        return
-    end
-
     -- 在ui上卸载到物品栏的空位置
-    self.articleInfoList[emptyItemIndex] = itemInfo
-    self:RequestSetArticleTableItemInfo(emptyItemIndex, itemInfo)
+    InventoryItemsSrv.AddItemToEntity(self.player,
+        itemInfo.count, itemInfo.path)
 
     -- 在ui上将装备栏对应位置设置为空
+    local emptyItemInfo = Common.NewArticleInfo()
     self.mountedEquInfoList[equTableIndex] = emptyItemInfo
     self:RequestSetEquTableItemInfo(equTableIndex, emptyItemInfo)
 

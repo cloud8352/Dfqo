@@ -38,6 +38,7 @@ local _auraDataMap = {
     player = _RESMGR.GetInstanceData("effect/aura/player")
 }
 
+---@type table<string, Core.Caller>
 local _callerMap = {
     add = _Caller.New(),
     del = _Caller.New(),
