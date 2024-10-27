@@ -22,6 +22,9 @@ local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
 local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 
+local ResLib = require("lib.resource")
+local SoundLib = require("lib.sound")
+
 local Table = require("lib.table")
 local _RESOURCE = require("lib.resource")
 local File = require("lib.file")
@@ -36,6 +39,9 @@ local DotAreaBulletInstanceData = ResMgr.GetInstanceData("bullet/swordman/dotare
 
 local PlayerCfgSavedFileName = "player"
 local PlayerCfgSavedFileSuffix = ".cfg"
+
+-- SoundData
+local NotFitAlertSoundData = ResLib.GetSoundData("ui/Alert1")
 
 ---@param director DIRECTOR
 function UiModel:Ctor(director)
@@ -1177,6 +1183,7 @@ function UiModel:Slot_InventoryItemOfPlayerInserted(articleInfo)
     self.articleInfoList[articleInfo.Index] = articleInfo
 
     self:RequestSetArticleTableItemInfo(articleInfo.Index, articleInfo)
+    self:SavePlayerData()
 end
 
 --========== private function ============
@@ -1213,6 +1220,19 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:mountEquipment(articleTableIndex, itemInfo)
     print("UiModel:mountEquipment(index, itemInfo)", articleTableIndex, itemInfo.name)
+    local job = self.player.identity.Job
+    if not Common.IsArticleInfoFitForJob(itemInfo, job) then
+        SoundLib.Play(NotFitAlertSoundData)
+        print("UiModel:mountEquipment(index, itemInfo)", "equ is not fit for job:", job)
+        return
+    end
+    local gender = self.player.identity.gender
+    if not Common.IsArticleInfoFitForGender(itemInfo, gender) then
+        SoundLib.Play(NotFitAlertSoundData)
+        print("UiModel:mountEquipment(index, itemInfo)",
+            "equ is not fit for gender:", gender)
+        return
+    end
 
     local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
     -- 在ui上卸载原有装备到物品栏

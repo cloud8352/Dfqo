@@ -11,8 +11,8 @@ local MotionSrv = require("actor.service.motion")
 local InputSrv = require("actor.service.input")
 local StateSrv = require("actor.service.state")
 local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
-local ResMgr = require("actor.resmgr")
 
+local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
 
 ---@class Actor.System.Life : Actor.System
@@ -26,7 +26,7 @@ function InventoryItemsSys:Ctor(upperEvent)
     }, "InventoryItems")
 
     -- itemGotSoundData
-    self.itemGotSoundData = ResMgr.GetSoundData("InventoryItemGot")
+    self.itemGotSoundData = ResLib.GetSoundData("ui/InventoryItemGot")
 end
 
 function InventoryItemsSys:Update()

@@ -63,6 +63,30 @@ UiCommon.WeaponSubType = {
     BeamSwd = 3, -- 武器 - 光剑
 }
 
+---@enum GameState
+local GameState = {
+    ActorSelect = 1,
+    Started = 2,
+}
+UiCommon.GameState = GameState
+
+---@enum GenderEnum
+local GenderEnum = {
+    Other = 0,
+    Male = 1,
+    Female = 2,
+}
+UiCommon.GenderEnum = GenderEnum
+
+---@enum JobEnum
+local JobEnum = {
+    Other = 0,
+    SwordMan = 1,
+    Fighter = 2,
+    InventoryItem = 3,
+}
+UiCommon.JobEnum = JobEnum
+
 ---@type table<int, string>
 local mapOfEquTypeToTag = {}
 mapOfEquTypeToTag[UiCommon.EquType.Belt] = "belt"
@@ -138,7 +162,8 @@ local EquInfo = {
 ---@field iconPath string
 ---@field count number
 ---@field maxCount number
----@field UsableJob table<int, JobEnum>
+---@field UsableJobs table<int, JobEnum>
+---@field UsableGenders table<int, GenderEnum>
 ---@field consumableInfo ConsumableInfo
 ---@field equInfo EquInfo
 local ArticleInfo = {
@@ -152,7 +177,9 @@ local ArticleInfo = {
     count = 1,
     maxCount = 100,
     ---@type table<int, JobEnum>
-    UsableJob = {},
+    UsableJobs = {},
+    ---@type table<int, GenderEnum>
+    UsableGenders = _TABLE.DeepClone(GenderEnum),
     ---@type ConsumableInfo
     consumableInfo = _TABLE.DeepClone(ConsumableInfo),
     ---@type EquInfo
@@ -163,6 +190,32 @@ local ArticleInfo = {
 ---@return ArticleInfo 创建新的物品信息
 function UiCommon.NewArticleInfo()
     return _TABLE.DeepClone(ArticleInfo)
+end
+
+---@param info ArticleInfo
+---@param job int JobEnum
+---@return boolean
+function UiCommon.IsArticleInfoFitForJob(info, job)
+    for _, usableJob in pairs(info.UsableJobs) do
+        if usableJob == job then
+            return true
+        end
+    end
+
+    return false
+end
+
+---@param info ArticleInfo
+---@param gender int GenderEnum
+---@return boolean
+function UiCommon.IsArticleInfoFitForGender(info, gender)
+    for _, usableGender in pairs(info.UsableGenders) do
+        if usableGender == gender then
+            return true
+        end
+    end
+
+    return false
 end
 
 ---@class ArticleInfoItemIndex 物品信息项检索
@@ -320,30 +373,6 @@ local InputKeyValueStruct = {
     Skill7 = "skill7"
 }
 UiCommon.InputKeyValueStruct = InputKeyValueStruct
-
----@enum GameState
-local GameState = {
-    ActorSelect = 1,
-    Started = 2,
-}
-UiCommon.GameState = GameState
-
----@enum GenderEnum
-local GenderEnum = {
-    Other = 0,
-    Male = 1,
-    Female = 2,
-}
-UiCommon.GenderEnum = GenderEnum
-
----@enum JobEnum
-local JobEnum = {
-    Other = 0,
-    SwordMan = 1,
-    Fighter = 2,
-    InventoryItem = 3,
-}
-UiCommon.JobEnum = JobEnum
 
 ---@class ActorInstanceInventoryItemInfo
 local ActorInstanceInventoryItemInfo = {

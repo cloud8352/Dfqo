@@ -9,10 +9,11 @@ local DrawableSprite = require("actor.drawable.sprite")
 local ResMgr = require("actor.resmgr")
 local Factory = require("actor.factory")
 
+local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
 
 -- 物品掉落音效
-local ItemDroppedSoundData = ResMgr.GetSoundData("InventoryItemDropped")
+local ItemDroppedSoundData = ResLib.GetSoundData("ui/InventoryItemDropped")
 
 ---@class Actor.Service.InventoryItemsSrv
 local InventoryItemsSrv = {}

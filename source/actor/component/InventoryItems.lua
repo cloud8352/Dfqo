@@ -83,7 +83,10 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
     articleInfo.name = inventoryItemData.Name
     articleInfo.desc = inventoryItemData.Desc
     articleInfo.iconPath = inventoryItemData.IconPath
-    articleInfo.UsableJob = inventoryItemData.UsableJob
+    articleInfo.UsableJobs = inventoryItemData.UsableJobs or {}
+    if inventoryItemData.UsableGenders then
+        articleInfo.UsableGenders = inventoryItemData.UsableGenders
+    end
     if articleInfo.type == UiCommon.ArticleType.Consumable and
         inventoryItemData.ConsumableInfo then
         local consumableInfoData = inventoryItemData.ConsumableInfo
