@@ -22,6 +22,7 @@ local Util = require("util.Util")
 ---@class ItemKeyGroup
 local ItemKeyGroup = require("core.class")()
 
+local SmallBtnWidth = 40
 local NormalBtnWidth = 90
 local LargeBtnWidth = 180
 
@@ -43,8 +44,9 @@ end
 function ItemKeyGroup:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
 
-    NormalBtnWidth = NormalBtnWidth * Util.GetWindowSizeScale()
-    LargeBtnWidth = LargeBtnWidth * Util.GetWindowSizeScale()
+    SmallBtnWidth = 40 * Util.GetWindowSizeScale()
+    NormalBtnWidth = 90 * Util.GetWindowSizeScale()
+    LargeBtnWidth = 180 * Util.GetWindowSizeScale()
 
     self.isVisible = true
 
@@ -60,6 +62,12 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.normalAttackBtn:EnableClickedSound(false)
     self.normalAttackBtn:SetSize(LargeBtnWidth, LargeBtnWidth)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.NormalAttack] = self.normalAttackBtn
+
+    self.getItemBtn = PushButton.New(parentWindow)
+    initBtnImgPaths(self.getItemBtn)
+    self.getItemBtn:EnableClickedSound(false)
+    self.getItemBtn:SetSize(SmallBtnWidth, SmallBtnWidth)
+    self.getItemBtn:SetNormalSpriteDataPath("icon/skill/GetItem")
 
     -- jump
     self.jumpBtn = PushButton.New(parentWindow)
@@ -130,6 +138,7 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.model:MocConnectSignal(self.model.Signal_PlayerMountedSkillsChanged, self)
 
     self.normalAttackBtn:MocConnectSignal(self.normalAttackBtn.Signal_BtnClicked, self)
+    self.getItemBtn:MocConnectSignal(self.getItemBtn.Signal_BtnClicked, self)
     self.jumpBtn:MocConnectSignal(self.jumpBtn.Signal_BtnClicked, self)
     self.counterAttackBtn:MocConnectSignal(self.counterAttackBtn.Signal_BtnClicked, self)
     self.skill1Btn:MocConnectSignal(self.skill1Btn.Signal_BtnClicked, self)
@@ -163,6 +172,8 @@ function ItemKeyGroup:Update(dt)
 
     -- normal attack
     self.normalAttackBtn:Update(dt)
+
+    self.getItemBtn:Update(dt)
 
     -- jump
     self.jumpBtn:Update(dt)
@@ -201,6 +212,8 @@ function ItemKeyGroup:Draw()
     end
     -- normal attack
     self.normalAttackBtn:Draw()
+
+    self.getItemBtn:Draw()
 
     -- jump
     self.jumpBtn:Draw()
@@ -266,6 +279,9 @@ function ItemKeyGroup:UpdatePosition()
         windowHeight - 40 * scale - LargeBtnWidth)
 
 
+    self.getItemBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 15 * scale,
+        windowHeight - 20 * scale - SmallBtnWidth + 15 * scale)
+
     -- jump
     self.jumpBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
         windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
@@ -324,6 +340,10 @@ function ItemKeyGroup:Slot_BtnClicked(btn)
         self.model:ReleasePlayerKey(Common.InputKeyValueStruct.NormalAttack)
     end
 
+    if btn == self.getItemBtn then
+        self.model:ReleasePlayerKey(Common.InputKeyValueStruct.GetItem)
+    end
+
     -- jump
     if (btn == self.jumpBtn) then
         self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Jump)
@@ -375,6 +395,10 @@ function ItemKeyGroup:updateUseLogic()
     -- normal attack
     if (self.normalAttackBtn:IsPressing()) then
         self.model:PressPlayerKey(Common.InputKeyValueStruct.NormalAttack)
+    end
+
+    if (self.getItemBtn:IsPressing()) then
+        self.model:PressPlayerKey(Common.InputKeyValueStruct.GetItem)
     end
 
     -- jump
