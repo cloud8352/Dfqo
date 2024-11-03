@@ -77,31 +77,14 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
         return
     end
 
-    local inventoryItemData = ResLib.ReadConfig(inventoryItemConfigPath, "config/actor/InventoryItem/%s.cfg")
+    local inventoryItemData = ResMgr.GetItemData(inventoryItemConfigPath)
     articleInfo.path = inventoryItemConfigPath
-    articleInfo.type = inventoryItemData.Type
-    articleInfo.name = inventoryItemData.Name
-    articleInfo.desc = inventoryItemData.Desc
-    articleInfo.iconPath = inventoryItemData.IconPath
-    articleInfo.UsableJobs = inventoryItemData.UsableJobs or {}
-    if inventoryItemData.UsableGenders then
-        articleInfo.UsableGenders = inventoryItemData.UsableGenders
-    end
-    if articleInfo.type == UiCommon.ArticleType.Consumable and
-        inventoryItemData.ConsumableInfo then
-        local consumableInfoData = inventoryItemData.ConsumableInfo
-        articleInfo.consumableInfo.hpRecovery = consumableInfoData.HpRecovery
-        articleInfo.consumableInfo.hpRecoveryRate = consumableInfoData.HpRecoveryRate
-        articleInfo.consumableInfo.mpRecovery = consumableInfoData.MpRecovery
-        articleInfo.consumableInfo.mpRecoveryRate = consumableInfoData.MpRecoveryRate
-    elseif inventoryItemData.ResMgrEquDataPath and 
-        type(inventoryItemData.ResMgrEquDataPath) == "string"
-    then
-        local resMgrEquData = ResMgr.NewEquipmentData(inventoryItemData.ResMgrEquDataPath)
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
+    local typeStr = inventoryItemData.type
+    if typeStr == "equipment" then
         articleInfo.type = UiCommon.ArticleType.Equipment
-        articleInfo.name = resMgrEquData.name
-        articleInfo.desc = resMgrEquData.comment or ""
+        ---@type Actor.RESMGR.EquipmentData
+        local resMgrEquData = inventoryItemData
+        articleInfo.equInfo.resMgrEquData = resMgrEquData
         articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
 
         local equType = 0
@@ -111,7 +94,24 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
             equType = UiCommon.MapOfTagToEquType[resMgrEquData.kind]
         end
         articleInfo.equInfo.type = equType
+    elseif typeStr == "Attribute" then
+        articleInfo.type = UiCommon.ArticleType.Consumable
+        ---@type Actor.RESMGR.AttributeData
+        local resMgrConsumableData = inventoryItemData
+        articleInfo.iconPath = "icon/Attribute/" .. resMgrConsumableData.icon
+        articleInfo.consumableInfo.hpRecovery = resMgrConsumableData.HpRecovery
+        articleInfo.consumableInfo.hpRecoveryRate = resMgrConsumableData.HpRecoveryRate
+        articleInfo.consumableInfo.mpRecovery = resMgrConsumableData.MpRecovery
+        articleInfo.consumableInfo.mpRecoveryRate = resMgrConsumableData.MpRecoveryRate
+    elseif typeStr == "skill" then
+        --
+    elseif typeStr == "buff" then
+        --
     end
+    articleInfo.name = inventoryItemData.name
+    articleInfo.desc = inventoryItemData.special or ""
+    articleInfo.UsableJobs = inventoryItemData.UsableJobs
+    articleInfo.UsableGenders = inventoryItemData.UsableGenders
 
     -- 计算非空物品总数
     self:computeNotEmptyItemCount()

@@ -25,8 +25,9 @@ git log -n 1
 rm -rf .git
 
 fileName=${pkgName}_${pkgVer}.zip
+filePath=../$fileName
 rm $filePath
-7z a -tzip -r ../$fileName * -x!androidBuildEnv
+7z a -tzip -r $filePath * -x!androidBuildEnv
  
  
 ### 安卓打包

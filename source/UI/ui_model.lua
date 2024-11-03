@@ -168,6 +168,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Belt]
             articleInfo.id = 5
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name or ""
             articleInfo.desc = resMgrEquData.comment or ""
@@ -181,6 +182,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Cap]
             articleInfo.id = 6
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -194,6 +196,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Coat]
             articleInfo.id = 7
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -202,12 +205,12 @@ function UiModel:SetPlayer(player)
             articleInfo.equInfo.resMgrEquData = resMgrEquData
         end
 
-
         itemDataFromContainer = self.player.equipments.container:Get("face")
         if itemDataFromContainer then
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Face]
             articleInfo.id = 7
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -216,12 +219,12 @@ function UiModel:SetPlayer(player)
             articleInfo.equInfo.resMgrEquData = resMgrEquData
         end
 
-
         itemDataFromContainer = self.player.equipments.container:Get("hair")
         if itemDataFromContainer then
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Hair]
             articleInfo.id = 8
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -235,6 +238,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Neck]
             articleInfo.id = 9
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -248,6 +252,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Pants]
             articleInfo.id = 10
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -261,6 +266,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Shoes]
             articleInfo.id = 11
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""
@@ -274,6 +280,7 @@ function UiModel:SetPlayer(player)
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Weapon]
             articleInfo.id = 12
+            articleInfo.path = "equipment/" .. resMgrEquData.path
             articleInfo.type = Common.ArticleType.Equipment
             articleInfo.name = resMgrEquData.name
             articleInfo.desc = resMgrEquData.comment or ""

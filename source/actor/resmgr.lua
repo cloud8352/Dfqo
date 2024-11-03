@@ -465,6 +465,16 @@ local function _NewItemData(path, pathFormat, keys, type, scriptHead, iconHead, 
         data.comment = _STRING.GetVersion(data.comment)
     end
 
+    if not data.UsableJobs then
+        ---@type table<int, int>
+        data.UsableJobs = {}
+    end
+
+    if not data.UsableGenders then
+        ---@type table<int, int>
+        data.UsableGenders = {}
+    end
+
     return data
 end
 
@@ -515,10 +525,18 @@ end
 ---@return Actor.RESMGR.AttributeData
 local function _NewAttributeData(path, keys)
     ---@class Actor.RESMGR.AttributeData : Actor.RESMGR.ItemData
-    ---@field value number
-    ---@field operation string @'+' or '*'
-    local data = _NewItemData(path, "config/actor/attribute/%s.cfg", keys, "attribute", _, "ui/icon/attribute/")
+    local data = _NewItemData(path, "config/actor/Attribute/%s.cfg", keys, "Attribute", _, "ui/icon/attribute/")
 
+    local info = data.Info
+    if not info then
+        info = {}
+    end
+    
+    data.HpRecovery = info.HpRecovery or 0
+    data.HpRecoveryRate = info.HpRecoveryRate or 0.0
+    data.MpRecovery = info.MpRecovery or 0
+    data.MpRecoveryRate = info.MpRecoveryRate or 0.0
+    
     return data
 end
 
@@ -732,7 +750,7 @@ function _RESMGR.GetItemData(path, param, keys)
         return _RESMGR.GetSkillData(path, keys)
     elseif (type == "buff") then
         return _RESMGR.NewBuffData(path, param, keys)
-    elseif (type == "attribute") then
+    elseif (type == "Attribute") then
         return _RESMGR.NewAttributeData(path, param, keys)
     end
 end
