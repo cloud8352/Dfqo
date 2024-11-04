@@ -437,6 +437,10 @@ function UiModel:DropArticleItem()
 
         -- 播放物品移动音效
         self:playChangedArticlePosSound()
+    else
+        local draggingArticleInfo = self.articleInfoList[self.articleTableDraggingItemIndex]
+        InventoryItemsSrv.DropItemFromEntity(self.player, draggingArticleInfo.Index,
+            draggingArticleInfo.count)
     end
 
     -- 请求界面设置拖拽项为不可见

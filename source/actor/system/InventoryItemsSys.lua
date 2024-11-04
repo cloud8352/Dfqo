@@ -33,7 +33,9 @@ function InventoryItemsSys:Update()
     if (not Config.user.player) then
         return
     end
-    for n = 1, self._list:GetLength() do
+
+    -- 判断物品拾取
+    for n = self._list:GetLength(), 1, -1 do
         ---@type Actor.Entity
         local e = self._list:Get(n)
         if e.identity.Job == Common.JobEnum.InventoryItem then
@@ -56,6 +58,7 @@ function InventoryItemsSys:Update()
 
                 -- destroy inventoryItems entity
                 e.identity.destroyProcess = 1
+                break
             end
         end
     end

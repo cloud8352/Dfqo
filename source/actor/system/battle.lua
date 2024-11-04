@@ -91,7 +91,7 @@ function _Battle:Update(dt)
                 if (e.battle.hasDestroy) then
                     e.identity.destroyProcess = 1
                     -- 从实例中掉落物品
-                    InventoryItemsSrv.DropItemFromEntity(e)
+                    InventoryItemsSrv.RandomDropItemFromEntity(e)
                 end
 
                 e.battle.deadCaller:Call()

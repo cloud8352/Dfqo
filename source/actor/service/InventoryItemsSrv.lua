@@ -64,11 +64,19 @@ function InventoryItemsSrv.AddItemToEntity(entity, count, inventoryItemConfigPat
     updateEntityAspect(entity)
 end
 
+---@param entity Actor.Entity
+---@param index int
+---@return ArticleInfo
+function InventoryItemsSrv.GetItem(entity, index)
+    return entity.InventoryItems:GetList()[index]
+end
+
 ---@param x int
 ---@param y int
 ---@param z int
+---@param count int
 ---@param inventoryItemConfigPath string
-function InventoryItemsSrv.CreateEntity(x, y, z, inventoryItemConfigPath)
+function InventoryItemsSrv.CreateEntity(x, y, z, count, inventoryItemConfigPath)
     local params = {
         x = x,
         y = y,
@@ -80,13 +88,15 @@ function InventoryItemsSrv.CreateEntity(x, y, z, inventoryItemConfigPath)
         }
     }
     local entity = Factory.New("article/InventoryItem", params)
-    InventoryItemsSrv.AddItemToEntity(entity, 1, 
+    InventoryItemsSrv.AddItemToEntity(entity, count, 
         inventoryItemConfigPath)
 end
 
 --- 从实例中掉落物品
 ---@param entity Actor.Entity
-function InventoryItemsSrv.DropItemFromEntity(entity)
+---@param index int
+---@param count int
+function InventoryItemsSrv.DropItemFromEntity(entity, index, count)
     local transform = entity.transform
     if transform == nil then
         return
@@ -102,14 +112,36 @@ function InventoryItemsSrv.DropItemFromEntity(entity)
     if inventoryItems:GetNotEmptyItemCount() < 1 then
         return
     end
+    local needDropItem = InventoryItemsSrv.GetItem(entity, index)
+    local restCount = needDropItem.count - count
+    if restCount > 0 then
+        InventoryItemsSrv.InsertItemToEntity(entity, index,
+            restCount, needDropItem.path)
+    else
+        InventoryItemsSrv.InsertItemToEntity(entity, index,
+            0, "")
+    end
+    InventoryItemsSrv.CreateEntity(x, y, z, count, needDropItem.path)
+
+    -- 播放物品掉落音效
+    SoundLib.Play(ItemDroppedSoundData)
+end
+
+--- 从实例中掉落物品
+---@param entity Actor.Entity
+function InventoryItemsSrv.RandomDropItemFromEntity(entity)
+    local inventoryItems = entity.InventoryItems
+    if inventoryItems == nil then
+        return
+    end
+    if inventoryItems:GetNotEmptyItemCount() < 1 then
+        return
+    end
     local articleInfo = inventoryItems:RandomGetNotEmptyItem()
     if articleInfo.type == Common.ArticleType.Empty then
         return
     end
-    InventoryItemsSrv.CreateEntity(x, y, z, articleInfo.path)
-
-    -- 播放物品掉落音效
-    SoundLib.Play(ItemDroppedSoundData)
+    InventoryItemsSrv.DropItemFromEntity(entity, articleInfo.Index, articleInfo.count)
 end
 
 return InventoryItemsSrv
