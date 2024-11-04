@@ -433,8 +433,6 @@ function UiModel:DropArticleItem()
         InventoryItemsSrv.InsertItemToEntity(self.player, self.articleTableDraggingItemIndex,
             hoveringArticleInfo.count, hoveringArticleInfo.path)
 
-        self:SavePlayerData()
-
         -- 播放物品移动音效
         self:playChangedArticlePosSound()
     else
