@@ -2,6 +2,7 @@
 	desc: MasteredSkills, a component.
 	author: keke
 ]]--
+local Common = require("UI.ui_common")
 
 local ResMgr = require("actor.resmgr")
 local _SKILL = require("actor.service.skill")
@@ -11,7 +12,9 @@ local _Container = require("core.container")
 
 ---@class Actor.Component.MasteredSkills
 ---@field public container Core.Container
----@field public caller Core.Caller
+---@field public SkillAddedCaller Core.Caller
+---@field public SkillChangedCaller Core.Caller
+---@field public List table<int, SkillInfo>
 local MasteredSkills = require("core.class")()
 
 function MasteredSkills.HandleData(data)
@@ -24,21 +27,24 @@ end
 
 function MasteredSkills:Ctor(data)
     self.container = _Container.New()
-    self.caller = _Caller.New()
+    self.SkillAddedCaller = _Caller.New()
+    self.SkillChangedCaller = _Caller.New()
     self.data = data
 
-    ---@type table<int, Actor.RESMGR.SkillData>
-    self.list = {}
-    local masteredSkills = data.List
-    for i, path in pairs(masteredSkills) do
-        local skillResMgrData = ResMgr.GetSkillData(path)
+    ---@type table<int, SkillInfo>
+    self.List = {}
+    local masteredSkills = data.List or {}
+    for i, skillData in pairs(masteredSkills) do
+        local skillResMgrData = ResMgr.GetSkillData(skillData.Path)
+        local info = Common.NewSkillInfoFromData(skillResMgrData)
+        Common.SetExpToSkillInfo(info, skillData.Exp)
 
-        table.insert(self.list, skillResMgrData)
+        table.insert(self.List, info)
     end
 end
 
 function MasteredSkills:GetList()
-    return self.list
+    return self.List
 end
 
 return MasteredSkills

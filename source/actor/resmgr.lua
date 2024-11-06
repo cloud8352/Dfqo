@@ -5,11 +5,14 @@
 	alter: 2019-8-26
 ]]--
 
+local Common = require("UI.ui_common")
+
 local _FILE = require("lib.file")
 local _MATH = require("lib.math")
 local _GRAPHICS = require("lib.graphics")
 local _STRING = require("lib.string")
 local _RESOURCE = require("lib.resource")
+local TableLib = require("lib.table")
 
 ---@class Actor.RESMGR
 local _RESMGR = {}
@@ -435,7 +438,7 @@ local function _NewItemData(path, pathFormat, keys, type, scriptHead, iconHead, 
     local data, path = _RESOURCE.ReadConfig(path, pathFormat, keys)
 
     if (not data) then
-        print(pathFormat .. " | " ..  path)
+        print(pathFormat .. " | " .. path)
     end
 
     if (data.script) then
@@ -469,10 +472,16 @@ local function _NewItemData(path, pathFormat, keys, type, scriptHead, iconHead, 
         ---@type table<int, int>
         data.UsableJobs = {}
     end
+    if TableLib.Len(data.UsableJobs) == 0 then
+        data.UsableJobs = TableLib.DeepClone(Common.JobEnum)
+    end
 
     if not data.UsableGenders then
         ---@type table<int, int>
         data.UsableGenders = {}
+    end
+    if TableLib.Len(data.UsableGenders) == 0 then
+        data.UsableGenders = TableLib.DeepClone(Common.GenderEnum)
     end
 
     return data
@@ -484,7 +493,7 @@ end
 local function _NewSkillData(path, keys)
     ---@class Actor.RESMGR.SkillData : Actor.RESMGR.ItemData
     local data = _NewItemData(path, "config/actor/skill/%s.cfg", keys, "skill",
-            "actor.skill.", "ui/icon/skill/")
+        "actor.skill.", "icon/skill/")
     data.kind = "skill"
     data.subKind = data.subKind or "normal"
     data.origin = data.origin or data.path
@@ -492,6 +501,13 @@ local function _NewSkillData(path, keys)
     --[[if (data.stateData) then
         data.stateData = _RESMGR.GetStateData(data.stateData)
     end]]--
+
+    if data.time == nil then
+        data.time = 0
+    end
+    if data.mp == nil then
+        data.mp = 0
+    end
 
     return data
 end

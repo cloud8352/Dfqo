@@ -17,9 +17,12 @@
         "filesystem",
         "ctrlled",
         "Struct",
-        "Recv"
+        "Recv",
+        "Cmpt"
     ],
     "files.exclude": {
-        "**/love2d": true
+        "**/love2d": true,
+        "**/PvfChar": true,
+        "**/tacentview": true,
     }
 }

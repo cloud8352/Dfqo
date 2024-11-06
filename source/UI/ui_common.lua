@@ -84,6 +84,7 @@ local JobEnum = {
     SwordMan = 1,
     Fighter = 2,
     InventoryItem = 3,
+    Kyo = 4,
 }
 UiCommon.JobEnum = JobEnum
 
@@ -126,12 +127,14 @@ UiCommon.EquPropType = {
 ---@field hpRecoveryRate number
 ---@field mpRecovery number
 ---@field mpRecoveryRate number
+---@field SkillPath string
 local ConsumableInfo = {
     -- hp/mp
     hpRecovery = 0,
     hpRecoveryRate = 0.0,
     mpRecovery = 0,
     mpRecoveryRate = 0.0,
+    SkillPath = "",
 }
 
 --- 装备信息
@@ -253,7 +256,10 @@ UiCommon.SkillPropType = {
     MagicDamageEnhanceRate = 4,
 }
 
---- 技能信息
+---- 技能信息
+--- 技能升级所需的基础经验
+local BaseExpOfSkillLevelUp = 500
+
 ---@class SkillInfo
 ---@field id number
 ---@field name string
@@ -264,6 +270,10 @@ UiCommon.SkillPropType = {
 ---@field mp number
 ---@field physicalDamageEnhanceRate number
 ---@field magicDamageEnhanceRate number
+---@field Exp int
+---@field Level int
+---@field ExpOfCurrentLevel int
+---@field MaxExpOfCurrentLevel int
 local SkillInfo = {
     id = 0,
     name = "",
@@ -274,6 +284,10 @@ local SkillInfo = {
     mp = 0,
     physicalDamageEnhanceRate = 0.0,
     magicDamageEnhanceRate = 0.0,
+    Exp = 0,
+    Level = 1,
+    ExpOfCurrentLevel = 0,
+    MaxExpOfCurrentLevel = 0
 }
 
 --- 创建新的物品信息
@@ -284,26 +298,15 @@ end
 
 
 ---@param skillInfo SkillInfo
----@param data table
+---@param data Actor.RESMGR.SkillData
 function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
-    if data.name then
-        skillInfo.name = data.name
-    end
-    if data.special then
-        skillInfo.desc = data.special
-    end
-    if data.path then
-        skillInfo.resDataPath = data.path
-    end
-    if data.icon then
-        skillInfo.iconPath = "icon/skill/" .. data.icon
-    end
-    if data.time then
-        skillInfo.cdTime = data.time / 1000
-    end
-    if data.mp then
-        skillInfo.mp = data.mp
-    end
+    skillInfo.name = data.name
+    skillInfo.desc = data.special
+    skillInfo.resDataPath = data.path
+    skillInfo.iconPath = "icon/skill/" .. data.icon
+    skillInfo.cdTime = data.time / 1000
+    skillInfo.mp = data.mp
+    -- 此处解析错误
     if data.attackValues and data.attackValues.isPhysical then
         skillInfo.physicalDamageEnhanceRate = 0 or data.attackValues.damageRate
     else
@@ -311,13 +314,49 @@ function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     end
 end
 
----@param data table
+---@param data Actor.RESMGR.SkillData
 ---@return SkillInfo
 function UiCommon.NewSkillInfoFromData(data)
     local skillInfo = UiCommon.NewSkillInfo()
     skillInfo.id = 1
     UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     return skillInfo
+end
+
+---@param info SkillInfo
+---@param exp int
+function UiCommon.SetExpToSkillInfo(info, exp)
+    info.Exp = exp
+    info.ExpOfCurrentLevel = exp
+    local level = 1
+    local lastExpOfSkillLevelUp = 0
+    while (1) do
+        local expOfSkillLevelUp = BaseExpOfSkillLevelUp * 2 ^ (level - 1)
+        if expOfSkillLevelUp > exp then
+            info.Level = level
+            info.MaxExpOfCurrentLevel = expOfSkillLevelUp - lastExpOfSkillLevelUp
+            break
+        end
+
+        info.ExpOfCurrentLevel = exp - expOfSkillLevelUp
+        level = level + 1
+        lastExpOfSkillLevelUp = expOfSkillLevelUp
+    end
+end
+
+---@param info SkillInfo
+---@param exp int
+---@return boolean whetherSkillLevelUp
+function UiCommon.AddExpOfSkillInfo(info, exp)
+    info.Exp = info.Exp + exp
+    info.ExpOfCurrentLevel = info.ExpOfCurrentLevel + exp
+    if info.MaxExpOfCurrentLevel < info.ExpOfCurrentLevel then
+        -- 技能升级
+        UiCommon.SetExpToSkillInfo(info, info.Exp)
+        return true
+    end
+
+    return false
 end
 
 --- 角色属性类型

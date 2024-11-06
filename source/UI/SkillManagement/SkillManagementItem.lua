@@ -44,6 +44,12 @@ function SkillManagementItem:Update(dt)
     if not self:IsVisible() then
         return
     end
+
+    self.iconLabel:Update(dt)
+    self.textLabel:Update(dt)
+    self.levelLabel:Update(dt)
+    self.progressBar:Update(dt)
+
     StandardItem.Update(self, dt)
 end
 
@@ -223,16 +229,19 @@ end
 ---@param path string
 function SkillManagementItem:SetIconPath(path)
     self.iconLabel:SetIconSpriteDataPath(path)
+    self:SetNeedUpdateAllStateCanvas(true)
 end
 
 ---@param title string
 function SkillManagementItem:SetTitle(title)
     self.textLabel:SetText(title)
+    self:SetNeedUpdateAllStateCanvas(true)
 end
 
 ---@param level int
 function SkillManagementItem:SetLevel(level)
     self.levelLabel:SetText("Lv." .. tostring(level))
+    self:SetNeedUpdateAllStateCanvas(true)
 end
 
 ---@param value int
@@ -240,6 +249,7 @@ end
 function SkillManagementItem:SetProgress(value, maxValue)
     self.progressBar:SetProgress(value / maxValue)
     self.progressBar:SetText(tostring(value) .. "/" .. tostring(maxValue))
+    self:SetNeedUpdateAllStateCanvas(true)
 end
 
 ---@param red integer
@@ -248,6 +258,7 @@ end
 ---@param alpha integer
 function SkillManagementItem:SetBarColor(red, green, blue, alpha)
     self.progressBar:SetBarColor(red, green, blue, alpha)
+    self:SetNeedUpdateAllStateCanvas(true)
 end
 
 --- signals

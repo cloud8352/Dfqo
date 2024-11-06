@@ -5,7 +5,7 @@
 
 local BaseSkill = require("actor.skill.base")
 
----@class Actor.Skill
+---@class Actor.Skill.JumpSkill : Actor.Skill
 ---@field protected _timer Util.Gear.Timer
 ---@field protected _entity Actor.Entity
 ---@field protected _judgeAi Actor.Ai.BattleJudge

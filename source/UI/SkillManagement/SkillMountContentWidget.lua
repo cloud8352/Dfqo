@@ -41,7 +41,7 @@ function SkillMountContentWidget:Ctor(parentWindow, model)
     self.skillDockViewFrame:SetIsBaseSkillItemVisible(true)
 
     self.clearSkillShortcutsBtn = PushButton.New(parentWindow)
-    self.clearSkillShortcutsBtn:SetText("置空")
+    self.clearSkillShortcutsBtn:SetText("取消装配")
     self.clearSkillShortcutsBtn:SetSize(80 * windowSizeScale, 30 * windowSizeScale)
 
     -- connection

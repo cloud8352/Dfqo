@@ -46,6 +46,8 @@ function InventoryItems:Ctor(data)
     for i, item in pairs(inventoryItems) do
         self:InsertItem(item.Index, item.Count, item.Path)
     end
+
+    self.DropRate = data.DropRate or 1.0
 end
 
 function InventoryItems:GetList()
@@ -104,7 +106,11 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
         articleInfo.consumableInfo.mpRecovery = resMgrConsumableData.MpRecovery
         articleInfo.consumableInfo.mpRecoveryRate = resMgrConsumableData.MpRecoveryRate
     elseif typeStr == "skill" then
-        --
+        articleInfo.type = UiCommon.ArticleType.Consumable
+        ---@type Actor.RESMGR.SkillData
+        local resMgrSkillData = inventoryItemData
+        articleInfo.iconPath = "icon/skill/" .. resMgrSkillData.icon
+        articleInfo.consumableInfo.SkillPath = resMgrSkillData.path
     elseif typeStr == "buff" then
         --
     end

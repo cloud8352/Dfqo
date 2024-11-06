@@ -64,6 +64,8 @@ function SkillManagementWidget:Ctor(parentWindow, model)
     
     -- connection
     self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
+    self.model:MocConnectSignal(self.model.Signal_PlayerMasteredSkillAdded, self)
+    self.model:MocConnectSignal(self.model.Signal_PlayerMasteredSkillChanged, self)
     self.skillItemListView:MocConnectSignal(self.skillItemListView.Signal_SelectedItemChanged, self)
 
     -- post init
@@ -150,25 +152,36 @@ end
 --- slots
 
 ---@param sender Obj
-function SkillManagementWidget:Slot_PlayerChanged()
+function SkillManagementWidget:Slot_PlayerChanged(sender)
     self.skillItemListView:ClearAllItems()
 
-    local skillResMgrDataList = self.model:GetSkillResMgrDataList()
-    for i, skillResMgrData in pairs(skillResMgrDataList) do
-        local info = Common.NewSkillInfoFromData(skillResMgrData)
+    local skillInfoList = self.model:GetPlayerMasteredSkillInfoList()
+    for _, info in pairs(skillInfoList) do
         print("SkillManagementWidget:Slot_PlayerChanged()", info.iconPath, info.name)
-
-        local item = SkillManagementItem.New()
-        item:SetIconPath(info.iconPath)
-        item:SetTitle(info.name)
-        item:SetLevel(1)
-        item:SetProgress(50, 100)
-        item:SetValue(ItemDataKey, info)
-        self.skillItemListView:AppendItem(item)
+        self:appendItem(info)
     end
 
     --- post init
     self.skillItemListView:SetCurrentIndex(1)
+end
+
+---@param sender Obj
+---@param info SkillInfo
+function SkillManagementWidget:Slot_PlayerMasteredSkillAdded(sender, info)
+    self:appendItem(info)
+end
+
+---@param sender Obj
+---@param info SkillInfo
+function SkillManagementWidget:Slot_PlayerMasteredSkillChanged(sender, info)
+    for _, item in pairs(self.skillItemListView:GetItemList()) do
+        ---@type SkillInfo
+        local infoTmp = item:GetValue(ItemDataKey)
+        if infoTmp.resDataPath == info.resDataPath then
+            self:updateItemByInfo(item, info)
+            break
+        end
+    end
 end
 
 ---@param sender Obj
@@ -208,6 +221,23 @@ function SkillManagementWidget:updateSelectedSkillContentScrollAreaContentWidget
 
     -- 显示控件内容改变，需要更新滑动区域显示内容
     self.selectedSkillContentScrollArea:SetNeedUpdateContentSprite(true)
+end
+
+---@param info SkillInfo
+function SkillManagementWidget:appendItem(info)
+    local item = SkillManagementItem.New()
+    self:updateItemByInfo(item, info)
+    self.skillItemListView:AppendItem(item)
+end
+
+---@param item SkillManagementItem
+---@param info SkillInfo
+function SkillManagementWidget:updateItemByInfo(item, info)
+    item:SetIconPath(info.iconPath)
+    item:SetTitle(info.name)
+    item:SetLevel(info.Level)
+    item:SetProgress(info.ExpOfCurrentLevel, info.MaxExpOfCurrentLevel)
+    item:SetValue(ItemDataKey, info)
 end
 
 return SkillManagementWidget

@@ -8,6 +8,7 @@
 local _TABLE = require("lib.table")
 local _INPUT = require("actor.service.input")
 local _STATE = require("actor.service.state")
+local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
 
 local _Timer = require("util.gear.timer")
 
@@ -160,6 +161,10 @@ end
 function _Skill:Use()
     self:CoolDown()
     self.isCombo = false
+
+    if self._entity.MasteredSkills then
+        MasteredSkillsSrv.AddSkillExp(self._entity.MasteredSkills, self._data.path, 1)
+    end
 
     if (self.state) then
         _STATE.Play(self._entity.states, self.state, false, self)

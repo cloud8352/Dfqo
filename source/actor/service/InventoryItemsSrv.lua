@@ -137,6 +137,13 @@ function InventoryItemsSrv.RandomDropItemFromEntity(entity)
     if inventoryItems:GetNotEmptyItemCount() < 1 then
         return
     end
+
+    -- 掉落概率
+    local points = math.random(0, 1000)
+    if points > inventoryItems.DropRate * 1000 then
+        return
+    end
+
     local articleInfo = inventoryItems:RandomGetNotEmptyItem()
     if articleInfo.type == Common.ArticleType.Empty then
         return

@@ -21,6 +21,7 @@ local InputLib = require("lib.input")
 local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
 local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
+local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
@@ -74,9 +75,9 @@ function UiModel:Ctor(director)
     ---@type table<number, ArticleInfo>
     self.mountedEquInfoList = {}
 
-    -- 技能资源数据列表
-    ---@type table<int, Actor.RESMGR.SkillData>
-    self.skillResMgrDataList = {}
+    -- 已掌握的技能信息列表
+    ---@type table<int, SkillInfo>
+    self.masteredSkillInfoList = {}
 
     -- 被攻击的敌人
     ---@type Actor.Entity
@@ -303,9 +304,9 @@ function UiModel:SetPlayer(player)
 
     -- 技能资源数据列表
     local masteredSkills = self.player.MasteredSkills
-    self.skillResMgrDataList = {}
+    self.masteredSkillInfoList = {}
     if masteredSkills then
-        self.skillResMgrDataList = self.player.MasteredSkills:GetList()
+        self.masteredSkillInfoList = self.player.MasteredSkills:GetList()
     end
 
     -- connection
@@ -314,6 +315,12 @@ function UiModel:SetPlayer(player)
     if inventoryItemsComponent then
         inventoryItemsComponent:AddListenerToItemInsertedCaller(self,
             self.Slot_InventoryItemOfPlayerInserted)
+    end
+    if masteredSkills then
+        MasteredSkillsSrv.AddListenerToSkillAddedCaller(masteredSkills,
+            self, self.Slot_MasteredSkillOfPlayerAdded)
+        MasteredSkillsSrv.AddListenerToSkillChangedCaller(masteredSkills,
+            self, self.Slot_MasteredSkillOfPlayerChanged)
     end
 
     -- post init
@@ -335,8 +342,8 @@ function UiModel:GetPlayerActorSkillObj(tag)
     return mapOfTagToActorSkillObj[tag]
 end
 
-function UiModel:GetSkillResMgrDataList()
-    return self.skillResMgrDataList
+function UiModel:GetPlayerMasteredSkillInfoList()
+    return self.masteredSkillInfoList
 end
 
 ---@param tag string
@@ -348,17 +355,12 @@ end
 ---@param tag string
 ---@param skillInfo SkillInfo
 function UiModel:MountPlayerSkill(tag, skillInfo)
-    ---@type Actor.RESMGR.SkillData
-    local skillResMgrData = nil
-    for i, data in pairs(self.skillResMgrDataList) do
-        if skillInfo.resDataPath == data.path then
-            skillResMgrData = data
-        end
-    end
 
-    -- 如果已经转配了相同技能，则先卸载
+    -- 如果已经装配了相同技能，则先卸载
     self:unloadPlayerSkill(skillInfo)
 
+    ---@type Actor.RESMGR.SkillData
+    local skillResMgrData = ResMgr.GetSkillData(skillInfo.resDataPath)
     SkillSrv.Set(self.player, tag, skillResMgrData)
 
     self:SavePlayerData()
@@ -662,10 +664,20 @@ function UiModel:SavePlayerData()
         end
     end
 
-    -- 5. 序列化数据
+    -- 5. 装载已掌握技能列表数据
+    data.MasteredSkills = { List = {} }
+    local masteredSkillInfoList = self.player.MasteredSkills:GetList()
+    for _, info in pairs(masteredSkillInfoList) do
+        local skillData = { Path = "", Exp = 0 };
+        skillData.Path = info.resDataPath
+        skillData.Exp = info.Exp
+        table.insert(data.MasteredSkills.List, skillData)
+    end
+
+    -- 6. 序列化数据
     local dataStr = Table.Deserialize(data)
 
-    -- 6. 保存数据
+    -- 7. 保存数据
     local dirPath = "config/actor/instance/duelist/"
     local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
@@ -1101,6 +1113,46 @@ function UiModel:Signal_PlayerHitEnemy(attack, hitEntity)
     end
 end
 
+---@param info SkillInfo
+function UiModel:Signal_PlayerMasteredSkillAdded(info)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerMasteredSkillAdded]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerMasteredSkillAdded
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, info)
+
+        ::continue::
+    end
+end
+
+---@param info SkillInfo
+function UiModel:Signal_PlayerMasteredSkillChanged(info)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_PlayerMasteredSkillChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_PlayerMasteredSkillChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, info)
+
+        ::continue::
+    end
+end
+
 --- slots
 
 ---@param player Actor.Entity
@@ -1190,9 +1242,24 @@ end
 ---@param articleInfo ArticleInfo
 function UiModel:Slot_InventoryItemOfPlayerInserted(articleInfo)
     self.articleInfoList[articleInfo.Index] = articleInfo
+    self:SavePlayerData()
 
     self:RequestSetArticleTableItemInfo(articleInfo.Index, articleInfo)
+end
+
+----------todo
+---@param info SkillInfo
+function UiModel:Slot_MasteredSkillOfPlayerAdded(info)
     self:SavePlayerData()
+
+    self:Signal_PlayerMasteredSkillAdded(info)
+end
+
+---@param info SkillInfo
+function UiModel:Slot_MasteredSkillOfPlayerChanged(info)
+    self:SavePlayerData()
+
+    self:Signal_PlayerMasteredSkillChanged(info)
 end
 
 --========== private function ============
@@ -1202,6 +1269,19 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:useConsumable(index, itemInfo)
     print("UiModel:useConsumable(index, itemInfo)", index, itemInfo.name)
+    local job = self.player.identity.Job
+    if not Common.IsArticleInfoFitForJob(itemInfo, job) then
+        SoundLib.Play(NotFitAlertSoundData)
+        print("UiModel:useConsumable(index, itemInfo)", "This consumable is not fit for job:", job)
+        return
+    end
+    local gender = self.player.identity.gender
+    if not Common.IsArticleInfoFitForGender(itemInfo, gender) then
+        SoundLib.Play(NotFitAlertSoundData)
+        print("UiModel:useConsumable(index, itemInfo)",
+            "This consumable is not fit for gender:", gender)
+        return
+    end
 
     local hpRecovery = itemInfo.consumableInfo.hpRecovery
     local playerCurrentHp = self:GetPlayerAttribute(Common.ActorAttributeType.Hp)
@@ -1210,12 +1290,19 @@ function UiModel:useConsumable(index, itemInfo)
         self:AddHpWithEffect(self.player, hpRecovery)
     end
 
+    if itemInfo.consumableInfo.SkillPath ~= "" then
+        MasteredSkillsSrv.AddSkillToMasteredSkillsCmpt(self.player.MasteredSkills,
+            itemInfo.consumableInfo.SkillPath)
+    end
+
     itemInfo.count = itemInfo.count - 1
     if itemInfo.count <= 0 then
         itemInfo.count = 0
         itemInfo.type = Common.ArticleType.Empty
+        itemInfo.path = ""
     end
-    self:RequestSetArticleTableItemInfo(index, itemInfo)
+    InventoryItemsSrv.InsertItemToEntity(self.player, index, itemInfo.count, itemInfo.path)
+    -- self:RequestSetArticleTableItemInfo(index, itemInfo)
 
     -- 更新物品托盘
     local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
