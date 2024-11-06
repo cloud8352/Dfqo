@@ -113,10 +113,10 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
     articleInfo.UsableJobs = inventoryItemData.UsableJobs
     articleInfo.UsableGenders = inventoryItemData.UsableGenders
 
-    -- 计算非空物品总数
-    self:computeNotEmptyItemCount()
     -- 加入到列表中
     self.list[index] = articleInfo
+    -- 计算非空物品总数
+    self:computeNotEmptyItemCount()
     self.itemInsertedCaller:Call(articleInfo)
 end
 
