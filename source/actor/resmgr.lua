@@ -447,6 +447,10 @@ local function _NewItemData(path, pathFormat, keys, type, scriptHead, iconHead, 
         data.script = nil
     end
 
+    if data.icon == nil then
+        data.icon = "NormalAttack"
+    end
+
     data.type = type
     data.name = _STRING.GetVersion(data.name)
     data.path = path
@@ -462,10 +466,14 @@ local function _NewItemData(path, pathFormat, keys, type, scriptHead, iconHead, 
 
     if (data.special) then
         data.special = "效果: " .. _STRING.GetVersion(data.special)
+    else
+        data.special = ""
     end
 
     if (data.comment) then
         data.comment = _STRING.GetVersion(data.comment)
+    else
+        data.comment = ""
     end
 
     if not data.UsableJobs then
