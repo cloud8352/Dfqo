@@ -29,6 +29,29 @@ for k, v in pairs(_poolGroup) do
     setmetatable(v, _meta)
 end
 
+---@type table<string, ImageData>
+local ImgSetDataPool = {
+}
+local ImgSetDataPoolSize = 0
+
+---@param imgData ImageData
+---@param int qx
+---@param int qy
+---@param int qw
+---@param int qh
+---@return ImageData
+local function getImgDataFromImgSetData(imgData, qx, qy, qw, qh)
+    local retImgData = love.image.newImageData(qw, qh)
+    for y = 0, qh - 1 do
+        for x = 0, qw - 1 do
+            local r, g, b, a = imgData:getPixel(x + qx, y + qy)
+            retImgData:setPixel(x, y, r, g, b, a)
+        end
+    end
+
+    return retImgData
+end
+
 ---@class Lib.RESOURCE
 local _RESOURCE = {}
 
@@ -54,12 +77,45 @@ end
 ---@param path string
 ---@return Image
 function _RESOURCE.NewImage(path)
+    -- 是否存在图集资源
+    local sourceFullPath = "config/asset/image/" .. path .. ".cfg"
+    if _FILE.Exists(sourceFullPath) then
+        local data, path = _RESOURCE.ReadConfig(path, "config/asset/image/%s.cfg")
+        local imgSimplePath = data.image or ""
+        local qx = data.qx
+        local qy = data.qy
+        local qw = data.qw
+        local qh = data.qh
+
+        local imgFilePath = "asset/image/" .. imgSimplePath .. ".png"
+        if false == _FILE.Exists(imgFilePath) then
+            imgFilePath = "asset/image/" .. imgSimplePath .. ".jpg"
+        end
+
+        -- local fileData = _FILE.NewFileData(imgFilePath)
+        local imageData = ImgSetDataPool[imgSimplePath]
+        if imageData == nil then
+            -- 限制资源池大小
+            if ImgSetDataPoolSize > 100 then
+                ImgSetDataPool = {}
+                ImgSetDataPoolSize = 0
+            end
+            imageData = love.image.newImageData(imgFilePath)
+            ImgSetDataPool[imgSimplePath] = imageData
+            ImgSetDataPoolSize = ImgSetDataPoolSize + 1
+            print(222, ImgSetDataPoolSize)
+        end
+        imageData = getImgDataFromImgSetData(imageData, qx, qy, qw, qh)
+        return love.graphics.newImage(imageData)
+    end
+
+    -- 若不存在图集资源，则直接读图片资源
     local sourceFullPath = "asset/image/" .. path .. ".png"
     if false == _FILE.Exists(sourceFullPath) then
         sourceFullPath = "asset/image/" .. path .. ".jpg"
     end
-    local fileData = _FILE.NewFileData(sourceFullPath)
-    local imageData = love.image.newImageData(fileData)
+    -- local fileData = _FILE.NewFileData(sourceFullPath)
+    local imageData = love.image.newImageData(sourceFullPath)
 
     return love.graphics.newImage(imageData)
 end

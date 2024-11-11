@@ -36,7 +36,7 @@ local _poolGroup = {
 local _meta = {__mode = 'v'}
 
 for k, v in pairs(_poolGroup) do
-    setmetatable(v, _meta)
+    -- setmetatable(v, _meta)
 end
 
 local _colliderMap = _FILE.ReadScript("config/actor/colliderMap.cfg")
