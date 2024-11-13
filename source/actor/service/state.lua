@@ -6,6 +6,7 @@
 ]]--
 
 local _ASPECT = require("actor.service.aspect")
+local _RESMGR = require("actor.resmgr")
 
 ---@class Actor.Service.STATE
 local _STATE = {}
@@ -46,6 +47,23 @@ end
 ---@param states Actor.Component.States
 function _STATE.HasTag(states, key)
     return states.current:HasTag(key)
+end
+
+---@param entity Actor.Entity
+---@param name string
+---@param stateResMgrDataPath string
+function _STATE.SetState(entity, name, stateResMgrDataPath)
+    local stateResMgrData = _RESMGR.GetStateData(stateResMgrDataPath)
+    ---@type Actor.State
+    local state = stateResMgrData.class.New(stateResMgrData)
+    state:Init(entity)
+    entity.states.map[name] = state
+end
+
+---@param states Actor.Component.States
+---@param name string
+function _STATE.HasState(states, name)
+    return states.map[name] ~= nil
 end
 
 ---@param states Actor.Component.States

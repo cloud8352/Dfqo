@@ -103,7 +103,6 @@ function _RESOURCE.NewImage(path)
             imageData = love.image.newImageData(imgFilePath)
             ImgSetDataPool[imgSimplePath] = imageData
             ImgSetDataPoolSize = ImgSetDataPoolSize + 1
-            print(222, ImgSetDataPoolSize)
         end
         imageData = getImgDataFromImgSetData(imageData, qx, qy, qw, qh)
         return love.graphics.newImage(imageData)

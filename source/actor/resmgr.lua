@@ -339,6 +339,7 @@ local function _NewStateData(path, keys)
     data.script = string.gsub(data.script, "/", ".")
     data.class = require("actor.state." .. data.script)
     data.script = nil
+    data.path = path
 
     if (data.class.HandleData) then
         data.class.HandleData(data)
@@ -509,6 +510,8 @@ local function _NewSkillData(path, keys)
     --[[if (data.stateData) then
         data.stateData = _RESMGR.GetStateData(data.stateData)
     end]]--
+    data.StateName = data.state or ""
+    data.StateResMgrDataPath = data.stateData or ""
 
     if data.time == nil then
         data.time = 0

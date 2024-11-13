@@ -39,6 +39,9 @@ function Util.RandomPlaySoundByGender(soundDataSet, gender)
     else
         soundDataList = soundDataSet.femaleVoice
     end
+    if soundDataList == nil then
+        return
+    end
     local n = math.random(1, _TABLE.Len(soundDataList))
     _SOUND.Play(soundDataList[n])
 end

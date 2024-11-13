@@ -24,6 +24,9 @@ git checkout $buildBranch
 git log -n 1
 rm -rf .git
 
+cp -rf ../asset .
+cp -rf ../config/asset ./config/
+
 fileName=${pkgName}_${pkgVer}.zip
 filePath=../$fileName
 rm $filePath

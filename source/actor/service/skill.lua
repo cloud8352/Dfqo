@@ -6,6 +6,7 @@
 ]]--
 
 local _RESMGR = require("actor.resmgr")
+local StateSrv = require("actor.service.state")
 
 ---@class Actor.Service.SKILL
 local _SKILL = {}
@@ -25,6 +26,12 @@ function _SKILL.Set(entity, key, data)
     if (not data) then
         entity.skills.container:Del(key)
     else
+        if not StateSrv.HasState(entity.states, data.StateName)
+            and data.StateResMgrDataPath ~= ""
+        then
+            StateSrv.SetState(entity, data.StateName, data.StateResMgrDataPath)
+        end
+
         local eskill = data.class.New(entity, key, data) ---@type Actor.Skill
         entity.skills.container:Add(eskill, key)
     end
