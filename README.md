@@ -38,37 +38,6 @@ windows平台，双击 start.bat 启动
 
 
 
-## 游戏设置修改方法
-
-- 复制一份 config/global_config.cfg.template 到 config目录下，并重命名为 global_config.cfg
-
-- 修改 config/global_config.cfg 文件中参数，部分参数说明如下：
-
-```
-_CONFIG -> setting:
-        music 为音乐音量大小
-        sound 为音效音量大小
-
-_CONFIG -> code:
-        up 为向上键值
-        down 为向下键值
-        left 为向左键值
-        right 为向右键值
-        normalAttack 为普通攻击键值
-        skill1 为技能1键值
-        skill2 为技能2键值
-        skill3 为技能3键值
-        skill4 为技能4键值
-        skill5 为技能5键值
-        skill6 为技能6键值
-        jump 为跳跃键值
-        counterAttack 为基础技能键值
-```
-
-- 保存，重启游戏，配置即可生效
-
-
-
 ## 装备添加方法
 
 ### 步骤：
