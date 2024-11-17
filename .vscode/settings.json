@@ -24,5 +24,6 @@
         "**/love2d": true,
         "**/PvfChar": true,
         "**/tacentview": true,
+        "**/tools/extract-npk/output": true,
     }
 }
