@@ -680,11 +680,11 @@ function UiModel:SavePlayerData()
     -- 7. 保存数据
     local dirPath = "config/actor/instance/duelist/"
     local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
-    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
-    if not ok then
-        print("UiModel:SavePlayerData()", errMsg, dirPath .. fileName, "file write failed！")
-        return
-    end
+    -- local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    -- if not ok then
+    --     print("UiModel:SavePlayerData()", errMsg, dirPath .. fileName, "file write failed！")
+    --     return
+    -- end
 end
 
 function UiModel:GetPlayerInstanceCfgSimplePath()
@@ -1475,6 +1475,7 @@ end
 
 function UiModel:loadActorSimplePathList()
     local actorSimplePathList = {
+        "duelist/militia",
         "duelist/Kyo",
         "duelist/atswordman",
         "duelist/Fighter",

@@ -13,17 +13,18 @@ local _Base = require("actor.system.base")
 local _Summon = require("core.class")(_Base)
 
 ---@param entity Actor.Entity
-local function _NewActor(entity, param)
+---@param summonInfo SummonInfo
+local function _NewActor(entity, summonInfo)
     local t = entity.transform
     local p = {}
-    setmetatable(p, {__index = param})
+    setmetatable(p, { __index = summonInfo })
     
     p.x = t.position.x
     p.y = t.position.y
     p.z = p.z or t.position.z
     p.direction = p.direction or t.direction
     p.entity = p.isSuperior and entity.identity.superior or entity
-    _FACTORY.New(p.path, p)
+    _FACTORY.New(summonInfo.Path, p)
 end
 
 function _Summon:Ctor(upperEvent)
@@ -34,22 +35,22 @@ end
 
 ---@param entity Actor.Entity
 function _Summon:OnEnter(entity)
-    local summons = entity.summon.summons
+    local summonInfoList = entity.summon.SummonInfoList
 
-    for n=1, #summons do
-        if (not summons[n].inDestroy) then
-            _NewActor(entity, summons[n])
+    for n = 1, #summonInfoList do
+        if (not summonInfoList[n].SummonWhenEntityDestroy) then
+            _NewActor(entity, summonInfoList[n])
         end
     end
 end
 
 ---@param entity Actor.Entity
 function _Summon:OnExit(entity)
-    local summons = entity.summon.summons
+    local summonInfoList = entity.summon.SummonInfoList
 
-    for n=1, #summons do
-        if (summons[n].inDestroy) then
-            _NewActor(entity, summons[n])
+    for n = 1, #summonInfoList do
+        if (summonInfoList[n].inDestroy) then
+            _NewActor(entity, summonInfoList[n])
         end
     end
 end
