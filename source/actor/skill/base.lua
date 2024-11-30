@@ -55,7 +55,11 @@ function _Skill:Ctor(entity, key, data)
     self.duraMax = data.dura
     self.dura = 0
     self.isCombo = false
+    -- hp 低于 hpRate 比例才可以使用技能
     self.hpRate = data.hpRate or 1
+    if type(self.hpRate) == "table" then
+        self.hpRate = math.random(self.hpRate[1] * 10, self.hpRate[2] * 10) / 10
+    end
     self.isUltimate = data.isUltimate
     self.icon = data.icon
     

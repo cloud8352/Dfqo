@@ -18,6 +18,10 @@ local _Drawing = require("core.class")(_Base)
 
 local _shader_white = _RESOURCE.NewShader(_RESOURCE.GetShaderData("white"))
 
+-- DrawingVisibleArea size
+local DrawingVisibleAreaW = 2000;
+local DrawingVisibleAreaH = 2000;
+
 ---@param a Actor.Entity
 ---@param b Actor.Entity
 ---@return boolean
@@ -115,8 +119,7 @@ function _Drawing:LateUpdate()
 
     self._list:Sort(_Sorting)
 
-    --
-    local cameraVisibleAreaW, cameraVisibleAreaH = Map.camera:GetVisibleArea()
+    -- 将可视区域中的实例加入到绘制列表
     local cameraXPos, cameraYPos = Map.camera:GetPosition()
     self.needDrawList = {}
     for n = 1, self._list:GetLength() do
@@ -134,8 +137,8 @@ function _Drawing:LateUpdate()
         local y = main:GetRectValue("y")
         local w = main:GetRectValue("w")
         local h = main:GetRectValue("h")
-        if x + w > cameraXPos - cameraVisibleAreaW / 2 and x < cameraXPos + cameraVisibleAreaW / 2 and
-            y + h > cameraYPos - cameraVisibleAreaH / 2 and y < cameraYPos + cameraVisibleAreaH / 2
+        if x + w > cameraXPos - DrawingVisibleAreaW and x < cameraXPos + DrawingVisibleAreaW and
+            y + h > cameraYPos - DrawingVisibleAreaH and y < cameraYPos + DrawingVisibleAreaH
         then
             table.insert(self.needDrawList, entity)
         end
