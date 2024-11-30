@@ -14,7 +14,6 @@ local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
 
 ---@class Actor.State.Duelist.mummy.ThunderState : Actor.State
----@field protected _attack Actor.Gear.Attack
 ---@field protected _skill Actor.Skill
 local ThunderState = require("core.class")(_Base)
 
@@ -25,8 +24,6 @@ end
 
 function ThunderState:Init(entity)
     _Base.Init(self, entity)
-
-    self._attack = _Attack.New(self._entity)
 end
 
 function ThunderState:NormalUpdate(dt, rate)
@@ -49,8 +46,6 @@ function ThunderState:NormalUpdate(dt, rate)
         -- sound
         _SOUND.Play(self._soundDataSet[1])
     end
-
-    self._attack:Update(dt)
 
     _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
 end
