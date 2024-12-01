@@ -12,7 +12,7 @@ local _STATE = require("actor.service.state")
 
 local _Base = require("actor.state.base")
 
----@class Actor.State.Duelist.mummy.MissState : Actor.State
+---@class Actor.State.Duelist.Mummy.MissState : Actor.State
 ---@field protected _skill Actor.Skill
 local MissState = require("core.class")(_Base)
 

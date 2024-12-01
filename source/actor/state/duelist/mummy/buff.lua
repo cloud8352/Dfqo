@@ -1,5 +1,5 @@
 --[[
-	desc: ThunderState, a state of mummy.
+	desc: BuffState, a state of mummy.
 	author: keke
 ]]
 --
@@ -9,40 +9,29 @@ local _SOUND = require("lib.sound")
 local _FACTORY = require("actor.factory")
 local _ASPECT = require("actor.service.aspect")
 local _STATE = require("actor.service.state")
+local BuffSrv = require("actor.service.buff")
 
 local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
 
----@class Actor.State.Duelist.Mummy.ThunderState : Actor.State
+---@class Actor.State.Duelist.Mummy.BuffState : Actor.State
 ---@field protected _skill Actor.Skill
-local ThunderState = require("core.class")(_Base)
+local BuffState = require("core.class")(_Base)
 
-function ThunderState:Ctor(data, ...)
+function BuffState:Ctor(data, ...)
     _Base.Ctor(self, data, ...)
-    self.tick = math.random(data.ticks[1], data.ticks[2])
+    self.tick = data.tick
 end
 
-function ThunderState:Init(entity)
+function BuffState:Init(entity)
     _Base.Init(self, entity)
 end
 
-function ThunderState:NormalUpdate(dt, rate)
+function BuffState:NormalUpdate(dt, rate)
     local main = _ASPECT.GetPart(self._entity.aspect) ---@type Graphics.Drawable.Frameani
     local tick = main:GetTick()
 
     if tick == self.tick then
-        local transform = self._entity.transform
-        local position = transform.position
-        local param = {
-            x = position.x,
-            y = position.y,
-            z = position.z,
-            direction = transform.direction,
-            entity = self._entity
-        }
-        local effect1 = _FACTORY.New(self._actorDataSet[1], param)
-        local bullet = _FACTORY.New(self._actorDataSet[2], param)
-
         -- sound
         _SOUND.Play(self._soundDataSet[1])
     end
@@ -50,15 +39,18 @@ function ThunderState:NormalUpdate(dt, rate)
     _STATE.AutoPlayEnd(self._entity.states, self._entity.aspect, self._nextState)
 end
 
-function ThunderState:Enter(lastState, skill)
+function BuffState:Enter(lastState, skill)
     if (lastState ~= self) then
         _Base.Enter(self)
 
         self._skill = skill
+
+        BuffSrv.AddBuff(self._entity, self._buffDatas[1])
+        BuffSrv.AddBuff(self._entity, self._buffDatas[2])
     end
 end
 
-function ThunderState:Exit(nextState)
+function BuffState:Exit(nextState)
     if (nextState == self) then
         return
     end
@@ -66,4 +58,4 @@ function ThunderState:Exit(nextState)
     _Base.Exit(self, nextState)
 end
 
-return ThunderState
+return BuffState
