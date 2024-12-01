@@ -19,7 +19,9 @@
         "Struct",
         "Recv",
         "Cmpt",
-        "Swordman"
+        "Swordman",
+        "Tepes",
+        "Noirpera"
     ],
     "files.exclude": {
         "**/love2d": true,

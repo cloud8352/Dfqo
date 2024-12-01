@@ -645,7 +645,7 @@ function _MAP.Make(path, entry)
                 end, namedCount)
             end
 
-            if (config.actor.enemy.boss) then
+            if (isBoss and config.actor.enemy.boss) then
                 local bossCount = math.random(1, #config.actor.enemy.boss)
     
                 local dulistParam = { rank = 2, isEnemy = true } -- 敌人风险为2，意味着该单位为boss
