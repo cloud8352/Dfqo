@@ -109,6 +109,7 @@ function _WORLD.Init()
         require("actor.system.article.pathgate").New(event),
         require("actor.system.bullet").New(event),
         require("actor.system.bullet.throwStone").New(event),
+        require("actor.system.bullet.swordman.BlastBloodBulletSys").New(event),
         require("actor.system.trigger").New(event),
         require("actor.system.skills").New(event),
         require("actor.system.InventoryItemsSys").New(event),

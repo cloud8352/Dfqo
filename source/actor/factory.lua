@@ -79,6 +79,7 @@ function _FACTORY.New(data, param)
     ---@field public equipments Actor.Component.Equipments
     ---@field public dropItem Actor.Component.DropItem
     ---@field public bullet Actor.Component.Bullet
+    ---@field public bullet_swordman_blastBlood Actor.Component.Bullet.Swordman.BlastBloodBullet
     ---@field public article Actor.Component.Article
     ---@field public topic Actor.Component.Topic
     ---@field public npc Actor.Component.Npc

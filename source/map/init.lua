@@ -68,7 +68,7 @@ local _emptyTab = {}
 local _const = {
     floorType = { "left", "middle", "right" },
     namedIndex = { 1, 3 },
-    namedRange = { 3, 4 },
+    namedRange = { 2, 4 },
     normalRange = { 4, 7 },
     floorRange = { 5, 15 },
     upRange = { 0.5, 1 },
@@ -626,6 +626,23 @@ function _MAP.Make(path, entry)
                         }
                     })
                 end, normalCount)
+            end
+
+            if config.actor.enemy.named then
+                local namedCount = math.random(_const.namedRange[1], _const.namedRange[2])
+
+                objectMatrix:Assign(function(x, y)
+                    local path = config.actor.enemy.named[math.random(1, #config.actor.enemy.named)]
+                    local direction = math.random(1, 2) == 1 and 1 or -1
+                    table.insert(data.actor, {
+                        path = "duelist/" .. path,
+                        x = x, y = y, direction = direction, camp = 2,
+                        dulist = {
+                            rank = 1, -- 敌人风险为1，意味着该单位为精英怪
+                            isEnemy = true
+                        }
+                    })
+                end, namedCount)
             end
 
             if (config.actor.enemy.boss) then

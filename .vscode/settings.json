@@ -18,7 +18,8 @@
         "ctrlled",
         "Struct",
         "Recv",
-        "Cmpt"
+        "Cmpt",
+        "Swordman"
     ],
     "files.exclude": {
         "**/love2d": true,
