@@ -1,6 +1,6 @@
 local npk = require("npk")
 
-npk.extractNPK("NpkResource/Swordman/sprite_character_swordman_effect_vaneslash.NPK")
+npk.extractNPK("NpkResource/Swordman/Shadowbane.NPK")
 
 
 --[[

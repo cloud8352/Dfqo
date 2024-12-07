@@ -431,8 +431,8 @@ function npk.extractImgFromAbstract(imgName, imgAbstract)
     -- 提取图片文件及文件偏移信息
     for i = 1, #imgInfoList do
         npk.outputImg(imgName, i - 1, imgInfoList[i])
-        local ox = 246 - imgInfoList[i].key_x
-        local oy = 383 - imgInfoList[i].key_y
+        local ox = 232 - imgInfoList[i].key_x
+        local oy = 333 - imgInfoList[i].key_y
         npk.outputImgOffsetInfo(imgName, i - 1, ox, oy)
     end
 
