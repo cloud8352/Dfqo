@@ -44,6 +44,11 @@ local _SYSTEM = {} ---@class Lib.SYSTEM
 function _SYSTEM.Init()
     -- _SYSTEM.initWindowOsDpi()
     _SYSTEM.initWindowSize()
+
+    -- 把窗口移到屏幕中央
+    local _, _, flags = love.window.getMode()
+    local screenW, screenH = love.window.getDesktopDimensions(flags.display)
+    love.window.setPosition(screenW / 2 - _width / 2, screenH / 2 - _height / 2 - 40 * _sy)
 end
 
 ---@return string @OS X, Windows, Linux, Android, iOS
@@ -112,9 +117,6 @@ function _SYSTEM.initWindowSize()
         windowWidth = screenW * percentage
         windowHeight = screenW * percentage * 9 / 16
         love.window.setMode(windowWidth, windowHeight, flags)
-
-        -- 把窗口移到屏幕中央
-        love.window.setPosition(screenW / 2 - windowWidth / 2, screenH / 2 - windowHeight / 2)
     end
 
     _SYSTEM.OnResize(windowWidth, windowHeight)
