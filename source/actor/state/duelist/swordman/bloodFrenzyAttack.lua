@@ -106,7 +106,7 @@ function BloodFrenzyAttack:NormalUpdate(dt, rate)
         self:EnterAttack()
     end
 
-    self._attack:Update()
+    self._attack:Update(dt)
 
     if (tick == self._easemoveParams[self._process].tick) then
         local direction = self._entity.transform.direction

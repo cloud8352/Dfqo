@@ -21,4 +21,4 @@ done
 
 cd ..
 mv -f ${inputDir}/* ${outputDir}/
-echo "转换完成“
+echo "转换完成"
