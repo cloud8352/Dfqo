@@ -24,7 +24,7 @@ local function _HandleObstacle(obstacle, data, nx, ny)
 
             if (not matrix:GetNode(x, y, true)) then
                 matrix:SetNode(x, y, true, true)
-                JobsModel.SetThreadObstacle(x, y, true)
+                -- JobsModel.SetThreadObstacle(x, y, true)
                 table.insert(obstacle.list, _Point.New(true, x, y))
             end
         end
@@ -73,7 +73,7 @@ function _Obstacle:OnExit(entity)
     for n = 1, #entity.obstacle.list do
         local x, y = entity.obstacle.list[n]:Get()
         matrix:SetNode(x, y, false, true)
-        JobsModel.SetThreadObstacle(x, y, false)
+        -- JobsModel.SetThreadObstacle(x, y, false)
     end
 
     entity.obstacle.list = nil

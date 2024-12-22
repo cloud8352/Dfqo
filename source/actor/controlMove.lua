@@ -86,13 +86,13 @@ function _ControlMove:Update()
     end
 
     if (axisX ~= 0) then
-        -- _MOTION.Move(self.transform, self.aspect, "x", self.speed.x * axisX)
-        JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.X, self.speed.x * axisX)
+        _MOTION.Move(self.transform, self.aspect, "x", self.speed.x * axisX)
+        -- JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.X, self.speed.x * axisX)
     end
 
     if (axisY ~= 0) then
-        -- _MOTION.Move(self.transform, self.aspect, "y", self.speed.y * axisY)
-        JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.Y, self.speed.y * axisY)
+        _MOTION.Move(self.transform, self.aspect, "y", self.speed.y * axisY)
+        -- JobsModel.AddMoveTask(self.transform, JobsCommon.AxisType.Y, self.speed.y * axisY)
     end
 
     for n = 1, #_CONFIG.arrow do

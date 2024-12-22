@@ -259,20 +259,20 @@ local function _Load(path)
     end
 
     -- 初始化 JobsModel 线程地图矩阵
-    ---@type table<int, PosStruct>
-    local obstaclePosList = {}
-    if (data.obstacle) then
-        for n = 1, #data.obstacle do
-            local pos = JobsCommon.NewPos()
-            pos.X = data.obstacle[n][1]
-            pos.Y = data.obstacle[n][2]
+    -- -@type table<int, PosStruct>
+    -- local obstaclePosList = {}
+    -- if (data.obstacle) then
+    --     for n = 1, #data.obstacle do
+    --         local pos = JobsCommon.NewPos()
+    --         pos.X = data.obstacle[n][1]
+    --         pos.Y = data.obstacle[n][2]
 
-            table.insert(obstaclePosList, pos)
-        end
-    end
+    --         table.insert(obstaclePosList, pos)
+    --     end
+    -- end
 
-    JobsModel.InitThreadMapMatrix(data.info.name, data.scope.x, data.scope.y,
-        data.scope.w, data.scope.h, 16, obstaclePosList)
+    -- JobsModel.InitThreadMapMatrix(data.info.name, data.scope.x, data.scope.y,
+    --     data.scope.w, data.scope.h, 16, obstaclePosList)
     -- JobsModel end --
 
     local pool = {}
