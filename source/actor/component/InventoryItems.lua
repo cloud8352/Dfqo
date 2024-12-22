@@ -141,14 +141,14 @@ function InventoryItems:AddItem(count, inventoryItemConfigPath)
         end
     end
     if sameArticleInfo then
-        self:InsertItem(sameArticleInfo.Index, sameArticleInfo.count + count, 
+        self:InsertItem(sameArticleInfo.Index, sameArticleInfo.count + count,
             inventoryItemConfigPath)
         return
     end
 
     -- 如果不存在同一非装备物品，则添加
     local minimumUsableIndex = self:getMinimumUsableIndex()
-    self:InsertItem(minimumUsableIndex, count, 
+    self:InsertItem(minimumUsableIndex, count,
         inventoryItemConfigPath)
 end
 

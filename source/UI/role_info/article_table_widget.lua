@@ -21,9 +21,10 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
----@class ArticleTableWidget
-local ArticleTableWidget = require("core.class")(Widget)
 
+--- item background
+local DockedItemBgImgPath = "ui/article_view_item/article_view_item_bg"
+local ItemBgImgPath = "ui/WindowFrame/CenterBg"
 
 local ItemWidth = Common.ArticleItemWidth
 ItemWidth = _MATH.Round(ItemWidth)
@@ -32,6 +33,9 @@ local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等�
 
 local ColCount = Common.ArticleTableColCount
 local RowCount = Common.ArticleTableRowCount
+
+---@class ArticleTableWidget
+local ArticleTableWidget = require("core.class")(Widget)
 
 ---@param parentWindow Window
 ---@param model UiModel
@@ -48,21 +52,22 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     self.baseWidget.width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
     self.baseWidget.height = ItemWidth * ColCount + ItemSpace * (RowCount - 1)
 
-    --- item background
-    local itemBgImgPath = "ui/WindowFrame/CenterBg"
     ---@type table<number, Label>
     self.viewItemBgList = {}
     --- item
-    local itemImgPath = ""
     ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
-    for i = 1, ColCount*RowCount do
+    for i = 1, ColCount * RowCount do
+        local bgImgPath = ItemBgImgPath
+        if i <= Common.ArticleDockColCount then
+            bgImgPath = DockedItemBgImgPath
+        end
         local bgLabel = Label.New(parentWindow)
-        bgLabel:SetIconSpriteDataPath(itemBgImgPath)
+        bgLabel:SetIconSpriteDataPath(bgImgPath)
         self.viewItemBgList[i] = bgLabel
 
         local item = ArticleViewItem.New(parentWindow)
-        item:SetIconSpriteDataPath(itemImgPath)
+        item:SetIconSpriteDataPath("")
         self.viewItemList[i] = item
     end
 

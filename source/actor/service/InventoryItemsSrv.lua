@@ -38,7 +38,6 @@ local function updateEntityAspect(entity)
 end
 
 ---@param entity Actor.Entity
------@param entity Actor.Component.InventoryItems
 ---@param index int
 ---@param count int
 ---@param inventoryItemConfigPath string

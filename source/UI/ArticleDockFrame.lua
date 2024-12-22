@@ -20,9 +20,8 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
----@class ArticleDockFrame
-local ArticleDockFrame = require("core.class")(Widget)
-
+--- item background
+local ItemBgImgPath = "ui/WindowFrame/CenterBg"
 
 local ItemWidth = Common.ArticleItemWidth
 ItemWidth = _MATH.Round(ItemWidth)
@@ -30,6 +29,9 @@ local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
 local ColCount = Common.ArticleDockColCount
+
+---@class ArticleDockFrame
+local ArticleDockFrame = require("core.class")(Widget)
 
 ---@param parentWindow Window
 ---@param model UiModel
@@ -45,21 +47,18 @@ function ArticleDockFrame:Ctor(parentWindow, model)
     local height = ItemWidth
     Widget.SetSize(self, width, height)
 
-    --- item background
-    local itemBgImgPath = "ui/WindowFrame/CenterBg"
     ---@type table<number, Label>
     self.viewItemBgList = {}
     --- item
-    local itemImgPath = ""
     ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
     for i = 1, ColCount do
         local bgLabel = Label.New(parentWindow)
-        bgLabel:SetIconSpriteDataPath(itemBgImgPath)
+        bgLabel:SetIconSpriteDataPath(ItemBgImgPath)
         self.viewItemBgList[i] = bgLabel
 
         local item = ArticleViewItem.New(parentWindow)
-        item:SetIconSpriteDataPath(itemImgPath)
+        item:SetIconSpriteDataPath("")
         self.viewItemList[i] = item
     end
 
@@ -210,7 +209,7 @@ function ArticleDockFrame:MouseEvent()
         else
             self.hoveringItemIndex = hoveringItemIndex
             self.model:SetArticleDockHoveringItemIndex(hoveringItemIndex)
-            self.hoveringItemInfo = self.model:GetArticleDockInfoList()[hoveringItemIndex]
+            self.hoveringItemInfo = self.model:GetArticleInfoList()[hoveringItemIndex]
 
             -- 开启计时鼠标悬浮时间
             self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
@@ -331,7 +330,9 @@ function ArticleDockFrame:Slot_PlayerChanged(sender)
 end
 
 function ArticleDockFrame:initArticleData()
-    for i, info in pairs(self.model:GetArticleDockInfoList()) do
+    local articleInfoList = self.model:GetArticleInfoList()
+    for i = 1, Common.ArticleDockColCount do
+        local info = articleInfoList[i]
         self:SetIndexItemInfo(i, info)
     end
 end

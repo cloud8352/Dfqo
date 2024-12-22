@@ -1,8 +1,6 @@
 --[[
 	desc: UiModel class, ui数据处理类
 	author: keke <243768648@qq.com>
-	since: 2023-7-19
-	alter: 2023-7-19
 ]]
 --
 
@@ -63,10 +61,6 @@ function UiModel:Ctor(director)
     
     self.articleTableHoveringItemIndex = -1
     self.articleTableDraggingItemIndex = -1
-
-    --- 物品托盘的物品列表
-    ---@type table<number, ArticleInfo>
-    self.articleDockInfoList = {}
     
     self.articleDockHoveringItemIndex = -1
     self.articleDockDraggingItemIndex = -1
@@ -99,12 +93,8 @@ function UiModel:Ctor(director)
     --- post init
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
         local articleInfo = Common.NewArticleInfo()
+        articleInfo.Index = i
         self.articleInfoList[i] = articleInfo
-    end
-
-    for i = 1, Common.ArticleDockColCount do
-        local articleInfo = Common.NewArticleInfo()
-        self.articleDockInfoList[i] = articleInfo
     end
 
     -- equ
@@ -295,13 +285,6 @@ function UiModel:SetPlayer(player)
         end
     end
 
-    -- aricle dock
-    self.articleDockInfoList[1] = self.articleInfoList[1]
-    self.articleDockInfoList[2] = self.articleInfoList[2]
-    self.articleDockInfoList[3] = self.articleInfoList[3]
-    self.articleDockInfoList[4] = self.articleInfoList[4]
-    self.articleDockInfoList[5] = self.articleInfoList[5]
-
     -- 技能资源数据列表
     local masteredSkills = self.player.MasteredSkills
     self.masteredSkillInfoList = {}
@@ -382,12 +365,6 @@ function UiModel:GetArticleInfoList()
     return self.articleInfoList
 end
 
---- 获取物品托盘的物品列表
----@return table<number, ArticleInfo>
-function UiModel:GetArticleDockInfoList()
-    return self.articleDockInfoList
-end
-
 --- 获取已装配的装备列表
 ---@return table<number, ArticleInfo>
 function UiModel:GetMountedEquInfoList()
@@ -416,7 +393,7 @@ end
 function UiModel:DragArticleDockItem(index)
     self.articleDockDraggingItemIndex = index
     self:RequestSetDraggingItemVisibility(true)
-    local info = self.articleDockInfoList[index]
+    local info = self.articleInfoList[index]
     self:RequestSetDraggingItemInfo(info)
 end
 
@@ -451,16 +428,16 @@ end
 function UiModel:DropArticleDockItem()
     -- 拖拽项放到了何处
     if self.articleDockHoveringItemIndex ~= -1 then
-        local hoveringArticleInfo = self.articleDockInfoList[self.articleDockHoveringItemIndex]
+        local hoveringArticleInfo = self.articleInfoList[self.articleDockHoveringItemIndex]
 
         -- 移动拖拽项到当前悬停处
-        local draggingArticleInfo = self.articleDockInfoList[self.articleDockDraggingItemIndex]
-        self.articleDockInfoList[self.articleDockHoveringItemIndex] = draggingArticleInfo
-        self:Signal_requestSetArticleDockItemInfo(self.articleDockHoveringItemIndex, draggingArticleInfo)
+        local draggingArticleInfo = self.articleInfoList[self.articleDockDraggingItemIndex]
+        InventoryItemsSrv.InsertItemToEntity(self.player, self.articleDockHoveringItemIndex,
+            draggingArticleInfo.count, draggingArticleInfo.path)
 
         -- 移动原先悬停处的物品到拖拽之前的位置
-        self.articleDockInfoList[self.articleDockDraggingItemIndex] = hoveringArticleInfo
-        self:Signal_requestSetArticleDockItemInfo(self.articleDockDraggingItemIndex, hoveringArticleInfo)
+        InventoryItemsSrv.InsertItemToEntity(self.player, self.articleDockDraggingItemIndex,
+            hoveringArticleInfo.count, hoveringArticleInfo.path)
 
         -- 播放物品移动音效
         self:playChangedArticlePosSound()
@@ -659,7 +636,11 @@ function UiModel:SavePlayerData()
     local articleInfoList = self.player.InventoryItems:GetList()
     for _, info in pairs(articleInfoList) do
         if info ~= nil and info.type ~= Common.ArticleType.Empty then
-            local item = { Index = info.Index, Count = info.count, Path = info.path }
+            local item = {
+                Index = info.Index,
+                Count = info.count,
+                Path = info.path
+            }
             table.insert(data.InventoryItems.List, item)
         end
     end
@@ -1177,23 +1158,16 @@ end
 
 ---@param index number
 function UiModel:OnRightKeyClickedArticleDockItem(index)
-    local clickedItemInfo = self.articleDockInfoList[index]
+    local clickedItemInfo = self.articleInfoList[index]
     if clickedItemInfo == nil then
         print("UiModel:OnRightKeyClickedArticleDockItem(index)", "err: can not find itemInfo")
         return
     end
 
-    local articleTableIndex = self:findInArticleInfoList(clickedItemInfo)
-    if (articleTableIndex.Index == -1) then
-        print("UiModel:OnRightKeyClickedArticleDockItem(index)", 
-            "err: can not find itemInfo in article table")
-        return
-    end
-
     if clickedItemInfo.type == Common.ArticleType.Consumable then
-        self:useConsumable(articleTableIndex.Index, clickedItemInfo)
+        self:useConsumable(clickedItemInfo.Index, clickedItemInfo)
     elseif clickedItemInfo.type == Common.ArticleType.Equipment then
-        self:mountEquipment(articleTableIndex.Index, clickedItemInfo)
+        self:mountEquipment(clickedItemInfo.Index, clickedItemInfo)
     end
 end
 
@@ -1242,12 +1216,15 @@ end
 ---@param articleInfo ArticleInfo
 function UiModel:Slot_InventoryItemOfPlayerInserted(articleInfo)
     self.articleInfoList[articleInfo.Index] = articleInfo
-    self:SavePlayerData()
-
     self:RequestSetArticleTableItemInfo(articleInfo.Index, articleInfo)
+
+    -- 更新物品托盘
+    if articleInfo.Index <= Common.ArticleDockColCount then
+        self:Signal_requestSetArticleDockItemInfo(articleInfo.Index, articleInfo)
+    end
+    self:SavePlayerData()
 end
 
-----------todo
 ---@param info SkillInfo
 function UiModel:Slot_MasteredSkillOfPlayerAdded(info)
     self:SavePlayerData()
@@ -1302,13 +1279,6 @@ function UiModel:useConsumable(index, itemInfo)
         itemInfo.path = ""
     end
     InventoryItemsSrv.InsertItemToEntity(self.player, index, itemInfo.count, itemInfo.path)
-    -- self:RequestSetArticleTableItemInfo(index, itemInfo)
-
-    -- 更新物品托盘
-    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
-    if (articleDockIndex.Index > 0) then
-        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, itemInfo)
-    end
 end
 
 --- 装载装备
@@ -1334,13 +1304,6 @@ function UiModel:mountEquipment(articleTableIndex, itemInfo)
     -- 在ui上卸载原有装备到物品栏
     InventoryItemsSrv.InsertItemToEntity(self.player, articleTableIndex,
         lastEquItemInfo.count, lastEquItemInfo.path)
-
-    -- 待装备的物品是否存在于物品托盘，如存在，则更新物品托盘
-    local articleDockIndex = self:findInArticleDockInfoList(itemInfo)
-    if (articleDockIndex.Index > 0) then
-        self.articleDockInfoList[articleDockIndex.Index] = lastEquItemInfo
-        self:Signal_requestSetArticleDockItemInfo(articleDockIndex.Index, lastEquItemInfo)
-    end
 
     -- 在服务上装载新装备
     local keyTag = Common.MapOfEquTypeToTag[itemInfo.equInfo.type]
@@ -1423,36 +1386,6 @@ function UiModel:getActorAttribute(entity, type)
     elseif type == Common.ActorAttributeType.MagAtkRate then
         return entity.attributes.magAtkRate
     end
-end
-
---- 在物品列表里查找
----@param findingInfo ArticleInfo
-function UiModel:findInArticleInfoList(findingInfo)
-    local index = Common.NewArticleInfoItemIndex()
-    for i, info in pairs(self.articleInfoList) do
-        if (info == findingInfo) then
-            index.Index = i
-            index.Info = info
-            break
-        end
-    end
-
-    return index
-end
-
---- 在物品托盘的物品列表里查找
----@param findingInfo ArticleInfo
-function UiModel:findInArticleDockInfoList(findingInfo)
-    local index = Common.NewArticleInfoItemIndex()
-    for i, info in pairs(self.articleDockInfoList) do
-        if (info == findingInfo) then
-            index.Index = i
-            index.Info = info
-            break
-        end
-    end
-
-    return index
 end
 
 function UiModel:playPlayerRebornSound()
