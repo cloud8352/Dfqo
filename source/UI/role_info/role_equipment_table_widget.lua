@@ -11,6 +11,8 @@ local Timer = require("util.gear.timer")
 local _TABLE = require("lib.table")
 local _MATH = require("lib.math")
 local _Graphics = require("lib.graphics")
+local SysLib = require("lib.system")
+local TouchLib = require("lib.touch")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
@@ -22,7 +24,7 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
----@class RoleEquTableWidget
+---@class RoleEquTableWidget : Widget
 local RoleEquTableWidget = require("core.class")(Widget)
 
 
@@ -36,12 +38,10 @@ local RowCount = Common.EquTableRowCount
 ---@param parentWindow Window
 ---@param model UiModel
 function RoleEquTableWidget:Ctor(parentWindow, model)
-    assert(parentWindow, "must assign parent window")
-    ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
-    ItemWidth = math.floor(ItemWidth)
-
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+    ItemWidth = math.floor(ItemWidth)
 
     self.model = model
 
@@ -86,6 +86,9 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
     ---@type ArticleInfo
     self.hoveringItemInfo = nil
 
+    -- touch
+    self.timeMsToLastPressed = 0
+
     -- connect
     self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
 
@@ -94,7 +97,15 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
 end
 
 function RoleEquTableWidget:Update(dt)
-    self:MouseEvent()
+    if false == self:IsVisible() then
+        return
+    end
+
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
 
     if (Widget.IsSizeChanged(self))
     then
@@ -123,6 +134,11 @@ function RoleEquTableWidget:Update(dt)
     -- 更新悬浮提示
     if self.lastIsShowHoveringItemTip ~= self.isShowHoveringItemTip then
         self:updateHoveringItemTipWindowData()
+    end
+
+    -- 更新到上次点击的时间
+    if self.hoveringItemInfo ~= nil then
+        self.timeMsToLastPressed = self.timeMsToLastPressed + dt
     end
 
     self.nameLabel:Update(dt)
@@ -212,6 +228,81 @@ function RoleEquTableWidget:MouseEvent()
             self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
         end
 
+        break
+    end
+end
+
+---@param label Label
+---@param idList table<number, string>
+---@return string id
+local function getLabelTouchedId(label, idList)
+    for _, id in pairs(idList) do
+        local point = TouchLib.GetPoint(id)
+        if (label:CheckPoint(point.x, point.y)) then
+            return id
+        end
+    end
+
+    return ""
+end
+
+function RoleEquTableWidget:TouchEvent()
+    -- 判断鼠标
+    while true do
+        -- 检查是否点击了其他窗口
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.parentWindow)
+        if #capturedTouchIdList == 0 and
+            TouchLib.WhetherExistHoldPoint()
+        then
+            self.hoveringItemIndex = -1
+            self.hoveringItemInfo = nil
+            self.itemHoveringTimer:Exit()
+            break
+        end
+        if #capturedTouchIdList == 0 then
+            break
+        end
+
+        -- 判断点击的显示项标签
+        local hoveringItemIndex = -1
+        local touchedId = ""
+        for i, label in pairs(self.viewItemBgList) do
+            touchedId = getLabelTouchedId(label, capturedTouchIdList)
+            if touchedId ~= "" then
+                hoveringItemIndex = i
+                break
+            end
+        end
+
+        if hoveringItemIndex == -1 then
+            self.hoveringItemIndex = -1
+            self.hoveringItemInfo = nil
+            self.itemHoveringTimer:Exit()
+            break
+        end
+
+        local point = TouchLib.GetPoint(touchedId)
+        if self.timeMsToLastPressed < 500
+            and hoveringItemIndex == self.hoveringItemIndex
+            and TouchLib.WhetherPointIsPressed(point)
+        then
+            -- 使用物品（模拟右键点击）
+            self.model:OnRightKeyClickedEquTableItem(hoveringItemIndex)
+        end
+
+        if TouchLib.WhetherPointIsPressed(point) then
+            self.timeMsToLastPressed = 0
+        end
+
+        if hoveringItemIndex == self.hoveringItemIndex then
+            break
+        end
+
+        self.hoveringItemIndex = hoveringItemIndex
+        self.hoveringItemInfo = self.model:GetMountedEquInfoList()[hoveringItemIndex]
+
+        -- 开启计时鼠标悬浮时间
+        self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
         break
     end
 end

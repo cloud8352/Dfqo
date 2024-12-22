@@ -10,6 +10,8 @@ local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _MATH = require("lib.math")
 local _Graphics = require("lib.graphics")
+local SysLib = require("lib.system")
+local TouchLib = require("lib.touch")
 
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
@@ -95,6 +97,10 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     self.originXPosWhenDragItem = 0
     self.originYPosWhenDragItem = 0
 
+    -- touch
+    self.touchedId = -1
+    self.timeMsToLastPressed = 0
+
     -- connect
     self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
     
@@ -103,7 +109,14 @@ function ArticleTableWidget:Ctor(parentWindow, model)
 end
 
 function ArticleTableWidget:Update(dt)
-    self:MouseEvent()
+    if not self.baseWidget.isVisible then
+        return
+    end
+    if not SysLib.IsMobile() then
+        self:MouseEvent()
+    else
+        self:TouchEvent()
+    end
 
     if (self.baseWidget:IsSizeChanged()
         ) then
@@ -132,6 +145,11 @@ function ArticleTableWidget:Update(dt)
     -- 更新悬浮提示
     if self.lastIsShowHoveringItemTip ~= self.isShowHoveringItemTip then
         self:updateHoveringItemTipWindowData()
+    end
+
+    -- 更新到上次点击的时间
+    if self.hoveringItemInfo ~= nil then
+        self.timeMsToLastPressed = self.timeMsToLastPressed + dt
     end
 
     for i, label in pairs(self.viewItemBgList) do
@@ -217,6 +235,87 @@ function ArticleTableWidget:MouseEvent()
     end
 
     self:judgeAndExecRequestDragItem()
+end
+
+---@param label Label
+---@param idList table<number, string>
+---@return string id
+local function getLabelTouchedId(label, idList)
+    for _, id in pairs(idList) do
+        local point = TouchLib.GetPoint(id)
+        if (label:CheckPoint(point.x, point.y)) then
+            return id
+        end
+    end
+
+    return ""
+end
+
+function ArticleTableWidget:TouchEvent()
+    -- 判断鼠标
+    while true do
+        -- 检查是否点击了其他窗口
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.baseWidget.parentWindow)
+        if #capturedTouchIdList == 0 and
+            TouchLib.WhetherExistHoldPoint()
+        then
+            self.hoveringItemIndex = -1
+            self.model:SetArticleTableHoveringItemIndex(-1)
+            self.hoveringItemInfo = nil
+            self.itemHoveringTimer:Exit()
+            break
+        end
+        if #capturedTouchIdList == 0 then
+            break
+        end
+
+        -- 判断点击的显示项标签
+        local hoveringItemIndex = -1
+        local touchedId = ""
+        for i, label in pairs(self.viewItemBgList) do
+            touchedId = getLabelTouchedId(label, capturedTouchIdList)
+            if touchedId ~= "" then
+                hoveringItemIndex = i
+                break
+            end
+        end
+
+        if hoveringItemIndex == -1 then
+            self.hoveringItemIndex = -1
+            self.model:SetArticleTableHoveringItemIndex(-1)
+            self.hoveringItemInfo = nil
+            self.itemHoveringTimer:Exit()
+            break
+        end
+
+        local point = TouchLib.GetPoint(touchedId)
+        if self.timeMsToLastPressed < 500
+            and hoveringItemIndex == self.hoveringItemIndex
+            and TouchLib.WhetherPointIsPressed(point)
+        then
+            -- 使用物品（模拟右键点击）
+            self.model:OnRightKeyClickedArticleTableItem(hoveringItemIndex)
+        end
+
+        if TouchLib.WhetherPointIsPressed(point) then
+            self.timeMsToLastPressed = 0
+        end
+
+        if hoveringItemIndex == self.hoveringItemIndex then
+            break
+        end
+
+        self.touchedId = touchedId
+        self.hoveringItemIndex = hoveringItemIndex
+        self.model:SetArticleTableHoveringItemIndex(hoveringItemIndex)
+        self.hoveringItemInfo = self.model:GetArticleInfoList()[hoveringItemIndex]
+
+        -- 开启计时鼠标悬浮时间
+        self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
+        break
+    end
+
+    self:judgeAndExecRequestDragItemUnderTouch()
 end
 
 function ArticleTableWidget:SetPosition(x, y)
@@ -383,6 +482,59 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
     if self.isReqDragItem then
         local destXPos = self.originXPosWhenDragItem + currentMouseXPos - self.originMouseXPosWhenDragItem
         local destYPos = self.originYPosWhenDragItem + currentMouseYPos - self.originMouseYPosWhenDragItem
+        self.model:OnRequestMoveDraggingArticleItem(destXPos, destYPos)
+    end
+end
+
+function ArticleTableWidget:judgeAndExecRequestDragItemUnderTouch()
+    if self.timeMsToLastPressed < 800 then
+        return
+    end
+    local touchedPoint = TouchLib.GetPoint(self.touchedId)
+    if touchedPoint == nil then
+        return
+    end
+
+    -- 判断鼠标
+    while true do
+        -- 是否处于按压中
+        if false == TouchLib.WhetherPointIsHold(touchedPoint) then
+            if self.isReqDragItem == true then
+                self.model:DropArticleItem()
+                self.hoveringItemIndex = -1
+                self.touchedId = -1
+                self.model:SetArticleTableHoveringItemIndex(-1)
+            end
+            
+            self.isReqDragItem = false
+            break
+        end
+
+        -- 如果正处于请求移动窗口中，则直接退出循环执行移动窗口逻辑
+        if self.isReqDragItem then
+            break
+        end
+
+        -- 确保鼠标停靠在物品上
+        if self.hoveringItemIndex == -1 or self.hoveringItemInfo.type == Common.ArticleType.Empty then
+            break
+        end
+
+        -- 请求移动窗口
+        self.isReqDragItem = true
+        self.originMouseXPosWhenDragItem = touchedPoint.x
+        self.originMouseYPosWhenDragItem = touchedPoint.y
+        self.originXPosWhenDragItem = touchedPoint.x - ItemWidth / 2
+        self.originYPosWhenDragItem = touchedPoint.y - ItemWidth / 2
+
+        -- 设置拖拽中的物品索引
+        self.model:DragArticleItem(self.hoveringItemIndex)
+        break
+    end
+
+    if self.isReqDragItem then
+        local destXPos = self.originXPosWhenDragItem + touchedPoint.x - self.originMouseXPosWhenDragItem
+        local destYPos = self.originYPosWhenDragItem + touchedPoint.y - self.originMouseYPosWhenDragItem
         self.model:OnRequestMoveDraggingArticleItem(destXPos, destYPos)
     end
 end
