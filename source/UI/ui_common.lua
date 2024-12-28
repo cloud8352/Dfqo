@@ -421,4 +421,18 @@ local ActorInstanceInventoryItemInfo = {
 }
 UiCommon.ActorInstanceInventoryItemInfo = ActorInstanceInventoryItemInfo
 
+---@enum DirEnum
+local DirEnum = {
+    Up = 1,
+    UpRight = 2,
+    Right = 3,
+    RightDown = 4,
+    Down = 5,
+    DownLeft = 6,
+    Left = 7,
+    LeftUp = 8,
+    Center = 9,
+}
+UiCommon.DirEnum = DirEnum
+
 return UiCommon

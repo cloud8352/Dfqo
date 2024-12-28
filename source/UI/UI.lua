@@ -23,7 +23,7 @@ local HoveringArticleItemTipWidget = require("UI.role_info.hovering_article_item
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 local HpRectBar = require("UI.hp_rect_bar")
-local DirKeyGroupWidget = require("UI.TouchComponents.DirKeyGroupWidget")
+local DirPadWidget = require("UI.TouchComponents.DirPadWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 local ArticleDockFrame = require("UI.ArticleDockFrame")
 
@@ -262,11 +262,11 @@ function UI.Init(director)
     UI.hoveringSkillItemTipWindow:SetContentWidget(UI.hoveringSkillItemTipWidget)
     UI.appendWindowWidget(UI.hoveringSkillItemTipWindow, UI.hoveringSkillItemTipWindow)
 
-    -- DirKeyGroupWidget
-    UI.dirKeyGroupWidget = DirKeyGroupWidget.New(bottomWindow, UI.model)
-    UI.dirKeyGroupWidget:SetPosition(150 * Util.GetWindowSizeScale(),
-        Util.GetWindowHeight() - UI.dirKeyGroupWidget.baseWidget.height - 50 * Util.GetWindowSizeScale())
-    UI.appendWindowWidget(bottomWindow, UI.dirKeyGroupWidget)
+    -- DirPadWidget
+    UI.dirPadWidget = DirPadWidget.New(bottomWindow, UI.model)
+    UI.dirPadWidget:SetPosition(150 * Util.GetWindowSizeScale(),
+        Util.GetWindowHeight() - UI.dirPadWidget.height - 50 * Util.GetWindowSizeScale())
+    UI.appendWindowWidget(bottomWindow, UI.dirPadWidget)
 
     -- itemKeyGroup
     UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI.model)
@@ -675,7 +675,7 @@ function UI.updateWindowVisibilityByGameState()
             UI.skillDockViewFrame:SetVisible(false)
             UI.articleDockFrame:SetVisible(false)
         else
-            UI.dirKeyGroupWidget:SetVisible(false)
+            UI.dirPadWidget:SetVisible(false)
             UI.itemKeyGroup:SetVisible(false)
         end
     end

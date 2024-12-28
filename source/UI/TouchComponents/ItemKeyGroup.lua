@@ -1,5 +1,5 @@
 --[[
-	desc: DirKeyGroupWidget class.
+	desc: ItemKeyGroup class.
 	author: keke <243768648@qq.com>
 ]] --
 

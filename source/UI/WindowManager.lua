@@ -131,7 +131,7 @@ end
 
 --- 触控是否被上层窗口捕获
 ---@param w Window
----@return idList table<number, string>
+---@return table<number, string> idList
 function WindowManager.GetWindowCapturedTouchIdList(w)
     ---@type table<number, string>
     local idList = {} -- 处于待获取窗口内且没有被上层窗口捕获的触控点

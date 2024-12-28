@@ -126,6 +126,13 @@ else
         if isTouch then
             return
         end
+        local point = _TOUCH.GetPoint(0)
+        if point == nil then
+            return
+        end
+        if false == _TOUCH.WhetherPointIsHold(point) then
+            return
+        end
         _TOUCH.Moved(0, x, y, dx, dy, 1)
     end
 

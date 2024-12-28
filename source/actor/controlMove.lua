@@ -42,10 +42,10 @@ function _ControlMove:Ctor(aspect, transform, input, speed, turnDirection, OnRel
 end
 
 function _ControlMove:Update()
-    local up = _INPUT.IsHold(self.input, "up")
-    local down = _INPUT.IsHold(self.input, "down")
-    local right = _INPUT.IsHold(self.input, "right")
-    local left = _INPUT.IsHold(self.input, "left")
+    local up = _INPUT.IsHold(self.input, "up") or _INPUT.IsPressed(self.input, "up")
+    local down = _INPUT.IsHold(self.input, "down") or _INPUT.IsPressed(self.input, "down")
+    local right = _INPUT.IsHold(self.input, "right") or _INPUT.IsPressed(self.input, "right")
+    local left = _INPUT.IsHold(self.input, "left") or _INPUT.IsPressed(self.input, "left")
     local axisX, axisY = 0, 0
 
     if (up or down) then
