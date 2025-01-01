@@ -67,8 +67,9 @@ function love.update(dt)
         _Update()
         _TIME.LateUpdate()
         
-        collectgarbage("step", 1000)
+        -- collectgarbage("step", 1000)
     end
+    collectgarbage("step", 100)
 end
 
 function love.draw()

@@ -327,6 +327,9 @@ end
 
 ---@param percent number
 function PushButton:SetMaskPercent(percent)
+    if self.maskPercent == percent then
+        return
+    end
     self.maskPercent = percent
     self.isMaskPercentUpdated = true
 end
