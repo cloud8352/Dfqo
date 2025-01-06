@@ -37,6 +37,8 @@ local function initBtnImgPaths(btn)
     btn:SetHoveringSpriteDataPath(HoveringImgPath)
     btn:SetNormalSpriteDataPath(NormalImgPath)
     btn:SetPressingSpriteDataPath(PressingImgPath)
+
+    btn:SetOpacity(0.7)
 end
 
 ---@param parentWindow Window

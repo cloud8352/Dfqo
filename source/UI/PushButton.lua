@@ -1,10 +1,11 @@
 --[[
 	desc: PushButton class.
 	author: keke <243768648@qq.com>
-	since: 2022-11-15
-	alter: 2022-11-15
-]]
---
+]]--
+
+local Widget = require("UI.Widget")
+local WindowManager = require("UI.WindowManager")
+local Label = require("UI.Label")
 
 local _CONFIG = require("config")
 local _RESOURCE = require("lib.resource")
@@ -14,11 +15,8 @@ local _Mouse = require("lib.mouse")
 local Touch = require("lib.touch")
 local SysLib = require("lib.system")
 
-local WindowManager = require("UI.WindowManager")
-local Label = require("UI.Label")
-
----@class PushButton
-local PushButton = require("core.class")()
+---@class PushButton : Widget
+local PushButton = require("core.class")(Widget)
 
 local DisplayState = {
     Unknown = 0,
@@ -30,15 +28,7 @@ local DisplayState = {
 
 ---@param parentWindow Window
 function PushButton:Ctor(parentWindow)
-    --- 信号到接收者的映射表
-    ---@type table<function, table<number, Object>>
-    self.mapOfSignalToReceiverList = {}
-
-    self.objectName = ""
-
-    assert(parentWindow, "must assign parent window")
-    ---@type Window
-    self.parentWindow = parentWindow
+    Widget.Ctor(self, parentWindow)
 
     self.normalSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/normal")
     self.hoveringSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/hovering")
@@ -51,11 +41,8 @@ function PushButton:Ctor(parentWindow)
     self.whetherEnableClickedSound = true
 
     ---@type Graphics.Drawable.Sprite
-    self.bgSprite = _Sprite.New() -- 背景，默认无背景
-    ---@type Graphics.Drawable.Sprite
     self.sprite = _Sprite.New()
     self.sprite:SwitchRect(true) -- 使用矩形
-    self.isBgSpriteUpdated = true
 
     -- content margins
     self.leftMargin = 0
@@ -64,13 +51,6 @@ function PushButton:Ctor(parentWindow)
     self.bottomMargin = 0
     self.isContentsMarginsUpdated = true
 
-    self.width = 30
-    self.height = 10
-    self.isSizeUpdated = true
-    self.xPos = 0
-    self.yPos = 0
-    self.enable = true
-    self.isVisible = true
     self.lastDisplayState = DisplayState.Unknown
     self.displayState = DisplayState.Normal
 
@@ -82,6 +62,9 @@ function PushButton:Ctor(parentWindow)
     self.maskSprite = _Sprite.New()
     self.maskPercent = 1.0
     self.isMaskPercentUpdated = true
+
+    self.opacity = 1.0
+    self.opacityChanged = true
 end
 
 function PushButton:Update(dt)
@@ -95,34 +78,35 @@ function PushButton:Update(dt)
     end
     self:judgeSignals()
 
-    if (self.isBgSpriteUpdated
-            or self.isContentsMarginsUpdated
-            or self.isSizeUpdated
-            or self.whetherSpriteDataUpdate
-            or self.lastDisplayState ~= self.displayState
-            or self.isMaskPercentUpdated
-            or self.isTextUpdated)
+    if self.isContentsMarginsUpdated
+        or self:IsSizeChanged()
+        or self.whetherSpriteDataUpdate
+        or self.lastDisplayState ~= self.displayState
+        or self.isMaskPercentUpdated
+        or self.isTextUpdated
+        or self.opacityChanged
     then
         self:updateSprites()
     end
 
     self.textLabel:Update(dt)
 
-    self.isBgSpriteUpdated = false
     self.isContentsMarginsUpdated = false
-    self.isSizeUpdated = false
     self.whetherSpriteDataUpdate = false
     self.isMaskPercentUpdated = false
     self.isTextUpdated = false
     self.lastDisplayState = self.displayState
+    self.opacityChanged = false
+
+    Widget.Update(self, dt)
 end
 
 function PushButton:Draw()
     if false == self.isVisible then
         return
     end
+    Widget.Draw(self)
 
-    self.bgSprite:Draw()
     self.sprite:Draw()
     self.textLabel:Draw()
     self.maskSprite:Draw()
@@ -215,12 +199,87 @@ function PushButton:TouchEvent()
     end
 end
 
+--- 连接信号
+---@param signal function
+---@param obj Object
+function PushButton:MocConnectSignal(signal, receiver)
+    Widget.MocConnectSignal(self, signal, receiver)
+end
+
+---@param signal function
+function PushButton:GetReceiverListOfSignal(signal)
+    return Widget.GetReceiverListOfSignal(self, signal)
+end
+
+---@param name string
+function PushButton:SetObjectName(name)
+    Widget.SetObjectName(self, name)
+end
+
+function PushButton:GetObjectName()
+    return Widget.GetObjectName(self)
+end
+
+---@param x int
+---@param y int
+function PushButton:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
+
+    self.textLabel:SetPosition(x, y)
+
+    self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
+    self.maskSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+---@return int, int 横坐标， 纵坐标
+function PushButton:GetPosition()
+    return Widget.GetPosition(self)
+end
+
+---@return int, int @宽，高
+function PushButton:GetSize()
+    return Widget.GetSize(self)
+end
+
+function PushButton:GetWidth()
+    return self.width
+end
+
+function PushButton:GetHeight()
+    return self.height
+end
+
+function PushButton:SetSize(width, height)
+    Widget.SetSize(self, width, height)
+end
+
+function PushButton:SetText(text)
+    self.textLabel:SetText(text)
+
+    self.isTextUpdated = true
+end
+
+function PushButton:SetEnable(enable)
+    Widget.SetEnable(self, enable)
+end
+
+function PushButton:IsVisible()
+    return Widget.IsVisible(self)
+end
+
+---@param isVisible bool
+function PushButton:SetVisible(isVisible)
+    Widget.SetVisible(self, isVisible)
+end
+
+function PushButton:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
+end
+
 ---@param path string
 function PushButton:SetBgSpriteDataPath(path)
     local spriteData = _RESOURCE.GetSpriteData(path)
-
     self.bgSprite:SetData(spriteData)
-    self.isBgSpriteUpdated = true
 end
 
 ---@param path string
@@ -260,67 +319,6 @@ function PushButton:SetContentsMargins(left, top, right, bottom)
     self.isContentsMarginsUpdated = true
 end
 
----@param x int
----@param y int
-function PushButton:SetPosition(x, y)
-    self.xPos = x
-    self.yPos = y
-
-    self.textLabel:SetPosition(x, y)
-
-    self.bgSprite:SetAttri("position", self.xPos, self.yPos)
-    self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
-    self.maskSprite:SetAttri("position", self.xPos, self.yPos)
-end
-
----@return int, int 横坐标， 纵坐标
-function PushButton:GetPosition()
-    return self.xPos, self.yPos
-end
-
----@return int, int @宽，高
-function PushButton:GetSize()
-    return self.width, self.height
-end
-
-function PushButton:GetWidth()
-    return self.width
-end
-
-function PushButton:GetHeight()
-    return self.height
-end
-
-function PushButton:SetSize(width, height)
-    self.width = width
-    self.height = height
-
-    self.isSizeUpdated = true
-end
-
-function PushButton:SetText(text)
-    self.textLabel:SetText(text)
-
-    self.isTextUpdated = true
-end
-
-function PushButton:SetEnable(enable)
-    self.enable = enable
-end
-
-function PushButton:IsVisible()
-    return self.isVisible
-end
-
----@param isVisible bool
-function PushButton:SetVisible(isVisible)
-    self.isVisible = isVisible
-end
-
-function PushButton:CheckPoint(x, y)
-    return self.sprite:CheckPoint(x, y)
-end
-
 function PushButton:IsPressing()
     return self.isPressing
 end
@@ -334,11 +332,6 @@ function PushButton:SetMaskPercent(percent)
     self.isMaskPercentUpdated = true
 end
 
----@param name string
-function PushButton:SetObjectName(name)
-    self.objectName = name
-end
-
 ---@param enable boolean
 function PushButton:EnableClickedSound(enable)
     self.whetherEnableClickedSound = enable
@@ -349,16 +342,13 @@ function PushButton:SetClickedSoundSourceByPath(path)
     self.clickedSoundSource = _RESOURCE.NewSource(path)
 end
 
---- 连接信号
----@param signal function
----@param obj Object
-function PushButton:MocConnectSignal(signal, receiver)
-    local receiverList = self.mapOfSignalToReceiverList[signal]
-    if receiverList == nil then
-        receiverList = {}
-        self.mapOfSignalToReceiverList[signal] = receiverList
+---@param opacity num @ 0.0 - 1.0
+function PushButton:SetOpacity(opacity)
+    if opacity == self.opacity then
+        return
     end
-    table.insert(receiverList, receiver)
+    self.opacity = opacity
+    self.opacityChanged = true
 end
 
 --- 信号 - 被点击
@@ -383,12 +373,6 @@ function PushButton:Signal_BtnClicked()
 end
 
 function PushButton:updateSprites()
-    -- 更新 bgSprite
-    local bgSpriteWidth, bgSpriteHeight = self.bgSprite:GetImageDimensions()
-    local bgSpriteXScale = (self.width / bgSpriteWidth)
-    local bgSpriteYScale = (self.height / bgSpriteHeight)
-    self.bgSprite:SetAttri("scale", bgSpriteXScale, bgSpriteYScale)
-
     --- 更新 sprite
     -- 根据状态设置按钮图片
     if DisplayState.Normal == self.displayState then
@@ -415,6 +399,11 @@ function PushButton:updateSprites()
     local spriteYScale = (self.height - self.topMargin - self.bottomMargin) / spriteHeight
     self.sprite:SetAttri("scale", spriteXScale, spriteYScale)
 
+    -- opacity
+    local r, g, b, a = self.sprite:GetAttri("color")
+    a = 255 * self.opacity
+    self.sprite:SetAttri("color", r, g, b, a)
+
     self.textLabel:SetSize(self.width - self.leftMargin - self.rightMargin,
         self.height - self.topMargin - self.bottomMargin)
     self.textLabel:SetPosition(self.xPos + self.leftMargin, self.yPos + self.topMargin)
@@ -439,6 +428,11 @@ function PushButton:updateMaskSprite()
 
     self.maskSprite:SetImage(canvas)
     self.maskSprite:AdjustDimensions()
+
+    -- opacity
+    local r, g, b, a = self.maskSprite:GetAttri("color")
+    a = 255 * self.opacity
+    self.maskSprite:SetAttri("color", r, g, b, a)
 end
 
 function PushButton:judgeSignals()
