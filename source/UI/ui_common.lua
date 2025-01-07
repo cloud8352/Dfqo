@@ -409,7 +409,13 @@ local InputKeyValueStruct = {
     Skill4 = "skill4",
     Skill5 = "skill5",
     Skill6 = "skill6",
-    Skill7 = "skill7"
+    Skill7 = "skill7",
+    DockItem1 = "DockItem1",
+    DockItem2 = "DockItem2",
+    DockItem3 = "DockItem3",
+    DockItem4 = "DockItem4",
+    DockItem5 = "DockItem5",
+    DockItem6 = "DockItem6",
 }
 UiCommon.InputKeyValueStruct = InputKeyValueStruct
 

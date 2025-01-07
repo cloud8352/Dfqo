@@ -36,6 +36,9 @@ function _DIRECTOR.Init()
 end
 
 function _DIRECTOR.Update(dt)
+    -- ui
+    UI.Update(dt)
+
     _MAP.LoadTick()
     
     _speedTweener:Update(dt)
@@ -45,9 +48,6 @@ function _DIRECTOR.Update(dt)
     dt = dt * _DIRECTOR.rate
     _WORLD.Update(dt, _DIRECTOR.rate)
     _MAP.Update(dt)
-
-    -- ui
-    UI.Update(dt) -- 此处存在内存泄漏！！！
 end
 
 function _DIRECTOR.firstUpdate()

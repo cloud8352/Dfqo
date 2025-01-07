@@ -424,6 +424,8 @@ function UI.Slot_requestSetArticleDockItemInfo(my, sender, index, itemInfo)
     if sender == UI.model then
         print("UI.Slot_requestSetArticleDockItemInfo(my, sender, index, itemInfo)", index, itemInfo.name)
         UI.articleDockFrame:SetIndexItemInfo(index, itemInfo)
+
+        UI.itemKeyGroup:SetDockItemInfo(index, itemInfo)
     end
 end
 
@@ -618,6 +620,11 @@ function UI.mergeTotalSprite()
 end
 
 function UI.keyboardEvent()
+    local player = UI.model:GetPlayer()
+    if player == nil then
+        return
+    end
+
     --- esc
     if (Keyboard.IsPressed("escape")) then
         UI.characterInfoWindow:SetVisible(false)
@@ -627,27 +634,29 @@ function UI.keyboardEvent()
         UI.hoveringSkillItemTipWindow:SetVisible(false)
     end
 
+    local model = UI.model
     --- 判断物品托盘快捷键
     local rightKeyClickedArticleDockIndex = -1
-    if (Keyboard.IsPressed("1")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem1) then
         rightKeyClickedArticleDockIndex = 1
     end
-    if (Keyboard.IsPressed("2")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem2) then
         rightKeyClickedArticleDockIndex = 2
     end
-    if (Keyboard.IsPressed("3")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem3) then
         rightKeyClickedArticleDockIndex = 3
     end
-    if (Keyboard.IsPressed("4")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem4) then
         rightKeyClickedArticleDockIndex = 4
     end
-    if (Keyboard.IsPressed("5")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem5) then
         rightKeyClickedArticleDockIndex = 5
     end
-    if (Keyboard.IsPressed("6")) then
+    if model:IsPressedPlayerKey(Common.InputKeyValueStruct.DockItem6) then
         rightKeyClickedArticleDockIndex = 6
     end
     if (-1 ~= rightKeyClickedArticleDockIndex) then
+        print(333, rightKeyClickedArticleDockIndex)
         UI.model:OnRightKeyClickedArticleDockItem(rightKeyClickedArticleDockIndex)
     end
 

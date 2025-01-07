@@ -58,6 +58,9 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     ---@type table<string, PushButton>
     self.mapOfTagToSkillBtn = {}
 
+    ---@type table<string, PushButton>
+    self.mapOfTagToDockItemBtn = {}
+
     -- normal attack
     self.normalAttackBtn = PushButton.New(parentWindow)
     initBtnImgPaths(self.normalAttackBtn)
@@ -134,6 +137,19 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.skill7Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
     self.mapOfTagToSkillBtn[Common.InputKeyValueStruct.Skill7] = self.skill7Btn
 
+    -- dock item
+    self.dockItem1Btn = PushButton.New(parentWindow)
+    initBtnImgPaths(self.dockItem1Btn)
+    self.dockItem1Btn:EnableClickedSound(false)
+    self.dockItem1Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
+    self.mapOfTagToDockItemBtn[Common.InputKeyValueStruct.DockItem1] = self.dockItem1Btn
+
+    self.dockItem2Btn = PushButton.New(parentWindow)
+    initBtnImgPaths(self.dockItem2Btn)
+    self.dockItem2Btn:EnableClickedSound(false)
+    self.dockItem2Btn:SetSize(NormalBtnWidth, NormalBtnWidth)
+    self.mapOfTagToDockItemBtn[Common.InputKeyValueStruct.DockItem2] = self.dockItem2Btn
+
 
     -- connection
     self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
@@ -150,9 +166,11 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     self.skill5Btn:MocConnectSignal(self.skill5Btn.Signal_BtnClicked, self)
     self.skill6Btn:MocConnectSignal(self.skill6Btn.Signal_BtnClicked, self)
     self.skill7Btn:MocConnectSignal(self.skill7Btn.Signal_BtnClicked, self)
+    self.dockItem1Btn:MocConnectSignal(self.dockItem1Btn.Signal_BtnClicked, self)
+    self.dockItem2Btn:MocConnectSignal(self.dockItem2Btn.Signal_BtnClicked, self)
 
     -- post init
-    self:UpdatePosition()
+    self:updatePosition()
     self:reloadSkillBtnsIcon()
 end
 
@@ -204,6 +222,10 @@ function ItemKeyGroup:Update(dt)
     -- skill7
     self.skill7Btn:Update(dt)
 
+    -- dock item
+    self.dockItem1Btn:Update(dt)
+    self.dockItem2Btn:Update(dt)
+
     -- 更新使用逻辑
     self:updateUseLogic()
 end
@@ -243,82 +265,36 @@ function ItemKeyGroup:Draw()
 
     -- skill7
     self.skill7Btn:Draw()
+
+    -- dock item
+    self.dockItem1Btn:Draw()
+    self.dockItem2Btn:Draw()
 end
 
 function ItemKeyGroup:SetVisible(visible)
     self.isVisible = visible
 end
 
-function ItemKeyGroup:reloadSkillBtnsIcon()
-    for k, v in pairs(self.mapOfTagToSkillBtn) do
-        local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
-        if actorSkillObj then
-            ---@type Actor.RESMGR.SkillData
-            local skillData = actorSkillObj:GetData()
-            local iconPath = "icon/skill/NormalAttack"
-            if skillData.icon then
-                iconPath = "icon/skill/" .. skillData.icon
-            end
-            v:SetNormalSpriteDataPath(iconPath)
-            v:SetHoveringSpriteDataPath(iconPath)
-            v:SetDisabledSpriteDataPath(iconPath)
-        else
-            v:SetNormalSpriteDataPath(NormalImgPath)
-            v:SetHoveringSpriteDataPath(HoveringImgPath)
-            v:SetDisabledSpriteDataPath(DisabledImgPath)
-        end
-
+---@param index int
+---@param articleInfo ArticleInfo
+function ItemKeyGroup:SetDockItemInfo(index, articleInfo)
+    local countStr = ""
+    if articleInfo.count > 1 then
+        countStr = tostring(articleInfo.count)
     end
-end
+    local iconPath = articleInfo.iconPath
+    if iconPath == "" then
+        iconPath = NormalImgPath
+    end
+    if index == 1 then
+        self.dockItem1Btn:SetNormalSpriteDataPath(iconPath)
+        self.dockItem1Btn:SetText(countStr)
+    end
 
-function ItemKeyGroup:UpdatePosition()
-    local windowWidth = Util.GetWindowWidth()
-    local windowHeight = Util.GetWindowHeight()
-    local scale = Util.GetWindowSizeScale()
-
-    -- normal attack
-    self.normalAttackBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth)
-
-
-    self.getItemBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 15 * scale,
-        windowHeight - 20 * scale - SmallBtnWidth + 15 * scale)
-
-    -- jump
-    self.jumpBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- counter Attack
-    self.counterAttackBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- skill1
-    self.skill1Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
-
-    -- skill2
-    self.skill2Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- skill3
-    self.skill3Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- skill4
-    self.skill4Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
-
-    -- skill5
-    self.skill5Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- skill6
-    self.skill6Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
-
-    -- skill7
-    self.skill7Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    if index == 2 then
+        self.dockItem2Btn:SetNormalSpriteDataPath(iconPath)
+        self.dockItem2Btn:SetText(countStr)
+    end
 end
 
 --- slots
@@ -326,11 +302,15 @@ end
 ---@param sender Obj
 function ItemKeyGroup:Slot_PlayerChanged(sender)
     self:reloadSkillBtnsIcon()
+
+    self:updateDockItemBtnsUi()
 end
 
 ---@param sender Obj
 function ItemKeyGroup:Slot_PlayerMountedSkillsChanged(sender)
     self:reloadSkillBtnsIcon()
+
+    self:updateDockItemBtnsUi()
 end
 
 --- 信号槽 - 当有按钮被点击时
@@ -390,6 +370,106 @@ function ItemKeyGroup:Slot_BtnClicked(btn)
     if (btn == self.skill7Btn) then
         self.model:ReleasePlayerKey(Common.InputKeyValueStruct.Skill7)
     end
+
+    -- dock item, 物品的使用逻辑还在UI中，没有放到esc框架中，所以目前直接调用model方法
+    if (btn == self.dockItem1Btn) then
+        self.model:OnRightKeyClickedArticleDockItem(1)
+    end
+    if (btn == self.dockItem2Btn) then
+        self.model:OnRightKeyClickedArticleDockItem(2)
+    end
+end
+
+--- private function
+
+function ItemKeyGroup:reloadSkillBtnsIcon()
+    for k, v in pairs(self.mapOfTagToSkillBtn) do
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
+        if actorSkillObj then
+            ---@type Actor.RESMGR.SkillData
+            local skillData = actorSkillObj:GetData()
+            local iconPath = "icon/skill/NormalAttack"
+            if skillData.icon then
+                iconPath = "icon/skill/" .. skillData.icon
+            end
+            v:SetNormalSpriteDataPath(iconPath)
+            v:SetHoveringSpriteDataPath(iconPath)
+            v:SetDisabledSpriteDataPath(iconPath)
+        else
+            v:SetNormalSpriteDataPath(NormalImgPath)
+            v:SetHoveringSpriteDataPath(HoveringImgPath)
+            v:SetDisabledSpriteDataPath(DisabledImgPath)
+        end
+
+    end
+end
+
+function ItemKeyGroup:updateDockItemBtnsUi()
+    local articleInfoList = self.model:GetArticleInfoList()
+
+    local articleInfo = articleInfoList[1]
+    self:SetDockItemInfo(1, articleInfo)
+
+    articleInfo = articleInfoList[2]
+    self:SetDockItemInfo(2, articleInfo)
+end
+
+function ItemKeyGroup:updatePosition()
+    local windowWidth = Util.GetWindowWidth()
+    local windowHeight = Util.GetWindowHeight()
+    local scale = Util.GetWindowSizeScale()
+
+    -- normal attack
+    self.normalAttackBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth,
+        windowHeight - 40 * scale - LargeBtnWidth)
+
+
+    self.getItemBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 15 * scale,
+        windowHeight - 20 * scale - SmallBtnWidth + 15 * scale)
+
+    -- jump
+    self.jumpBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- counter Attack
+    self.counterAttackBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- skill1
+    self.skill1Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth)
+
+    -- skill2
+    self.skill2Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- skill3
+    self.skill3Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- skill4
+    self.skill4Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth)
+
+    -- skill5
+    self.skill5Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- skill6
+    self.skill6Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- skill7
+    self.skill7Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+
+    -- dock item
+    self.dockItem2Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth
+        - 20 * scale - NormalBtnWidth - 80 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth)
+    self.dockItem1Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth
+        - 20 * scale - NormalBtnWidth - 80 * scale - NormalBtnWidth - 40 * scale - NormalBtnWidth,
+        windowHeight - 20 * scale - NormalBtnWidth)
 end
 
 --- 更新使用逻辑
