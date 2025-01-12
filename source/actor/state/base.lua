@@ -118,6 +118,7 @@ function _State:Enter()
     end
 end
 
+---@param nextState Actor.State
 function _State:Exit(nextState)
     if (self:HasTag("attackRate")) then
         self._entity.aspect.rate = 1
