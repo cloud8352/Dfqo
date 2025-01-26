@@ -47,7 +47,7 @@ function _Transport:LateUpdate(dt)
                 if (e.transport.type == "make") then
                     _MAP.Load(_MAP.Make(e.transport.map, e))
                 else
-                    _MAP.Load(e.transport.map)
+                    _MAP.Load(e.transport.map, false, e.transport.ToPos)
                 end
 
                 -- 更新boss房间方向

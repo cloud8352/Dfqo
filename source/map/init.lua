@@ -99,7 +99,8 @@ local _const = {
 local _load = {
     process = 0,
     path = nil,
-    caller = _Caller.New()
+    caller = _Caller.New(),
+    playerInitPos = {}
 }
 
 local _layerGroup = {
@@ -202,6 +203,12 @@ end
 ---@param path string | table
 local function _Load(path)
     local data = _RESOURCE.ReadConfig(path, "config/map/instance/%s.cfg")
+
+    if _load.playerInitPos.X or _load.playerInitPos.Y then
+        data.init = { x = _load.playerInitPos.X,
+            y = _load.playerInitPos.Y
+        }
+    end
 
     _MAP.info = data.info
     _load.caller:Call(data)
@@ -612,7 +619,9 @@ function _MAP.Make(path, entry)
         local isBoss = data.info.isBoss
 
         if (config.actor.enemy) then
-            if config.actor.enemy.normal then
+            if config.actor.enemy.normal
+                and #config.actor.enemy.normal > 0
+            then
                 local normalCount = math.random(_const.normalRange[1], _const.normalRange[2])
 
                 objectMatrix:Assign(function(x, y)
@@ -628,7 +637,9 @@ function _MAP.Make(path, entry)
                 end, normalCount)
             end
 
-            if config.actor.enemy.named then
+            if config.actor.enemy.named
+                and #config.actor.enemy.named > 0
+            then
                 local namedCount = math.random(_const.namedRange[1], _const.namedRange[2])
 
                 objectMatrix:Assign(function(x, y)
@@ -645,7 +656,9 @@ function _MAP.Make(path, entry)
                 end, namedCount)
             end
 
-            if (isBoss and config.actor.enemy.boss) then
+            if (isBoss and config.actor.enemy.boss)
+                and #config.actor.enemy.boss > 0
+            then
                 local bossCount = math.random(1, #config.actor.enemy.boss)
     
                 local dulistParam = { rank = 2, isEnemy = true } -- 敌人风险为2，意味着该单位为boss
@@ -694,7 +707,9 @@ function _MAP.Make(path, entry)
 end
 
 ---@param path string
-function _MAP.Load(path, adjust)
+---@param adjust boolean
+---@param playerInitPos table
+function _MAP.Load(path, adjust, playerInitPos)
     _load.path = path
     _load.adjust = adjust
 
@@ -702,6 +717,12 @@ function _MAP.Load(path, adjust)
         local DIRECTOR = require("director")
         _SOUND.Play(_const.runningSoundData)
         DIRECTOR.Curtain(_Color.black, 0, 500, 1000, _, _, _OnLoadEnd)
+    end
+
+    if playerInitPos then
+        _load.playerInitPos = playerInitPos
+    else
+        _load.playerInitPos = {}
     end
 end
 

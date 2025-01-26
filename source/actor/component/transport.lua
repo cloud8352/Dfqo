@@ -14,6 +14,7 @@ local _Collider = require("actor.collider")
 ---@field public type string
 ---@field public direction string
 ---@field public map string
+---@field public ToPos table
 local _Transport = require("core.class")()
 
 function _Transport.HandleData(data)
@@ -26,6 +27,8 @@ function _Transport:Ctor(data, param)
     self.direction = data.direction
     self.map = data.map or param.map
     self.collider = _Collider.New(data.collider)
+
+    self.ToPos = data.ToPos or { X = 0, Y = 0 }
 end
 
 return _Transport
