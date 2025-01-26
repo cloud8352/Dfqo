@@ -29,5 +29,4 @@
         "**/tacentview": true,
         "**/tools/extract-npk/output": true,
     },
-    "git.ignoreLimitWarning": true
 }
