@@ -17,6 +17,7 @@ local Timer = require("util.gear.timer")
 
 ---@class Actor.State.Duelist.Direzie.SummonState : Actor.State
 ---@field protected _skill Actor.Skill
+---@field protected buff Actor.Buff
 local SummonState = require("core.class")(_Base)
 
 function SummonState:Ctor(data, ...)
@@ -37,6 +38,7 @@ end
 function SummonState:Init(entity)
     _Base.Init(self, entity)
 
+    self.buff = nil
     self.timer = Timer.New()
 end
 
@@ -83,6 +85,8 @@ function SummonState:Enter(lastState, skill)
         self._skill = skill
 
         self.count = 0
+
+        self.buff = BuffSrv.AddBuff(self._entity, self._buffDatas)
     end
 end
 
@@ -93,6 +97,8 @@ function SummonState:Exit(nextState)
 
     _Base.Exit(self, nextState)
     self.timer:Exit()
+
+    self.buff:Exit()
 end
 
 return SummonState

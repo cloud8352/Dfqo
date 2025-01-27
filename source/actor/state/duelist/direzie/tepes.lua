@@ -17,6 +17,7 @@ local Timer = require("util.gear.timer")
 
 ---@class Actor.State.Duelist.Direzie.TepesState : Actor.State
 ---@field protected _skill Actor.Skill
+---@field protected buff Actor.Buff
 local TepesState = require("core.class")(_Base)
 
 function TepesState:Ctor(data, ...)
@@ -34,6 +35,7 @@ function TepesState:Init(entity)
     _Base.Init(self, entity)
 
     self.timer = Timer.New()
+    self.buff = nil
 end
 
 function TepesState:NormalUpdate(dt, rate)
@@ -76,6 +78,8 @@ function TepesState:Enter(lastState, skill)
         self.count = 0
         self.timer:Enter(self.readyTimeMs)
         _SOUND.Play(self._soundDataSet.ready)
+
+        self.buff = BuffSrv.AddBuff(self._entity, self._buffDatas)
     end
 end
 
@@ -86,6 +90,8 @@ function TepesState:Exit(nextState)
 
     _Base.Exit(self, nextState)
     self.timer:Exit()
+
+    self.buff:Exit()
 end
 
 return TepesState
