@@ -63,7 +63,13 @@ _CONFIG.code = {
     skill12 = "y",
     suptool1 = "q",
     suptool2 = "w",
-    dash = "v"
+    dash = "v",
+    DockItem1 = "1",
+    DockItem2 = "2",
+    DockItem3 = "3",
+    DockItem4 = "4",
+    DockItem5 = "5",
+    DockItem6 = "6",
 }
 
 _CONFIG.anticode = {}
@@ -72,17 +78,58 @@ _CONFIG.ConfigDirPath = "config/"
 _CONFIG.DefaultSettingsFileName = "DefaultSettings.cfg"
 _CONFIG.SettingsFileName = "Settings.cfg"
 
--- 加载全局配置
+-- 加载用户配置
+local userConfigs = nil
 local settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.SettingsFileName
 if (_FILE.Exists(settingsFilePath)) then
     local content = _FILE.ReadFile(settingsFilePath)
-    _CONFIG = loadstring(content)()
+    userConfigs = loadstring(content)()
 end
 
-do
-    for k, v in pairs(_CONFIG.code) do
-        _CONFIG.anticode[v] = k
+--- 将a表的简单数据复制到b表
+---@param a table
+---@param b table
+local function tableSimpleCopy(a, b)
+    for k, v in pairs(a) do
+        if type(v) ~= "table" then
+            b[k] = v
+        end
     end
+end
+
+if userConfigs and userConfigs.setting then
+    local userData = userConfigs.setting
+    local setting = _CONFIG.setting
+
+    tableSimpleCopy(userData, setting)
+end
+
+if userConfigs and userConfigs.debug then
+    local userData = userConfigs.debug
+    local debug = _CONFIG.debug
+    tableSimpleCopy(userData, debug)
+
+    if userData.map then
+        local userData2 = userData.map
+        local map = debug.map
+        tableSimpleCopy(userData2, map)
+    end
+end
+
+if userConfigs and userConfigs.arrow then
+    local userData = userConfigs.arrow
+    local arrow = _CONFIG.arrow
+    tableSimpleCopy(userData, arrow)
+end
+
+if userConfigs and userConfigs.code then
+    local userData = userConfigs.code
+    local code = _CONFIG.code
+    tableSimpleCopy(userData, code)
+end
+
+for k, v in pairs(_CONFIG.code) do
+    _CONFIG.anticode[v] = k
 end
 
 return _CONFIG
