@@ -77,6 +77,7 @@ end
 ---@param entity Actor.Entity
 ---@param value int
 function _ATTRIBUTE.AddHpWithEffect(entity, value)
+    value = math.floor(value)
     _ATTRIBUTE.AddHp(entity.attributes, value)
     _SOUND.Play(_hpSoundData)
 
