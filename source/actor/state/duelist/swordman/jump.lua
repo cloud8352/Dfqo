@@ -74,8 +74,8 @@ function SwordmanJump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
             self.jumpAttackEffectEntity = _FACTORY.New(self._actorDataSet[1], effectParam)
 
             -- SwordWind
-            effectParam.z = 0
-            _FACTORY.New("bullet/SwordWind", effectParam)
+            -- effectParam.z = 0
+            -- _FACTORY.New("bullet/SwordWind", effectParam)
         end
     end
 end
