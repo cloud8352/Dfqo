@@ -40,7 +40,7 @@ function _Buff:Ctor(entity, key, data)
 end
 
 function _Buff:Cond()
-    return true
+    return _Skill.Cond(self)
 end
 
 ---@return boolean

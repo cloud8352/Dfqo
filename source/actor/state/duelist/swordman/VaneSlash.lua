@@ -18,7 +18,6 @@ local _STATE = require("actor.service.state")
 local _SOUND = require("lib.sound")
 
 local VaneSlashFlashSoundData = ResMgr.GetSoundData("swing/swordman/VaneSlashFlash")
-local VaneSlashWindSoundData = ResMgr.GetSoundData("swing/swordman/VaneSlashWind")
 
 ---@class Actor.State.Duelist.Swordman.VaneSlash:Actor.State
 ---@field protected _attack Actor.Gear.Attack
@@ -44,13 +43,8 @@ function VaneSlashState:Ctor(data, ...)
     ---@type Actor.Entity
     self.controlledEntity = nil
 
-    ---@type table<int, Actor.Entity>
-    self.attackedEntityMap = {}
-
     ---@type Source
     self.VaneSlashFlashSoundSource = nil
-    ---@type Source
-    self.VaneSlashWindSoundSource = nil
 end
 
 function VaneSlashState:Init(entity, ...)
@@ -67,7 +61,7 @@ function VaneSlashState:NormalUpdate(dt, rate)
     self._attack:Update()
 
     self.attackTimeMs = self.attackTimeMs + dt
-    if self.attackTimeMs > 500
+    if self.attackTimeMs > 400
         and #self.effectList > 2
     then
         self.attackTimeMs = 0
@@ -88,20 +82,6 @@ function VaneSlashState:NormalUpdate(dt, rate)
 
     if self.process == 2 and main:TickEnd() then
         self:setProcess(3)
-    end
-
-    -- sound
-    if self.process >= 2 then
-        if not self.VaneSlashFlashSoundSource:isPlaying() 
-            and not self.VaneSlashWindSoundSource
-        then
-            self.VaneSlashWindSoundSource = _SOUND.Play(VaneSlashWindSoundData)
-        end
-        if self.VaneSlashWindSoundSource
-            and not self.VaneSlashWindSoundSource:isPlaying()
-        then
-            self.VaneSlashWindSoundSource = _SOUND.Play(VaneSlashWindSoundData)
-        end
     end
 
     if self.process == 3 and main:TickEnd() then
@@ -130,7 +110,6 @@ function VaneSlashState:Enter(laterState, skill)
 
     self.buff = nil
     self.controlledEntity = nil
-    self.attackedEntityMap = {}
 
     if self._entity.identity.gender == 1 then
         _SOUND.Play(self._soundDataSet.voice)
@@ -150,17 +129,22 @@ function VaneSlashState:Exit(nextState)
     end
     self:destroyEffectList()
 
-    for _, e in pairs(self.attackedEntityMap) do
-        local banCountMap = e.battle.banCountMap
-        -- banCountMap.stun = banCountMap.stun - 1
-        banCountMap.flight = banCountMap.flight - 1
-        banCountMap.overturn = banCountMap.overturn - 1
-        banCountMap.dmgSound = banCountMap.dmgSound - 1
-        -- banCountMap.turn = banCountMap.turn - 1
-
-        BattleSrv.Flight(e.battle, e.states, 8.5, nil,
-            nil, 6, 0, self._entity.transform.direction)
+    if nil == self.controlledEntity then
+        return
     end
+    local e = self.controlledEntity
+    local banCountMap = e.battle.banCountMap
+    -- banCountMap.stun = banCountMap.stun - 1
+    banCountMap.flight = banCountMap.flight - 1
+    local lastFlightBanCount = banCountMap.flight
+    banCountMap.flight = 0
+    banCountMap.overturn = banCountMap.overturn - 1
+    banCountMap.dmgSound = banCountMap.dmgSound - 1
+    -- banCountMap.turn = banCountMap.turn - 1
+
+    BattleSrv.Flight(e.battle, e.states, 8.5, nil,
+        nil, 6, 0, self._entity.transform.direction)
+    banCountMap.flight = lastFlightBanCount
 end
 
 ---@param process int
@@ -223,19 +207,6 @@ function VaneSlashState:onHitFunc(attack, e)
         return
     end
 
-    if self.attackedEntityMap[e] then
-        return
-    end
-
-    self.attackedEntityMap[e] = e
-
-    local banCountMap = e.battle.banCountMap
-    -- banCountMap.stun = banCountMap.stun + 1
-    banCountMap.flight = banCountMap.flight + 1
-    banCountMap.overturn = banCountMap.overturn + 1
-    banCountMap.dmgSound = banCountMap.dmgSound + 1
-    -- banCountMap.turn = banCountMap.turn + 1
-
     if self.controlledEntity ~= nil then
         return
     end
@@ -243,8 +214,18 @@ function VaneSlashState:onHitFunc(attack, e)
     self.controlledEntity = e
     StateSrv.Reset(e.states, true)
 
+    local banCountMap = e.battle.banCountMap
+    local lastStunBanCount = banCountMap.stun
+    banCountMap.stun = 0
+    banCountMap.flight = banCountMap.flight + 1
+    banCountMap.overturn = banCountMap.overturn + 1
+    banCountMap.dmgSound = banCountMap.dmgSound + 1
+    -- banCountMap.turn = banCountMap.turn + 1
+
     local dir = self._entity.transform.direction
     BattleSrv.Stun(e.battle, e.states, 5000, 0, 0, dir)
+    banCountMap.stun = lastStunBanCount
+
     e.transform.position.x = self._entity.transform.position.x + dir * 102
     e.transform.position.y = self._entity.transform.position.y
     e.transform.position.z = self._entity.transform.position.z - 45
