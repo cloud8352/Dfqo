@@ -24,7 +24,6 @@ local _Base = require("actor.state.base")
 ---@class Actor.State.Duelist.Swordman.NormalWaveSlash:Actor.State
 ---@field protected _attack Actor.Gear.Attack
 ---@field protected _skill Actor.Skill
----@field protected _effect Actor.Entity
 ---@field protected _easemoveTick int
 ---@field protected _easemoveParams table
 ---@field protected _easemove Actor.Gear.Easemove
@@ -58,17 +57,16 @@ function NormalWaveSlashState:NormalUpdate(dt, rate)
     if (tick == self._effectTick) then
         local t = self._entity.transform
         local param = {
-            x = t.x,
-            y = t.y,
-            z = t.z,
+            x = t.position.x,
+            y = t.position.y,
+            z = t.position.z,
             direction = t.direction,
-            entity = self._entity
+            entity = self._entity,
+            attackValue = self._skill.attackValues[1]
         }
 
-        self._effect = _FACTORY.New(self._actorDataSet[1], param)
-
+        local bulletEntity = _FACTORY.New(self._actorDataSet[1], param)
         self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
-        self._attack.collision[_ASPECT.GetPart(self._effect.aspect)] = "attack"
     elseif (tick == self._easemoveTick) then
         local direction = self._entity.transform.direction
         local arrowDirection = _INPUT.GetArrowDirection(self._entity.input, direction)
@@ -88,6 +86,7 @@ function NormalWaveSlashState:Enter(laterState, skill)
     if (laterState ~= self) then
         _Base.Enter(self)
 
+        self._attack:Exit()
         self._easemove:Exit()
         self._skill = skill
 
@@ -109,11 +108,6 @@ function NormalWaveSlashState:Exit(nextState)
     end
 
     _Base.Exit(self, nextState)
-
-    if (self._effect) then
-        self._effect.identity.destroyProcess = 1
-        self._effect = nil
-    end
 end
 
 return NormalWaveSlashState
