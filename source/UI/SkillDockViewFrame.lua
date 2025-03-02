@@ -144,8 +144,14 @@ function SkillDockViewFrame:Update(dt)
     else
         self.isShowHoveringItemTip = true
     end
+
     -- 更新悬浮提示
     if self.lastIsShowHoveringItemTip ~= self.isShowHoveringItemTip then
+        -- 空技能项不显示悬浮提示
+        local actorSkillObj = self.model:GetPlayerActorSkillObj(self.hoveringItemTag)
+        if nil == actorSkillObj then
+            self.isShowHoveringItemTip = false
+        end
         self:updateHoveringItemTipWindowData()
     end
 
@@ -525,6 +531,9 @@ end
 
 function SkillDockViewFrame:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringSkillItemTipWindowVisibility(self.isShowHoveringItemTip)
+    if not self.isShowHoveringItemTip then
+        return
+    end
 
     local item = self.mapOfTagToSkillViewItem[self.hoveringItemTag]
     if nil == item then
