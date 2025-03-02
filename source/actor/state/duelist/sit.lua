@@ -34,13 +34,13 @@ function _Sit:Enter(laterState, Func, time)
         Func()
     end
 
-    self._entity.battle.banCountMap.attack = self._entity.battle.banCountMap.attack + 1
+    -- self._entity.battle.banCountMap.attack = self._entity.battle.banCountMap.attack + 1
 end
 
 function _Sit:Exit()
     _Base.Exit(self)
 
-    self._entity.battle.banCountMap.attack = self._entity.battle.banCountMap.attack - 1
+    -- self._entity.battle.banCountMap.attack = self._entity.battle.banCountMap.attack - 1
 end
 
 return _Sit

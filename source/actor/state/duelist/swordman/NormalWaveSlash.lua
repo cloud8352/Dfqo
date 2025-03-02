@@ -66,7 +66,6 @@ function NormalWaveSlashState:NormalUpdate(dt, rate)
         }
 
         local bulletEntity = _FACTORY.New(self._actorDataSet[1], param)
-        self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
     elseif (tick == self._easemoveTick) then
         local direction = self._entity.transform.direction
         local arrowDirection = _INPUT.GetArrowDirection(self._entity.input, direction)
@@ -99,6 +98,7 @@ function NormalWaveSlashState:Enter(laterState, skill)
         self._attack.shake.time = hitstop[1]
 
         _SOUND.Play(self._soundDataSet.effect[1])
+        self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
     end
 end
 
