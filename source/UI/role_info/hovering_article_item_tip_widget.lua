@@ -27,6 +27,12 @@ function HoveringArticleItemTipWidget:Ctor(parentWindow)
     self.typeLabel = Label.New(parentWindow)
     self.typeLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
 
+    self.usableJobsLabel = Label.New(parentWindow)
+    self.usableJobsLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
+
+    self.usableGendersLabel = Label.New(parentWindow)
+    self.usableGendersLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
+
     --- 消耗品属性类型 到 标签控件 的映射表
     ---@type table<ConsumablePropType, Label>
     self.mapOfConsumablePropTypeToLabel = {}
@@ -67,6 +73,8 @@ function HoveringArticleItemTipWidget:Update(dt)
     then
         self.nameLabel:Update(dt)
         self.typeLabel:Update(dt)
+        self.usableJobsLabel:Update(dt)
+        self.usableGendersLabel:Update(dt)
         --- 更新各属性标签控件
         for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
             label:Update(dt)
@@ -88,9 +96,17 @@ function HoveringArticleItemTipWidget:Update(dt)
         adjustYPosOffset = adjustYPosOffset + viewContentSizeH
         self.typeLabel:SetPosition(self.xPos, self.yPos + adjustYPosOffset)
 
+        viewContentSizeW, viewContentSizeH = self.typeLabel:GetViewContentSize()
+        adjustYPosOffset = adjustYPosOffset + viewContentSizeH
+        self.usableJobsLabel:SetPosition(self.xPos, self.yPos + adjustYPosOffset)
+
+        viewContentSizeW, viewContentSizeH = self.usableJobsLabel:GetViewContentSize()
+        adjustYPosOffset = adjustYPosOffset + viewContentSizeH
+        self.usableGendersLabel:SetPosition(self.xPos, self.yPos + adjustYPosOffset)
+
         -- 布局各属性标签控件
         ---@type Label
-        local theLastLabel = self.typeLabel
+        local theLastLabel = self.usableGendersLabel
         for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
             viewContentSizeW, viewContentSizeH = theLastLabel:GetViewContentSize()
             adjustYPosOffset = adjustYPosOffset + viewContentSizeH
@@ -114,6 +130,8 @@ function HoveringArticleItemTipWidget:Update(dt)
 
     self.nameLabel:Update(dt)
     self.typeLabel:Update(dt)
+    self.usableJobsLabel:Update(dt)
+    self.usableGendersLabel:Update(dt)
     --- 更新各属性标签控件
     for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
         label:Update(dt)
@@ -133,6 +151,8 @@ function HoveringArticleItemTipWidget:Draw()
 
     self.nameLabel:Draw()
     self.typeLabel:Draw()
+    self.usableJobsLabel:Draw()
+    self.usableGendersLabel:Draw()
     --- 绘制各属性标签控件
     for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
         label:Draw()
@@ -152,18 +172,20 @@ function HoveringArticleItemTipWidget:SetPosition(x, y)
 
     Widget.SetPosition(self, x, y)
 
-    self.nameLabel:SetPosition(x, y)
-    self.typeLabel:SetPosition(x, y)
-    --- 设置各属性标签控件坐标
-    for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
-        label:SetPosition(x, y)
-    end
-    for _, label in pairs(self.mapOfEquPropTypeToLabel) do
-        label:SetPosition(x, y)
-    end
+    -- self.nameLabel:SetPosition(x, y)
+    -- self.typeLabel:SetPosition(x, y)
+    -- self.usableJobsLabel:SetPosition(x, y)
+    -- self.usableGendersLabel:SetPosition(x, y)
+    -- --- 设置各属性标签控件坐标
+    -- for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
+    --     label:SetPosition(x, y)
+    -- end
+    -- for _, label in pairs(self.mapOfEquPropTypeToLabel) do
+    --     label:SetPosition(x, y)
+    -- end
 
-    --- 设置简介控件坐标
-    self.descriptionLabel:SetPosition(x, y)
+    -- --- 设置简介控件坐标
+    -- self.descriptionLabel:SetPosition(x, y)
 end
 
 function HoveringArticleItemTipWidget:SetSize(width, height)
@@ -175,6 +197,8 @@ function HoveringArticleItemTipWidget:SetSize(width, height)
 
     self.nameLabel:SetSize(width, height)
     self.typeLabel:SetSize(width, height)
+    self.usableJobsLabel:SetSize(width, height)
+    self.usableGendersLabel:SetSize(width, height)
     --- 设置各属性标签控件大小
     for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
         label:SetSize(width, height)
@@ -192,6 +216,8 @@ function HoveringArticleItemTipWidget:SetEnable(enable)
 
     self.nameLabel:SetEnable(enable)
     self.typeLabel:SetEnable(enable)
+    self.usableJobsLabel:SetEnable(enable)
+    self.usableGendersLabel:SetEnable(enable)
     --- 使能各属性标签控件
     for _, label in pairs(self.mapOfConsumablePropTypeToLabel) do
         label:SetEnable(enable)
@@ -243,6 +269,8 @@ function HoveringArticleItemTipWidget:SetVisible(isVisible)
 
     self.nameLabel:SetVisible(isVisible)
     self.typeLabel:SetVisible(isVisible)
+    self.usableJobsLabel:SetVisible(isVisible)
+    self.usableGendersLabel:SetVisible(isVisible)
 
     -- 通过属性调整各控件可见性
     self:AdjustWidgetsVisibilityByProp()
@@ -268,6 +296,30 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
     end
     self.typeLabel:SetText(typeStr)
     self.type = info.type
+
+    local usableJobsStr = ""
+    for _, job in pairs(info.UsableJobs) do
+        local jobStr = Common.MapOfJobToTxt[job]
+        if usableJobsStr == "" then
+            usableJobsStr = jobStr
+        else
+            usableJobsStr = usableJobsStr .. "、" .. jobStr
+        end
+    end
+    usableJobsStr = "职业要求：" .. usableJobsStr
+    self.usableJobsLabel:SetText(usableJobsStr)
+
+    local usableGendersStr = ""
+    for _, gender in pairs(info.UsableGenders) do
+        local genderStr = Common.MapOfGenderToTxt[gender]
+        if usableGendersStr == "" then
+            usableGendersStr = genderStr
+        else
+            usableGendersStr = usableGendersStr .. "、" .. genderStr
+        end
+    end
+    usableGendersStr = "性别要求：" .. usableGendersStr
+    self.usableGendersLabel:SetText(usableGendersStr)
 
     ---@type Label
     local label = nil

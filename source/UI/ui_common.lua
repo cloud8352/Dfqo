@@ -72,11 +72,16 @@ UiCommon.GameState = GameState
 
 ---@enum GenderEnum
 local GenderEnum = {
-    Other = 0,
     Male = 1,
     Female = 2,
 }
 UiCommon.GenderEnum = GenderEnum
+
+---@type table<int, string>
+local mapOfGenderToTxt = {}
+mapOfGenderToTxt[GenderEnum.Male] = "男"
+mapOfGenderToTxt[GenderEnum.Female] = "女"
+UiCommon.MapOfGenderToTxt = mapOfGenderToTxt
 
 ---@enum JobEnum
 local JobEnum = {
@@ -87,6 +92,15 @@ local JobEnum = {
     Kyo = 4,
 }
 UiCommon.JobEnum = JobEnum
+
+---@type table<int, string>
+local mapOfJobToTxt = {}
+mapOfJobToTxt[JobEnum.Other] = "其他"
+mapOfJobToTxt[JobEnum.SwordMan] = "鬼剑士"
+mapOfJobToTxt[JobEnum.Fighter] = "格斗家"
+mapOfJobToTxt[JobEnum.InventoryItem] = "物品"
+mapOfJobToTxt[JobEnum.Kyo] = "草薙京"
+UiCommon.MapOfJobToTxt = mapOfJobToTxt
 
 ---@type table<int, string>
 local mapOfEquTypeToTag = {}
@@ -165,7 +179,7 @@ local EquInfo = {
 ---@field iconPath string
 ---@field count number
 ---@field maxCount number
----@field UsableJobs table<int, JobEnum>
+---@field UsableJobs table<int, int>
 ---@field UsableGenders table<int, GenderEnum>
 ---@field consumableInfo ConsumableInfo
 ---@field equInfo EquInfo
@@ -179,9 +193,9 @@ local ArticleInfo = {
     iconPath = "",
     count = 1,
     maxCount = 100,
-    ---@type table<int, JobEnum>
+    ---@type table<int, int>
     UsableJobs = {},
-    ---@type table<int, GenderEnum>
+    ---@type table<int, int>
     UsableGenders = _TABLE.DeepClone(GenderEnum),
     ---@type ConsumableInfo
     consumableInfo = _TABLE.DeepClone(ConsumableInfo),
