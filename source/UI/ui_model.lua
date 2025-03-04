@@ -41,6 +41,7 @@ local PlayerCfgSavedFileSuffix = ".cfg"
 
 -- SoundData
 local NotFitAlertSoundData = ResLib.GetSoundData("ui/Alert1")
+local SkillConsumableUsedSoundData = ResLib.GetSoundData("ui/AbilityUpItem")
 
 ---@param director DIRECTOR
 function UiModel:Ctor(director)
@@ -727,6 +728,12 @@ function UiModel:GetMapSimplePathList()
     return self.mapSimplePathList
 end
 
+---@param timeMs int
+---@param text string
+function UiModel:RequestUiToShowNotification(timeMs, text)
+    self:Signal_RequestShowNotification(timeMs, text)
+end
+
 --- signals
 
 --- 请求去设置物品栏某一显示项的信息
@@ -1134,6 +1141,27 @@ function UiModel:Signal_PlayerMasteredSkillChanged(info)
     end
 end
 
+---@param timeMs int
+---@param text string
+function UiModel:Signal_RequestShowNotification(timeMs, text)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_RequestShowNotification]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_RequestShowNotification
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, timeMs, text)
+
+        ::continue::
+    end
+end
+
 --- slots
 
 ---@param player Actor.Entity
@@ -1230,6 +1258,9 @@ function UiModel:Slot_MasteredSkillOfPlayerAdded(info)
     self:SavePlayerData()
 
     self:Signal_PlayerMasteredSkillAdded(info)
+
+    local text = "习得：[" .. info.name .. "]"
+    self:RequestUiToShowNotification(5000, text)
 end
 
 ---@param info SkillInfo
@@ -1268,6 +1299,7 @@ function UiModel:useConsumable(index, itemInfo)
     end
 
     if itemInfo.consumableInfo.SkillPath ~= "" then
+        SoundLib.Play(SkillConsumableUsedSoundData)
         MasteredSkillsSrv.AddSkillToMasteredSkillsCmpt(self.player.MasteredSkills,
             itemInfo.consumableInfo.SkillPath)
     end

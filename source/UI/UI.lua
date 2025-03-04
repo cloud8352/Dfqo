@@ -66,11 +66,12 @@ function UI.Init(director)
     UI.appendWindowWidget(UI.startGameWindow, UI.startGameWindow)
 
     -- 角色概况
+    local windowSizeScale = Util.GetWindowSizeScale()
     local bottomWindow = Window.New()
     UI.bottomWindow = bottomWindow
     bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
     UI.characterTopBtn = PushButton.New(bottomWindow)
-    UI.characterTopBtn:SetSize(60 * Util.GetWindowSizeScale(), 60 * Util.GetWindowSizeScale())
+    UI.characterTopBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
     UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
     UI.characterTopBtn:SetPosition(10, 10)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
@@ -82,13 +83,13 @@ function UI.Init(director)
     UI.appendWindowWidget(bottomWindow, UI.characterTopBtn)
 
     --- 右下角 按钮区
-    local rightDownBtnAreaSpace = 5 * Util.GetWindowSizeScale()
-    local rightDownBtnAreaBtnWidth = 25 * Util.GetWindowSizeScale()
+    local rightDownBtnAreaSpace = 5 * windowSizeScale
+    local rightDownBtnAreaBtnWidth = 25 * windowSizeScale
     -- 设置窗口按钮
     UI.settingsBtn = PushButton.New(bottomWindow)
     UI.settingsBtn:SetSize(rightDownBtnAreaBtnWidth, rightDownBtnAreaBtnWidth)
-    UI.settingsBtn:SetPosition(Util.GetWindowWidth() - 10 * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth,
-        Util.GetWindowHeight() - 10 * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth)
+    UI.settingsBtn:SetPosition(Util.GetWindowWidth() - 10 * windowSizeScale - rightDownBtnAreaBtnWidth,
+        Util.GetWindowHeight() - 10 * windowSizeScale - rightDownBtnAreaBtnWidth)
     UI.settingsBtn:SetNormalSpriteDataPath("ui/PushButton/Settings/Normal")
     UI.settingsBtn:SetHoveringSpriteDataPath("ui/PushButton/Settings/Hovering")
     UI.settingsBtn:SetPressingSpriteDataPath("ui/PushButton/Settings/Pressing")
@@ -100,7 +101,7 @@ function UI.Init(director)
     UI.skillManagementBtn = PushButton.New(bottomWindow)
     UI.skillManagementBtn:SetSize(rightDownBtnAreaBtnWidth, rightDownBtnAreaBtnWidth)
     local settingsBtnXPos, settingsBtnYPos = UI.settingsBtn:GetPosition()
-    UI.skillManagementBtn:SetPosition(settingsBtnXPos - rightDownBtnAreaSpace * Util.GetWindowSizeScale() - rightDownBtnAreaBtnWidth,
+    UI.skillManagementBtn:SetPosition(settingsBtnXPos - rightDownBtnAreaSpace * windowSizeScale - rightDownBtnAreaBtnWidth,
         settingsBtnYPos)
     UI.skillManagementBtn:SetNormalSpriteDataPath("ui/PushButton/SkillManagement/Normal")
     UI.skillManagementBtn:SetHoveringSpriteDataPath("ui/PushButton/SkillManagement/Hovering")
@@ -112,8 +113,8 @@ function UI.Init(director)
 
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
-    UI.characterInfoWindow:SetSize(977 * Util.GetWindowSizeScale(),
-        622 * Util.GetWindowSizeScale())
+    UI.characterInfoWindow:SetSize(977 * windowSizeScale,
+        622 * windowSizeScale)
     local characterInfoWindowWidth, characterInfoWindowHeight = UI.characterInfoWindow:GetSize()
     local characterInfoWindowOriginXPos = (Util.GetWindowWidth() - characterInfoWindowWidth) / 2
     local characterInfoWindowOriginYPos = (Util.GetWindowHeight() - characterInfoWindowHeight) / 2
@@ -127,8 +128,8 @@ function UI.Init(director)
 
     -- skillManagementWindow
     UI.skillManagementWindow = Window.New()
-    UI.skillManagementWindow:SetSize(977 * Util.GetWindowSizeScale(),
-        622 * Util.GetWindowSizeScale())
+    UI.skillManagementWindow:SetSize(977 * windowSizeScale,
+        622 * windowSizeScale)
     UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos + 10, characterInfoWindowOriginYPos + 10)
     UI.skillManagementWindow:SetVisible(false)
 
@@ -139,8 +140,8 @@ function UI.Init(director)
 
     -- settingsWindow
     UI.settingsWindow = Window.New()
-    UI.settingsWindow:SetSize(977 * Util.GetWindowSizeScale(),
-        622 * Util.GetWindowSizeScale())
+    UI.settingsWindow:SetSize(977 * windowSizeScale,
+        622 * windowSizeScale)
     UI.settingsWindow:SetPosition(characterInfoWindowOriginXPos + 20, characterInfoWindowOriginYPos + 20)
     UI.settingsWindow:SetVisible(false)
     UI.settingsWindow:SetTitleBarIsBackgroundVisible(false)
@@ -170,38 +171,38 @@ function UI.Init(director)
     if IsShowFps then
         -- fps Label
         UI.fpsLabel = Label.New(bottomWindow)
-        UI.fpsLabel:SetPosition(120 * Util.GetWindowSizeScale(), 20 * Util.GetWindowSizeScale())
-        UI.fpsLabel:SetSize(80 * Util.GetWindowSizeScale(), 30 * Util.GetWindowSizeScale())
+        UI.fpsLabel:SetPosition(120 * windowSizeScale, 20 * windowSizeScale)
+        UI.fpsLabel:SetSize(80 * windowSizeScale, 30 * windowSizeScale)
         -- UI.fpsLabel:SetText(_TIME.GetFPS())
         UI.appendWindowWidget(bottomWindow, UI.fpsLabel)
     end
 
     -- hp bar
     UI.hpRectBar = HpRectBar.New(bottomWindow)
-    UI.hpRectBar:SetSize(400 * Util.GetWindowSizeScale(), 15 * Util.GetWindowSizeScale())
-    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 130 * Util.GetWindowSizeScale(), 10 * Util.GetWindowSizeScale())
+    UI.hpRectBar:SetSize(400 * windowSizeScale, 15 * windowSizeScale)
+    UI.hpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 130 * windowSizeScale, 10 * windowSizeScale)
     UI.appendWindowWidget(bottomWindow, UI.hpRectBar)
 
     -- hit enemy hp bar
     UI.hitEnemyHpRectBar = HpRectBar.New(bottomWindow)
     UI.hitEnemyHpRectBar:SetRightLabelVisible(false)
-    UI.hitEnemyHpRectBar:SetSize(500 * Util.GetWindowSizeScale(), 22 * Util.GetWindowSizeScale())
-    UI.hitEnemyHpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * Util.GetWindowSizeScale(),
-        35 * Util.GetWindowSizeScale())
+    UI.hitEnemyHpRectBar:SetSize(500 * windowSizeScale, 22 * windowSizeScale)
+    UI.hitEnemyHpRectBar:SetPosition(Util.GetWindowWidth() / 2 - 220 * windowSizeScale,
+        35 * windowSizeScale)
     UI.appendWindowWidget(bottomWindow, UI.hitEnemyHpRectBar)
     UI.hitEnemyHpRectBar:SetVisible(false)
 
     -- partner hp bar
     ---@type table<number, HpRectBar>
     UI.partnerHpRectBarList = {}
-    local partnerHpRectBarHeight = 15 * Util.GetWindowSizeScale()
-    local partnerHpRectBarSpace = 8 * Util.GetWindowSizeScale()
-    local partnerHpRectBarYPos = 200 * Util.GetWindowSizeScale()
+    local partnerHpRectBarHeight = 15 * windowSizeScale
+    local partnerHpRectBarSpace = 8 * windowSizeScale
+    local partnerHpRectBarYPos = 200 * windowSizeScale
     for i = 1, UI.model:GetPartnerCount() do
         local hpRectBar = HpRectBar.New(bottomWindow)
         hpRectBar:SetRightLabelVisible(false)
-        hpRectBar:SetSize(150 * Util.GetWindowSizeScale(), partnerHpRectBarHeight)
-        hpRectBar:SetPosition(15 * Util.GetWindowSizeScale(),
+        hpRectBar:SetSize(150 * windowSizeScale, partnerHpRectBarHeight)
+        hpRectBar:SetPosition(15 * windowSizeScale,
             partnerHpRectBarYPos + (i - 1) * (partnerHpRectBarHeight + partnerHpRectBarSpace))
         hpRectBar:SetText("伙伴" .. tostring(i))
         hpRectBar:SetMaxHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.MaxHp))
@@ -236,7 +237,7 @@ function UI.Init(director)
     -- 将 物品托盘 和 技能托盘 水平居中放到窗口底部
     local articleDockFrameWidth, articleDockFrameHeight = UI.articleDockFrame:GetSize()
     local skillDockViewFrameWidth, skillDockViewFrameHeight = UI.skillDockViewFrame:GetSize()
-    local adfSdfSpace = 10 * Util.GetWindowSizeScale()
+    local adfSdfSpace = 10 * windowSizeScale
     UI.articleDockFrame:SetPosition((Util.GetWindowWidth() - articleDockFrameWidth - skillDockViewFrameWidth - adfSdfSpace) / 2,
         Util.GetWindowHeight() - articleDockFrameHeight - 10)
     UI.skillDockViewFrame:SetPosition((Util.GetWindowWidth() + articleDockFrameWidth + adfSdfSpace - skillDockViewFrameWidth) / 2,
@@ -244,10 +245,10 @@ function UI.Init(director)
 
     --
     UI.bossDirectionTipLabel = Label.New(bottomWindow)
-    UI.bossDirectionTipLabel:SetSize(300 * Util.GetWindowSizeScale(), 70 * Util.GetWindowSizeScale())
+    UI.bossDirectionTipLabel:SetSize(300 * windowSizeScale, 70 * windowSizeScale)
     local bossDirectionTipLabelWidth, bossDirectionTipLabelHeight = UI.bossDirectionTipLabel:GetSize()
-    local bossDirectionTipLabelOriginXPos = Util.GetWindowWidth() - bossDirectionTipLabelWidth - 50 * Util.GetWindowSizeScale()
-    local bossDirectionTipLabelOriginYPos = (Util.GetWindowHeight() - bossDirectionTipLabelHeight) / 2 - 150 * Util.GetWindowSizeScale()
+    local bossDirectionTipLabelOriginXPos = Util.GetWindowWidth() - bossDirectionTipLabelWidth - 50 * windowSizeScale
+    local bossDirectionTipLabelOriginYPos = (Util.GetWindowHeight() - bossDirectionTipLabelHeight) / 2 - 150 * windowSizeScale
     UI.bossDirectionTipLabel:SetPosition(bossDirectionTipLabelOriginXPos, bossDirectionTipLabelOriginYPos)
     UI.appendWindowWidget(bottomWindow, UI.bossDirectionTipLabel)
 
@@ -264,8 +265,8 @@ function UI.Init(director)
 
     -- DirPadWidget
     UI.dirPadWidget = DirPadWidget.New(bottomWindow, UI.model)
-    UI.dirPadWidget:SetPosition(150 * Util.GetWindowSizeScale(),
-        Util.GetWindowHeight() - UI.dirPadWidget.height - 50 * Util.GetWindowSizeScale())
+    UI.dirPadWidget:SetPosition(150 * windowSizeScale,
+        Util.GetWindowHeight() - UI.dirPadWidget.height - 50 * windowSizeScale)
     UI.appendWindowWidget(bottomWindow, UI.dirPadWidget)
 
     -- itemKeyGroup
@@ -283,6 +284,20 @@ function UI.Init(director)
     UI.playerRebornDialogContent = Label.New(UI.playerRebornDialog)
     UI.playerRebornDialog:SetContentWidget(UI.playerRebornDialogContent)
     UI.appendWindowWidget(UI.playerRebornDialog, UI.playerRebornDialog)
+
+    -- 信息通知框
+    UI.notificationWindowVisibleTimeMs = 0
+    UI.notificationWindowMaxVisibleTimeMs = 0
+    UI.notificationWindow = Window.New()
+    UI.notificationWindow:SetSize(400 * windowSizeScale, 50 * windowSizeScale)
+    UI.notificationWindow:SetIsTipToolWindow(true)
+    UI.notificationWindow:SetTitleBarVisible(false)
+    UI.notificationWindow:SetPosition(Util.GetWindowWidth() / 2 - 175, Util.GetWindowHeight() / 2 - 100)
+    UI.notificationWindow:SetVisible(false)
+
+    UI.notificationWindowContent = Label.New(UI.playerRebornDialog)
+    UI.notificationWindow:SetContentWidget(UI.notificationWindowContent)
+    UI.appendWindowWidget(UI.notificationWindow, UI.notificationWindow)
 
     ---- connect
     -- StartGameWindow
@@ -315,6 +330,9 @@ function UI.Init(director)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
 
+    -- notification
+    UI.model:MocConnectSignal(UI.model.Signal_RequestShowNotification, UI)
+
     --- post init
     UI.updateWindowVisibilityByGameState()
 
@@ -330,6 +348,14 @@ function UI.Update(dt)
     end
 
     UI.updateAllHpRectBar()
+
+    if UI.notificationWindow:IsVisible() then
+        UI.notificationWindowVisibleTimeMs = UI.notificationWindowVisibleTimeMs + dt
+
+        if UI.notificationWindowVisibleTimeMs > UI.notificationWindowMaxVisibleTimeMs then
+            UI.notificationWindow:SetVisible(false)
+        end
+    end
 
     -- 更新所有控件
     local windowWidgetList = WindowManager.GetWindowWidgetList()
@@ -360,6 +386,20 @@ end
 --- 获取玩家实例配置简化路径
 function UI.GetPlayerInstanceCfgSimplePath()
     return UI.model:GetPlayerInstanceCfgSimplePath()
+end
+
+---@param timeMs int
+---@param text string
+function UI.ShowNotification(timeMs, text)
+    UI.notificationWindowVisibleTimeMs = 0
+    UI.notificationWindowMaxVisibleTimeMs = timeMs
+
+    local windowSizeScale = Util.GetWindowSizeScale()
+    local w, h = UI.notificationWindow:GetSize()
+    UI.notificationWindow:SetPosition(Util.GetWindowWidth() / 2 - w / 2, 10 * windowSizeScale)
+
+    UI.notificationWindowContent:SetText(text)
+    UI.notificationWindow:SetVisible(true)
 end
 
 --- slots
@@ -588,6 +628,18 @@ function UI.Slot_PlayerReborn(my, sender)
     end
 
     UI.playerRebornDialog:SetVisible(false)
+end
+
+---@param my obj
+---@param sender obj
+---@param timeMs int
+---@param text string
+function UI.Slot_RequestShowNotification(my, sender, timeMs, text)
+    if sender ~= UI.model then
+        return
+    end
+
+    UI.ShowNotification(timeMs, text)
 end
 
 --- private function
