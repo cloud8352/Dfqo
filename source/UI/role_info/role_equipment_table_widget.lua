@@ -431,6 +431,9 @@ end
 ---@type sender Object
 function RoleEquTableWidget:Slot_PlayerChanged(sender)
     self:initArticleData()
+
+    local player = self.model:GetPlayer()
+    self.nameLabel:SetText(player.identity.name)
 end
 
 function RoleEquTableWidget:initArticleData()
