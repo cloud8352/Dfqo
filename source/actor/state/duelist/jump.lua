@@ -17,7 +17,7 @@ local GearJump = require("actor.gear.jump")
 local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
 
----@class Actor.State.Duelist.Swordman.HopSmash:Actor.State
+---@class Actor.State.Duelist.Jump:Actor.State
 ---@field protected _skill Actor.Skill
 ---@field protected _effect Actor.Entity
 local _Jump = require("core.class")(_Base)
