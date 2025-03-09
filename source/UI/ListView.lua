@@ -311,6 +311,10 @@ function ListView:SetContentWidget(w)
     ScrollArea.SetContentWidget(self, w)
 end
 
+function ListView:GetContentWidget()
+    return ScrollArea.GetContentWidget(self)
+end
+
 function ListView:GetDisplayContentWidth()
     return ScrollArea.GetDisplayContentWidth(self)
 end

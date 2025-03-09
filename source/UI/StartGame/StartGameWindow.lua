@@ -16,7 +16,7 @@ local MusicLib = require("lib.music")
 
 local Window = require("UI.Window")
 
----@class StartGameWindow
+---@class StartGameWindow : Window
 local StartGameWindow = require("core.class")(Window)
 
 ---@param model UiModel
@@ -37,10 +37,6 @@ function StartGameWindow:Ctor(model)
     bgLabel:SetIconSize(Util.GetWindowWidth(), actorSelectBgLabelHeight)
     -- actorSelectBgLabel:SetPosition(0, (Util.GetWindowHeight() - actorSelectBgLabelHeight) / 3)
     bgLabel:SetIconSpriteDataPath("ui/ActorSelect/Bg2")
-
-    -- 背景音乐
-    local musicData = ResourceLib.NewMusic("CharacterSelectStage2")
-    MusicLib.Play(musicData, true)
 
     -- 
     local centralContentBgWindow = Window.New()
@@ -258,6 +254,10 @@ end
 ---@param widget Widget
 function StartGameWindow:SetContentWidget(widget)
     Window.SetContentWidget(self, widget)
+end
+
+function StartGameWindow:GetContentWidget()
+    return Window.GetContentWidget(self)
 end
 
 ---@param isVisible boolean

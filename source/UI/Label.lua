@@ -24,7 +24,7 @@ local localAlignTrailing = localAlignRight
 local localAlignHCenter = 0x0004
 local localAlignJustify = 0x0008
 local localAlignAbsolute = 0x0010
-local localAlignHorizontal_Mask =  bit.bor(localAlignLeft, localAlignRight, localAlignHCenter, localAlignJustify, localAlignAbsolute)
+local localAlignHorizontal_Mask = bit.bor(localAlignLeft, localAlignRight, localAlignHCenter, localAlignJustify, localAlignAbsolute)
 
 local localAlignTop = 0x0020
 local localAlignBottom = 0x0040
@@ -51,6 +51,13 @@ Label.AlignmentFlag = {
 
     AlignCenter = localAlignCenter
 }
+
+---@param parentWindow Window
+function Label.Create(parentWindow)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return Label.New(parentWindow)
+end
 
 ---@param parentWindow Window
 function Label:Ctor(parentWindow)

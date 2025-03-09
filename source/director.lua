@@ -23,11 +23,11 @@ local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 local playerInstanceCfgSimplePath = ""
 
 function _DIRECTOR.Init()
-    -- ui
-    UI.Init(_DIRECTOR)
-
     ---@type Graphics.Curtain
     _curtain = _Curtain.New()
+
+    -- ui
+    UI.Init(_DIRECTOR)
 
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
@@ -73,8 +73,15 @@ function _DIRECTOR.Draw()
     _curtain:Draw()
 end
 
-function _DIRECTOR.Curtain(...)
-    _curtain:Enter(...)
+---@param color Graphics.Drawunit.Color
+---@param upTime milli
+---@param downTime milli
+---@param wattingTime milli
+---@param OnFull function
+---@param OnDown function
+---@param OnEnd function
+function _DIRECTOR.Curtain(color, upTime, downTime, wattingTime, OnFull, OnDown, OnEnd)
+    _curtain:Enter(color, upTime, downTime, wattingTime, OnFull, OnDown, OnEnd)
 end
 
 ---@return boolean

@@ -20,6 +20,7 @@ local AttributeSrv = require("actor.service.attribute")
 local Factory = require("actor.factory")
 local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
+local LifeSrv = require("actor.service.LifeSrv")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
@@ -565,7 +566,6 @@ function UiModel:RebornPlayer()
     end
 
     print("UiModel:RebornPlayer()", "LifeSrv.RebornEntity(self.player)")
-    local LifeSrv = require("actor.service.LifeSrv")
     LifeSrv.RebornEntity(self.player)
 
     local pos = self.player.transform.position
@@ -732,6 +732,13 @@ end
 ---@param text string
 function UiModel:RequestUiToShowNotification(timeMs, text)
     self:Signal_RequestShowNotification(timeMs, text)
+end
+
+function UiModel:GoToGameStartPage()
+    _MAP.Load("NoMap", true)
+    LifeSrv.KillAllEntity()
+
+    self:Signal_RequestSetUiGameState(Common.GameState.ActorSelect)
 end
 
 --- signals
@@ -1157,6 +1164,26 @@ function UiModel:Signal_RequestShowNotification(timeMs, text)
         end
 
         func(receiver, self, timeMs, text)
+
+        ::continue::
+    end
+end
+
+---@param state GameState
+function UiModel:Signal_RequestSetUiGameState(state)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_RequestSetUiGameState]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_RequestSetUiGameState
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, state)
 
         ::continue::
     end

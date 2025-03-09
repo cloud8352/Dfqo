@@ -26,6 +26,7 @@ local HpRectBar = require("UI.hp_rect_bar")
 local DirPadWidget = require("UI.TouchComponents.DirPadWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 local ArticleDockFrame = require("UI.ArticleDockFrame")
+local PlayerRebornDlg = require("UI.PlayerRebornDlg")
 
 local Map = require("map.init")
 
@@ -39,6 +40,7 @@ local Keyboard = require("lib.keyboard")
 local ResourceLib = require("lib.resource")
 local MusicLib = require("lib.music")
 local TableLib = require("lib.table")
+local Color = require("graphics.drawunit.color")
 
 local IsShowFps = true
 
@@ -48,6 +50,8 @@ local UI = {}
 ---@param director DIRECTOR
 function UI.Init(director)
     WindowManager.Init()
+
+    UI.director = director
 
     -- 统一显示对象
     UI.totalSprite = _Sprite.New()
@@ -274,16 +278,12 @@ function UI.Init(director)
     UI.appendWindowWidget(bottomWindow, UI.itemKeyGroup)
 
     -- 玩家角色复活对话框
-    UI.playerRebornDialog = Window.New()
-    UI.playerRebornDialog:SetSize(350, 200)
-    UI.playerRebornDialog:SetIsTipToolWindow(true)
-    UI.playerRebornDialog:SetTitleBarVisible(false)
-    UI.playerRebornDialog:SetPosition(Util.GetWindowWidth() / 2 - 175, Util.GetWindowHeight() / 2 - 100)
-    UI.playerRebornDialog:SetVisible(false)
-
-    UI.playerRebornDialogContent = Label.New(UI.playerRebornDialog)
-    UI.playerRebornDialog:SetContentWidget(UI.playerRebornDialogContent)
-    UI.appendWindowWidget(UI.playerRebornDialog, UI.playerRebornDialog)
+    UI.playerRebornDlg = PlayerRebornDlg.Create(UI.model)
+    UI.playerRebornDlg:SetSize(260 * windowSizeScale, 150 * windowSizeScale)
+    UI.playerRebornDlg:SetPosition(Util.GetWindowWidth() / 2 - 130 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - 75 * windowSizeScale)
+    UI.playerRebornDlg:SetVisible(false)
+    UI.appendWindowWidget(UI.playerRebornDlg, UI.playerRebornDlg)
 
     -- 信息通知框
     UI.notificationWindowVisibleTimeMs = 0
@@ -292,10 +292,11 @@ function UI.Init(director)
     UI.notificationWindow:SetSize(400 * windowSizeScale, 50 * windowSizeScale)
     UI.notificationWindow:SetIsTipToolWindow(true)
     UI.notificationWindow:SetTitleBarVisible(false)
-    UI.notificationWindow:SetPosition(Util.GetWindowWidth() / 2 - 175, Util.GetWindowHeight() / 2 - 100)
+    UI.notificationWindow:SetPosition(Util.GetWindowWidth() / 2 - 175 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - 100 * windowSizeScale)
     UI.notificationWindow:SetVisible(false)
 
-    UI.notificationWindowContent = Label.New(UI.playerRebornDialog)
+    UI.notificationWindowContent = Label.New(UI.notificationWindow)
     UI.notificationWindow:SetContentWidget(UI.notificationWindowContent)
     UI.appendWindowWidget(UI.notificationWindow, UI.notificationWindow)
 
@@ -310,7 +311,7 @@ function UI.Init(director)
     UI.settingsBtn:MocConnectSignal(UI.settingsBtn.Signal_BtnClicked, UI)
     -- mapSelectComboBox
     UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
-    -- model
+    ---- model
     UI.model:MocConnectSignal(UI.model.RequestSetArticleTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.Signal_requestSetArticleDockItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetEquTableItemInfo, UI)
@@ -320,6 +321,10 @@ function UI.Init(director)
     UI.model:MocConnectSignal(UI.model.Signal_EnemyCleared, UI)
     UI.model:MocConnectSignal(UI.model.Signal_EnemyAppeared, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerHitEnemy, UI)
+    -- notification
+    UI.model:MocConnectSignal(UI.model.Signal_RequestShowNotification, UI)
+    -- 
+    UI.model:MocConnectSignal(UI.model.Signal_RequestSetUiGameState, UI)
     -- model - hoveringArticleItemTipWindow
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowVisibility, UI)
     UI.model:MocConnectSignal(UI.model.RequestSetHoveringArticleItemTipWindowPosAndInfo, UI)
@@ -329,9 +334,6 @@ function UI.Init(director)
     
     UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
-
-    -- notification
-    UI.model:MocConnectSignal(UI.model.Signal_RequestShowNotification, UI)
 
     --- post init
     UI.updateWindowVisibilityByGameState()
@@ -616,8 +618,8 @@ function UI.Slot_PlayerDestroyed(my, sender)
 
     local rebornCoinCount = UI.model:GetPlayerRebornCoinCount()
     local rebornCoinCountStr = tostring(rebornCoinCount)
-    UI.playerRebornDialogContent:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键】复活角色")
-    UI.playerRebornDialog:SetVisible(true)
+    UI.playerRebornDlg:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键】复活角色")
+    UI.playerRebornDlg:SetVisible(true)
 end
 
 ---@param my obj
@@ -627,7 +629,7 @@ function UI.Slot_PlayerReborn(my, sender)
         return
     end
 
-    UI.playerRebornDialog:SetVisible(false)
+    UI.playerRebornDlg:SetVisible(false)
 end
 
 ---@param my obj
@@ -640,6 +642,14 @@ function UI.Slot_RequestShowNotification(my, sender, timeMs, text)
     end
 
     UI.ShowNotification(timeMs, text)
+end
+
+---@param my Obj
+---@param sender Obj
+---@param state GameState
+function UI.Slot_RequestSetUiGameState(my, sender, state)
+    UI.gameState = state
+    UI.updateWindowVisibilityByGameState()
 end
 
 --- private function
@@ -708,7 +718,6 @@ function UI.keyboardEvent()
         rightKeyClickedArticleDockIndex = 6
     end
     if (-1 ~= rightKeyClickedArticleDockIndex) then
-        print(333, rightKeyClickedArticleDockIndex)
         UI.model:OnRightKeyClickedArticleDockItem(rightKeyClickedArticleDockIndex)
     end
 
@@ -725,19 +734,30 @@ function UI.updateWindowVisibilityByGameState()
     UI.bottomWindow:SetVisible(false)
     UI.characterInfoWindow:SetVisible(false)
     UI.skillManagementWindow:SetVisible(false)
+    UI.skillDockViewFrame:SetVisible(false)
+    UI.articleDockFrame:SetVisible(false)
+    UI.dirPadWidget:SetVisible(false)
+    UI.itemKeyGroup:SetVisible(false)
+    UI.playerRebornDlg:SetVisible(false)
+    UI.notificationWindow:SetVisible(false)
 
     if UI.gameState == Common.GameState.ActorSelect then
         UI.startGameWindow:SetVisible(true)
+        
+        UI.director.Curtain(Color.black, 0, 500, 1000, _, _, _)
+        -- 背景音乐
+        local musicData = ResourceLib.NewMusic("CharacterSelectStage")
+        MusicLib.Play(musicData, true)
     end
     if UI.gameState == Common.GameState.Started then
         UI.bottomWindow:SetVisible(true)
 
         if (System.IsMobile()) then
-            UI.skillDockViewFrame:SetVisible(false)
-            UI.articleDockFrame:SetVisible(false)
+            UI.dirPadWidget:SetVisible(true)
+            UI.itemKeyGroup:SetVisible(true)
         else
-            UI.dirPadWidget:SetVisible(false)
-            UI.itemKeyGroup:SetVisible(false)
+            UI.skillDockViewFrame:SetVisible(true)
+            UI.articleDockFrame:SetVisible(true)
         end
     end
 end

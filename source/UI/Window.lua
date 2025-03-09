@@ -19,7 +19,7 @@ local TitleBar = require("UI.TitleBar")
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
 
----@class Window
+---@class Window : Widget
 local Window = require("core.class")(Widget)
 
 local MarginSpace = 15
@@ -341,6 +341,10 @@ function Window:SetContentWidget(widget)
         height - MarginSpace * 2 - realTitleBarHeight)
     local xPos, yPos = self:GetPosition()
     self.contentWidget:SetPosition(xPos + MarginSpace, yPos + MarginSpace + realTitleBarHeight)
+end
+
+function Window:GetContentWidget()
+    return self.contentWidget
 end
 
 ---@param isVisible boolean

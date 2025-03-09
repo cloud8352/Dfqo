@@ -179,6 +179,10 @@ function SkillMountDialog:SetContentWidget(widget)
     Window.SetContentWidget(self, widget)
 end
 
+function SkillMountDialog:GetContentWidget()
+    return Window.GetContentWidget(self)
+end
+
 ---@param isVisible boolean
 function SkillMountDialog:SetTitleBarIsBackgroundVisible(isVisible)
     Window.SetTitleBarIsBackgroundVisible(self, isVisible)

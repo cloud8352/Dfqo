@@ -228,22 +228,18 @@ function WindowManager.SetWindowToTopLayer(window)
 
     -- 将悬置顶窗口放到最顶层
     for i, windowTmp in pairs(topHintWindowList) do
-        if windowTmp ~= window then
-            windowTmp:SetWindowLayerIndex(layerIndex)
-            table.insert(WindowManager.windowList, windowTmp)
+        windowTmp:SetWindowLayerIndex(layerIndex)
+        table.insert(WindowManager.windowList, windowTmp)
 
-            layerIndex = layerIndex + 1
-        end
+        layerIndex = layerIndex + 1
     end
 
     -- 将悬浮提示窗口放到最顶层
     for i, windowTmp in pairs(toolTipWindowList) do
-        if windowTmp ~= window then
-            windowTmp:SetWindowLayerIndex(layerIndex)
-            table.insert(WindowManager.windowList, windowTmp)
+        windowTmp:SetWindowLayerIndex(layerIndex)
+        table.insert(WindowManager.windowList, windowTmp)
 
-            layerIndex = layerIndex + 1
-        end
+        layerIndex = layerIndex + 1
     end
 
     -- 整理 windowWidgetList

@@ -192,6 +192,10 @@ function ScrollArea:SetContentWidget(w)
     self.contentWidget = w
 end
 
+function ScrollArea:GetContentWidget()
+    return self.contentWidget
+end
+
 function ScrollArea:GetDisplayContentWidth()
     local w, _ = Widget.GetSize(self)
     local scrollBarW = self.scrollBar:GetWidth()

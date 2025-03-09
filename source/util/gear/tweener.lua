@@ -47,7 +47,7 @@ function _Tweener:Ctor(subject, target, easing, Callback)
         easing = "linearFixed"
     end
 
-    self._tween = _Tween.new(_, subject, target, _GetEasing(easing))
+    self._tween = _Tween.new(0, subject, target, _GetEasing(easing))
     self.Callback = Callback
 end
 

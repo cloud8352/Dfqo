@@ -27,6 +27,13 @@ local DisplayState = {
 }
 
 ---@param parentWindow Window
+function PushButton.Create(parentWindow)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return PushButton.New(parentWindow)
+end
+
+---@param parentWindow Window
 function PushButton:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
 
