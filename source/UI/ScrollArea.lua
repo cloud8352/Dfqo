@@ -11,13 +11,12 @@ local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
 local ScrollBar = require("UI.ScrollBar")
 
----@class ScrollArea
+---@class ScrollArea : Widget
 local ScrollArea = require("core.class")(Widget)
 
 ---@param parentWindow Window
 function ScrollArea:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
-    assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
 

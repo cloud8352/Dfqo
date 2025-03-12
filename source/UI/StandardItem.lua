@@ -168,7 +168,7 @@ function StandardItem:SetText(text)
 
     self.text = text
 
-    self.needUpdateAllStateCanvas = false
+    self.needUpdateAllStateCanvas = true
 end
 
 function StandardItem:GetText()

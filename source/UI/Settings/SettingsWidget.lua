@@ -21,9 +21,16 @@ local Label = require("UI.Label")
 local PushButton = require("UI.PushButton")
 local ScrollArea = require("UI.ScrollArea")
 local KeySettingsWidget = require("UI.Settings.KeySettingsWidget")
+local BasicSettingsWidget = require("UI.Settings.BasicSettingsWidget")
 
----@class SettingsWidget
+---@class SettingsWidget : Widget
 local SettingsWidget = require("core.class")(Widget)
+
+---@enum SettingShowingPageEnum
+local SettingShowingPageEnum = {
+    Basic = 1,
+    Key = 2
+}
 
 ---@param parentWindow Window
 ---@param model UiModel
@@ -40,15 +47,26 @@ function SettingsWidget:Ctor(parentWindow, model)
     self.rightMargin = self.leftMargin
     self.bottomMargin = self.leftMargin
 
-    self.titleBtnBox = PushButton.New(parentWindow)
-    self.titleBtnBox:SetText("按键设置")
+    self.showingPage = SettingShowingPageEnum.Basic
+
+    self.basicSettingsTitleBtn = PushButton.Create(parentWindow)
+    self.basicSettingsTitleBtn:SetText("基础")
+
+    self.basicSettingsWidget = BasicSettingsWidget.Create(parentWindow, model)
+
+    self.keySettingsTitleBtn = PushButton.Create(parentWindow)
+    self.keySettingsTitleBtn:SetText("按键")
 
     self.titleBtnBoxKeySettingsWidgetVSpace = 5 * windowSizeScale
-    self.keySettingsWidget = KeySettingsWidget.New(parentWindow, model)
+    self.keySettingsWidget = KeySettingsWidget.Create(parentWindow, model)
     
     -- connection
+    self.basicSettingsTitleBtn:MocConnectSignal(self.basicSettingsTitleBtn.Signal_BtnClicked, self)
+    self.keySettingsTitleBtn:MocConnectSignal(self.keySettingsTitleBtn.Signal_BtnClicked, self)
 
     -- post init
+    self:updatePageVisible()
+
 end
 
 function SettingsWidget:Update(dt)
@@ -59,7 +77,10 @@ function SettingsWidget:Update(dt)
     then
     end
 
-    self.titleBtnBox:Update(dt)
+    self.basicSettingsTitleBtn:Update(dt)
+    self.basicSettingsWidget:Update(dt)
+
+    self.keySettingsTitleBtn:Update(dt)
     self.keySettingsWidget:Update(dt)
 
     Widget.Update(self, dt)
@@ -68,7 +89,10 @@ end
 function SettingsWidget:Draw()
     Widget.Draw(self)
 
-    self.titleBtnBox:Draw()
+    self.basicSettingsTitleBtn:Draw()
+    self.basicSettingsWidget:Draw()
+
+    self.keySettingsTitleBtn:Draw()
     self.keySettingsWidget:Draw()
 end
 
@@ -81,9 +105,12 @@ function SettingsWidget:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
     local windowSizeScale = Util.GetWindowSizeScale()
 
-    self.titleBtnBox:SetPosition(x, y)
+    self.basicSettingsTitleBtn:SetPosition(x, y)
+    local basicSettingsTitleBtnWidth = self.basicSettingsTitleBtn:GetWidth()
+    self.keySettingsTitleBtn:SetPosition(x + basicSettingsTitleBtnWidth, y)
 
-    local _, titleBtnBoxHeight = self.titleBtnBox:GetSize()
+    local _, titleBtnBoxHeight = self.basicSettingsTitleBtn:GetSize()
+    self.basicSettingsWidget:SetPosition(x, y + titleBtnBoxHeight + self.titleBtnBoxKeySettingsWidgetVSpace)
     self.keySettingsWidget:SetPosition(x, y + titleBtnBoxHeight + self.titleBtnBoxKeySettingsWidgetVSpace)
 end
 
@@ -93,20 +120,66 @@ function SettingsWidget:SetSize(width, height)
     Widget.SetSize(self, width, height)
     local windowSizeScale = Util.GetWindowSizeScale()
 
-    self.titleBtnBox:SetSize(90 * windowSizeScale, 30 * windowSizeScale)
-    local _, titleBtnBoxHeight = self.titleBtnBox:GetSize()
-    self.keySettingsWidget:SetSize(width, height - titleBtnBoxHeight - self.titleBtnBoxKeySettingsWidgetVSpace)
+    self.basicSettingsTitleBtn:SetSize(90 * windowSizeScale, 30 * windowSizeScale)
+    self.keySettingsTitleBtn:SetSize(90 * windowSizeScale, 30 * windowSizeScale)
+
+    local _, titleBtnBoxHeight = self.basicSettingsTitleBtn:GetSize()
+    self.basicSettingsWidget:SetSize(width, 
+        height - titleBtnBoxHeight - self.titleBtnBoxKeySettingsWidgetVSpace)
+    self.keySettingsWidget:SetSize(width, 
+        height - titleBtnBoxHeight - self.titleBtnBoxKeySettingsWidgetVSpace)
 end
 
 function SettingsWidget:SetEnable(enable)
     Widget.SetEnable(self, enable)
 
-    self.titleBtnBox:SetEnable(enable)
+    self.basicSettingsTitleBtn:SetEnable(enable)
+    self.basicSettingsWidget:SetEnable(enable)
+
+    self.keySettingsTitleBtn:SetEnable(enable)
     self.keySettingsWidget:SetEnable(enable)
+end
+
+---@param isVisible boolean
+function SettingsWidget:SetVisible(isVisible)
+    Widget.SetVisible(self, isVisible)
+
+    self:updatePageVisible()
 end
 
 --- slots
 
+---@param sender Obj
+function SettingsWidget:Slot_BtnClicked(sender)
+    if sender == self.basicSettingsTitleBtn then
+        self.showingPage = SettingShowingPageEnum.Basic
+        self:updatePageVisible()
+    elseif sender == self.keySettingsTitleBtn then
+        self.showingPage = SettingShowingPageEnum.Key
+        self:updatePageVisible()
+    end
+end
+
 --- private function
+
+function SettingsWidget:updatePageVisible()
+    if self:IsVisible() == false then
+        self.basicSettingsWidget:SetVisible(false)
+        self.keySettingsWidget:SetVisible(false)
+        return
+    end
+
+    if SettingShowingPageEnum.Basic == self.showingPage then
+        self.basicSettingsTitleBtn:SetForcePressed(true)
+        self.basicSettingsWidget:SetVisible(true)
+        self.keySettingsTitleBtn:SetForcePressed(false)
+        self.keySettingsWidget:SetVisible(false)
+    elseif SettingShowingPageEnum.Key == self.showingPage then
+        self.basicSettingsTitleBtn:SetForcePressed(false)
+        self.basicSettingsWidget:SetVisible(false)
+        self.keySettingsTitleBtn:SetForcePressed(true)
+        self.keySettingsWidget:SetVisible(true)
+    end
+end
 
 return SettingsWidget

@@ -134,6 +134,14 @@ function Widget:SetSize(width, height)
     if self.width == width and self.height == height then
         return
     end
+
+    if width < 1 then
+        width = 1
+    end
+    if height < 1 then
+        height = 1
+    end
+
     self.width = width
     self.height = height
     

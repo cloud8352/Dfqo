@@ -455,4 +455,18 @@ local DirEnum = {
 }
 UiCommon.DirEnum = DirEnum
 
+---@enum WindowSizeEnum
+local WindowSizeEnum = {
+    Small = 1,
+    Medium = 2,
+    Large = 3
+}
+UiCommon.WindowSizeEnum = WindowSizeEnum
+
+local MapOfWindowSizeEnumToPercentage = {}
+MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Small] = 0.5
+MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Medium] = 0.7
+MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Large] = 0.85
+UiCommon.MapOfWindowSizeEnumToPercentage = MapOfWindowSizeEnumToPercentage
+
 return UiCommon

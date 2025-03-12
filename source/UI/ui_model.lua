@@ -24,6 +24,7 @@ local LifeSrv = require("actor.service.LifeSrv")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
+local MusicLib = require("lib.music")
 
 local Table = require("lib.table")
 local _RESOURCE = require("lib.resource")
@@ -694,6 +695,12 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
         InputLib.SetKey(funName, key)
     end
 
+    self:SaveConfig()
+
+    self:Signal_PlayerMountedSkillsChanged()
+end
+
+function UiModel:SaveConfig()
     -- 1、获取设置文件路径
     local settingsFilePath = _CONFIG.ConfigDirPath .. _CONFIG.SettingsFileName
     if not File.Exists(settingsFilePath) then
@@ -705,8 +712,15 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     ---@type CONFIG
     local configData = loadstring(content)()
 
-    -- 3、更新设置数据
+    -- 3.1、更新按键数据
     configData.code = _CONFIG.code
+
+    -- 3.2 更新音量数据
+    configData.setting.music = _CONFIG.setting.music
+    configData.setting.sound = _CONFIG.setting.sound
+    
+    -- 3.3 更新窗口尺寸比例
+    configData.setting.WindowSizePercentage = _CONFIG.setting.WindowSizePercentage
 
     -- 4. 序列化数据
     local dataStr = Table.Deserialize(configData)
@@ -716,11 +730,9 @@ function UiModel:SaveConfigMapOfFunNameToKey(map)
     local fileName = _CONFIG.SettingsFileName
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
     if not ok then
-        print("UiModel:SaveConfigMapOfFunNameToKey(map)", errMsg, dirPath .. fileName, "file write failed！")
+        print("UiModel:SaveConfig()", errMsg, dirPath .. fileName, "file write failed！")
         return
     end
-
-    self:Signal_PlayerMountedSkillsChanged()
 end
 
 function UiModel:GetActorSimplePathList()
@@ -742,6 +754,52 @@ function UiModel:GoToGameStartPage()
     LifeSrv.KillAllEntity()
 
     self:Signal_RequestSetUiGameState(Common.GameState.ActorSelect)
+end
+
+---@param value number
+function UiModel:SetMusicVol(value)
+    if math.abs(_CONFIG.setting.music - value) < 0.001 then
+        return
+    end
+
+    _CONFIG.setting.music = value
+    MusicLib.AdjustVolume()
+
+    self:SaveConfig()
+end
+
+function UiModel:GetMusicVol()
+    return _CONFIG.setting.music
+end
+
+---@param value number
+function UiModel:SetSoundVol(value)
+    if math.abs(_CONFIG.setting.sound - value) < 0.001 then
+        return
+    end
+
+    _CONFIG.setting.sound = value
+
+    self:SaveConfig()
+end
+
+function UiModel:GetSoundVol()
+    return _CONFIG.setting.sound
+end
+
+---@param value number
+function UiModel:SetWindowSizePercentage(value)
+    if math.abs(_CONFIG.setting.WindowSizePercentage - value) < 0.001 then
+        return
+    end
+
+    _CONFIG.setting.WindowSizePercentage = value
+
+    self:SaveConfig()
+end
+
+function UiModel:GetWindowSizePercentage()
+    return _CONFIG.setting.WindowSizePercentage
 end
 
 --- signals

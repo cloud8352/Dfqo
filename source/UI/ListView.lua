@@ -19,14 +19,19 @@ local ScrollArea = require("UI.ScrollArea")
 local ScrollBar = require("UI.ScrollBar")
 local Widget = require("UI.Widget")
 
----@class ListView
----@type ScrollArea
+---@class ListView : ScrollArea
 local ListView = require("core.class")(ScrollArea)
+
+---@param parentWindow Window
+function ListView.Create(parentWindow)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return ListView.New(parentWindow)
+end
 
 ---@param parentWindow Window
 function ListView:Ctor(parentWindow)
     ScrollArea.Ctor(self, parentWindow)
-    assert(parentWindow, "must assign parent window")
     ---@type Window
     self.parentWindow = parentWindow
 

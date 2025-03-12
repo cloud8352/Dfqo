@@ -48,7 +48,7 @@ function _SYSTEM.Init()
     -- 把窗口移到屏幕中央
     local _, _, flags = love.window.getMode()
     local screenW, screenH = love.window.getDesktopDimensions(flags.display)
-    love.window.setPosition(screenW / 2 - _width / 2, (screenH / 2 - _height / 2) * 4 / 5 )
+    love.window.setPosition(screenW / 2 - _width / 2, (screenH / 2 - _height / 2) * 4 / 5)
 end
 
 ---@return string @OS X, Windows, Linux, Android, iOS
@@ -112,7 +112,7 @@ function _SYSTEM.initWindowSize()
         ) then
         local _, _, flags = love.window.getMode()
         local screenW, screenH = love.window.getDesktopDimensions(flags.display)
-        local percentage = 0.85
+        local percentage = _CONFIG.setting.WindowSizePercentage
 
         windowWidth = screenW * percentage
         windowHeight = screenW * percentage * 9 / 16

@@ -13,7 +13,7 @@ local ListView = require("UI.ListView")
 local KeySettingsItem = require("UI.Settings.KeySettingsItem")
 local PushButton = require("UI.PushButton")
 
----@class KeySettingsWidget
+---@class KeySettingsWidget : Widget
 local KeySettingsWidget = require("core.class")(Widget)
 
 local MapOfFunNameToTransStr = {
@@ -74,6 +74,14 @@ local SortedFunNameList = {
 }
 
 local ItemDataKey = "FunName"
+
+---@param parentWindow Window
+---@param model UiModel
+function KeySettingsWidget.Create(parentWindow, model)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return KeySettingsWidget.New(parentWindow, model)
+end
 
 ---@param parentWindow Window
 ---@param model UiModel

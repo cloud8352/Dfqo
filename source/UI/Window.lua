@@ -250,6 +250,8 @@ end
 ---@param visible boolean
 function Window:SetVisible(visible)
     Widget.SetVisible(self, visible)
+
+    self.contentWidget:SetVisible(visible)
 end
 
 ---@param sprite Graphics.Drawable.Sprite

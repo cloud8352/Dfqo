@@ -21,7 +21,7 @@ local Window = require("UI.Window")
 local ListView = require("UI.ListView")
 local Label = require("UI.Label")
 
----@class ComboBox
+---@class ComboBox : Widget
 local ComboBox = require("core.class")(Widget)
 
 local DisplayState = {
@@ -31,6 +31,13 @@ local DisplayState = {
     Pressing = 3,
     Disable = 4,
 }
+
+---@param parentWindow Window
+function ComboBox.Create(parentWindow)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return ComboBox.New(parentWindow)
+end
 
 ---@param parentWindow Window
 function ComboBox:Ctor(parentWindow)
@@ -250,12 +257,15 @@ function ComboBox:SetEnable(enable)
     self.dropDownBtn:SetEnable(enable)
 end
 
+---@param isVisible boolean
 function ComboBox:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
 
     self.dropDownBtn:SetVisible(isVisible)
-    self.dropDownListView:SetVisible(isVisible)
-    self.dropDownListViewWindow:SetVisible(isVisible)
+    if isVisible == false then
+        self.dropDownListView:SetVisible(false)
+        self.dropDownListViewWindow:SetVisible(false)
+    end
 end
 
 function ComboBox:InsertItemWithText(i, text)

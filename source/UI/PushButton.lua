@@ -72,6 +72,8 @@ function PushButton:Ctor(parentWindow)
 
     self.opacity = 1.0
     self.opacityChanged = true
+
+    self.isForcePressed = false
 end
 
 function PushButton:Update(dt)
@@ -128,6 +130,11 @@ function PushButton:MouseEvent()
             break
         end
 
+        if self.isForcePressed then
+            self.displayState = DisplayState.Pressing
+            break
+        end
+
         -- 检查是否有上层窗口遮挡
         local windowLayerIndex = self.parentWindow:GetWindowLayerIndex()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
@@ -161,6 +168,11 @@ function PushButton:TouchEvent()
         -- 是否处于禁用状态
         if false == self.enable then
             self.displayState = DisplayState.Disable
+            break
+        end
+
+        if self.isForcePressed then
+            self.displayState = DisplayState.Pressing
             break
         end
 
@@ -356,6 +368,23 @@ function PushButton:SetOpacity(opacity)
     end
     self.opacity = opacity
     self.opacityChanged = true
+end
+
+---@param pressed boolean
+function PushButton:SetForcePressed(pressed)
+    self.isForcePressed = pressed
+    if self.enable == false then
+        return
+    end
+    if pressed then
+        self.displayState = DisplayState.Pressing
+        self.lastDisplayState = DisplayState.Pressing
+    else
+        self.displayState = DisplayState.Normal
+        self.lastDisplayState = DisplayState.Normal
+
+    end
+    self.whetherSpriteDataUpdate = true
 end
 
 --- 信号 - 被点击

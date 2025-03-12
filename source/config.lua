@@ -16,7 +16,8 @@ local _CONFIG = {
         music = 0.3,
         sound = 1,
         digit = true,
-        shadow = true
+        shadow = true,
+        WindowSizePercentage = 0.85
     },
     debug = {
         point = false,

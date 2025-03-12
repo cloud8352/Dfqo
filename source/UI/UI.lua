@@ -218,8 +218,8 @@ function UI.Init(director)
 
     -- mapSelectComboBox
     UI.mapSelectComboBox = ComboBox.New(bottomWindow)
-    UI.mapSelectComboBox:SetSize(200, 45)
-    UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 210, 10)
+    UI.mapSelectComboBox:SetSize(160 * windowSizeScale, 35 * windowSizeScale)
+    UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 170 * windowSizeScale, 10 * windowSizeScale)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.mapSelectComboBox)
 
@@ -616,6 +616,10 @@ function UI.Slot_PlayerDestroyed(my, sender)
         return
     end
 
+    if UI.gameState == Common.GameState.ActorSelect then
+        return
+    end
+
     local rebornCoinCount = UI.model:GetPlayerRebornCoinCount()
     local rebornCoinCountStr = tostring(rebornCoinCount)
     UI.playerRebornDlg:SetText("剩余复活次数：" .. rebornCoinCountStr .. "\n\n" .. "请按下【攻击键】复活角色")
@@ -734,6 +738,7 @@ function UI.updateWindowVisibilityByGameState()
     UI.bottomWindow:SetVisible(false)
     UI.characterInfoWindow:SetVisible(false)
     UI.skillManagementWindow:SetVisible(false)
+    UI.settingsWindow:SetVisible(false)
     UI.skillDockViewFrame:SetVisible(false)
     UI.articleDockFrame:SetVisible(false)
     UI.dirPadWidget:SetVisible(false)
