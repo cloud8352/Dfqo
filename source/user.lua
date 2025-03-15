@@ -73,10 +73,13 @@ function _User:AddPartner(partner)
     table.insert(self.partnerList, partner)
 end
 
-
 ---@param partner Actor.Entity
 function _User:RemovePartner(partner)
     table.remove(self.partnerList, partner)
+end
+
+function _User:ClearPartnerList()
+    self.partnerList = {}
 end
 
 function _User:GetPartnerList()

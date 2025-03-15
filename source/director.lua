@@ -113,6 +113,7 @@ function _DIRECTOR.StartGame(actorSimplePath)
         camp = 1
     })
 
+    _CONFIG.user:ClearPartnerList()
     -- 创建伙伴
     local partner = _FACTORY.New("duelist/atswordman", {
         x = 400,

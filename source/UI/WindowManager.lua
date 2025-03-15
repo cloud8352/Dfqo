@@ -263,6 +263,16 @@ function WindowManager.AppendWindowWidget(window, widget)
     table.insert(windowWidgetList, windowWidget)
 end
 
+---@param widget Widget
+function WindowManager.RemoveWindowWidget(widget)
+    for i, windowWidget in pairs(windowWidgetList) do
+        if widget == windowWidget.Widget then
+            windowWidgetList[i] = nil
+            break
+        end
+    end
+end
+
 function WindowManager.GetWindowWidgetList()
     return windowWidgetList
 end

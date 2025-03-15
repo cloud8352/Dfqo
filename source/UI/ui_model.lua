@@ -458,6 +458,8 @@ function UiModel:StartGame(actorIndex)
     local actorSimplePath = self.actorSimplePathList[actorIndex]
     self.director.StartGame(actorSimplePath)
 
+    self.partnerList = _CONFIG.user:GetPartnerList()
+
     -- 重置复活次数
     self.playerRebornCoinCount = 3
 end

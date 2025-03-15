@@ -199,22 +199,6 @@ function UI.Init(director)
     -- partner hp bar
     ---@type table<number, HpRectBar>
     UI.partnerHpRectBarList = {}
-    local partnerHpRectBarHeight = 15 * windowSizeScale
-    local partnerHpRectBarSpace = 8 * windowSizeScale
-    local partnerHpRectBarYPos = 200 * windowSizeScale
-    for i = 1, UI.model:GetPartnerCount() do
-        local hpRectBar = HpRectBar.New(bottomWindow)
-        hpRectBar:SetRightLabelVisible(false)
-        hpRectBar:SetSize(150 * windowSizeScale, partnerHpRectBarHeight)
-        hpRectBar:SetPosition(15 * windowSizeScale,
-            partnerHpRectBarYPos + (i - 1) * (partnerHpRectBarHeight + partnerHpRectBarSpace))
-        hpRectBar:SetText("伙伴" .. tostring(i))
-        hpRectBar:SetMaxHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.MaxHp))
-
-        UI.appendWindowWidget(bottomWindow, hpRectBar)
-
-        UI.partnerHpRectBarList[i] = hpRectBar
-    end
 
     -- mapSelectComboBox
     UI.mapSelectComboBox = ComboBox.New(bottomWindow)
@@ -412,6 +396,8 @@ function UI.Slot_GameStarted(my, sender)
     if UI.startGameWindow == sender then
         UI.gameState = Common.GameState.Started
         UI.updateWindowVisibilityByGameState()
+
+        UI.reloadPartnerHpRectBarList()
     end
 end
 
@@ -666,6 +652,11 @@ function UI.appendWindowWidget(window, widget)
     WindowManager.AppendWindowWidget(window, widget)
 end
 
+---@param widget Widget
+function UI.RemoveWindowWidget(widget)
+    WindowManager.RemoveWindowWidget(widget)
+end
+
 function UI.mergeTotalSprite()
     _Graphics.SaveCanvas()
     _Graphics.SetCanvas(UI.totalSpriteCanvas)
@@ -785,6 +776,33 @@ function UI.updateAllHpRectBar()
     -- partner
     for i, rectBar in pairs(UI.partnerHpRectBarList) do
         rectBar:SetHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.Hp))
+    end
+end
+
+function UI.reloadPartnerHpRectBarList()
+    for _, bar in pairs(UI.partnerHpRectBarList) do
+        UI.RemoveWindowWidget(bar)
+    end
+
+    local windowSizeScale = Util.GetWindowSizeScale()
+    local bottomWindow = UI.bottomWindow
+    ---@type table<number, HpRectBar>
+    UI.partnerHpRectBarList = {}
+    local partnerHpRectBarHeight = 15 * windowSizeScale
+    local partnerHpRectBarSpace = 8 * windowSizeScale
+    local partnerHpRectBarYPos = 200 * windowSizeScale
+    for i = 1, UI.model:GetPartnerCount() do
+        local hpRectBar = HpRectBar.New(bottomWindow)
+        hpRectBar:SetRightLabelVisible(false)
+        hpRectBar:SetSize(150 * windowSizeScale, partnerHpRectBarHeight)
+        hpRectBar:SetPosition(15 * windowSizeScale,
+            partnerHpRectBarYPos + (i - 1) * (partnerHpRectBarHeight + partnerHpRectBarSpace))
+        hpRectBar:SetText("伙伴" .. tostring(i))
+        hpRectBar:SetMaxHp(UI.model:GetOnePartnerAttribute(i, Common.ActorAttributeType.MaxHp))
+
+        UI.appendWindowWidget(bottomWindow, hpRectBar)
+
+        UI.partnerHpRectBarList[i] = hpRectBar
     end
 end
 
