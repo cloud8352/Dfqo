@@ -563,6 +563,7 @@ local function _NewAttributeData(path, keys)
     data.HpRecoveryRate = info.HpRecoveryRate or 0.0
     data.MpRecovery = info.MpRecovery or 0
     data.MpRecoveryRate = info.MpRecoveryRate or 0.0
+    data.StateName = info.StateName or ""
     
     return data
 end

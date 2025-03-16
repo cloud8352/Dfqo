@@ -17,7 +17,10 @@ local List = EcsMgr.NewComboList({ identity = true })
 function LifeSrv.RebornEntity(entity)
     entity.battle.deadProcess = 0
     entity.identity.destroyProcess = 0
-    entity.aspect.pureColor = Color.New(_, _, _, 0)
+    entity.aspect.isPaused = false
+    entity.aspect.pureColor:Set(_, _, _, 0)
+
+    entity.aspect.colorTick = true
     AttributeSrv.AddHp(entity.attributes, entity.attributes.maxHp)
 
     for k, component in pairs(entity) do

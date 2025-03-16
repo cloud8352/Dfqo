@@ -55,7 +55,11 @@ function _AttackJudge:Select()
     for n=1, _list1:GetLength() do
         local e = _list1:Get(n) ---@type Actor.Entity
 
-        if (e.battle.banCountMap.hide == 0 and self._entity ~= e) then
+        if (e.battle.banCountMap.hide == 0
+                and self._entity ~= e
+                and e.battle.deadProcess == 0
+            )
+        then
             if (_BATTLE.CondCamp(camp, e.battle.camp, self.campType) and _STATE.HasTag(e.states, "attack") and _SolidRect.CollideWithList(solidRectList, _ASPECT.GetBodySolidRectList(e.aspect))) then
                 return e
             end

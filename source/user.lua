@@ -13,7 +13,7 @@ local _Caller = require("core.caller")
 ---@class User
 ---@field public player Actor.Entity
 ---@field public setPlayerCaller Core.Caller
----@field private partnerList table<Actor.Entity>
+---@field private partnerList table<int, Actor.Entity>
 local _User = require("core.class")()
 
 function _User:Ctor()

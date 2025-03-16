@@ -105,6 +105,7 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
         articleInfo.consumableInfo.hpRecoveryRate = resMgrConsumableData.HpRecoveryRate
         articleInfo.consumableInfo.mpRecovery = resMgrConsumableData.MpRecovery
         articleInfo.consumableInfo.mpRecoveryRate = resMgrConsumableData.MpRecoveryRate
+        articleInfo.consumableInfo.StateName = resMgrConsumableData.StateName
     elseif typeStr == "skill" then
         articleInfo.type = UiCommon.ArticleType.Consumable
         ---@type Actor.RESMGR.SkillData

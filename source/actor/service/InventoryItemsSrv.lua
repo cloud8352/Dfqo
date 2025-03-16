@@ -70,6 +70,22 @@ function InventoryItemsSrv.GetItem(entity, index)
     return entity.InventoryItems:GetList()[index]
 end
 
+---@param entity Actor.Entity
+---@param path string
+---@return ArticleInfo
+function InventoryItemsSrv.GetItemByPath(entity, path)
+    local inventoryItems = entity.InventoryItems
+    if inventoryItems == nil then
+        return Common.NewArticleInfo()
+    end
+    for _, info in pairs(inventoryItems:GetList()) do
+        if info.path == path then
+            return info
+        end
+    end
+    return Common.NewArticleInfo()
+end
+
 ---@param x int
 ---@param y int
 ---@param z int

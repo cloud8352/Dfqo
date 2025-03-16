@@ -21,6 +21,7 @@ local Factory = require("actor.factory")
 local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
 local LifeSrv = require("actor.service.LifeSrv")
+local StateSrv = require("actor.service.state")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
@@ -1378,6 +1379,19 @@ function UiModel:useConsumable(index, itemInfo)
         SoundLib.Play(NotFitAlertSoundData)
         print("UiModel:useConsumable(index, itemInfo)",
             "This consumable is not fit for gender:", gender)
+        return
+    end
+
+    -- Revive
+    local StateName = itemInfo.consumableInfo.StateName
+    if StateName == "Revive" and self.player.states.current:GetName() == "stay" then
+        if not StateSrv.HasState(self.player.states, StateName)
+        then
+            local jobPath = Common.MapOfJobToPath[self.player.identity.Job]
+            local stateResMgrDataPath = jobPath .. "/" .. StateName
+            StateSrv.SetState(self.player, StateName, stateResMgrDataPath)
+        end
+        StateSrv.Play(self.player.states, StateName)
         return
     end
 

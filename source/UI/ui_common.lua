@@ -102,6 +102,16 @@ mapOfJobToTxt[JobEnum.InventoryItem] = "物品"
 mapOfJobToTxt[JobEnum.Kyo] = "草薙京"
 UiCommon.MapOfJobToTxt = mapOfJobToTxt
 
+
+---@type table<int, string>
+local mapOfJobToPath = {}
+mapOfJobToPath[JobEnum.Other] = "----"
+mapOfJobToPath[JobEnum.SwordMan] = "duelist/swordman"
+mapOfJobToPath[JobEnum.Fighter] = "duelist/Fighter"
+mapOfJobToPath[JobEnum.InventoryItem] = "----"
+mapOfJobToPath[JobEnum.Kyo] = "duelist/Kyo"
+UiCommon.MapOfJobToPath = mapOfJobToPath
+
 ---@type table<int, string>
 local mapOfEquTypeToTag = {}
 mapOfEquTypeToTag[UiCommon.EquType.Belt] = "belt"
@@ -142,6 +152,7 @@ UiCommon.EquPropType = {
 ---@field mpRecovery number
 ---@field mpRecoveryRate number
 ---@field SkillPath string
+---@field StateName string
 local ConsumableInfo = {
     -- hp/mp
     hpRecovery = 0,
@@ -149,6 +160,7 @@ local ConsumableInfo = {
     mpRecovery = 0,
     mpRecoveryRate = 0.0,
     SkillPath = "",
+    StateName = "",
 }
 
 --- 装备信息

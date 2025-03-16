@@ -51,7 +51,11 @@ function _BattleJudge:Select()
     for n=1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
 
-        if (e.battle.banCountMap.hide == 0 and self._entity ~= e) then
+        if (e.battle.banCountMap.hide == 0
+                and self._entity ~= e
+                and e.battle.deadProcess == 0
+            )
+        then
             if (_BATTLE.CondCamp(camp, e.battle.camp, self.campType) and _SolidRect.CollideWithList(solidRectList, _ASPECT.GetBodySolidRectList(e.aspect))) then
                 return e
             end
