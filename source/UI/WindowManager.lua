@@ -267,7 +267,7 @@ end
 function WindowManager.RemoveWindowWidget(widget)
     for i, windowWidget in pairs(windowWidgetList) do
         if widget == windowWidget.Widget then
-            windowWidgetList[i] = nil
+            table.remove(windowWidgetList, i)
             break
         end
     end
