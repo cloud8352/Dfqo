@@ -41,6 +41,18 @@ function _GRAPHICS.Init()
     love.graphics.setBackgroundColor(0, 0, 0, 255)
 end
 
+---@param text string
+---@param x int
+---@param y int
+---@param r int Orientation (radians)
+---@param sx int
+---@param sy int
+---@param ox int
+---@param oy int
+function _GRAPHICS.Print(text, x, y, r, sx, sy, ox, oy)
+    love.graphics.print(text, x, y, r, sx, sy, ox, oy)
+end
+
 ---@param shader Shader
 function _GRAPHICS.SetShader(shader)
     if (_nowShader ~= shader) then

@@ -5,6 +5,8 @@
 	alter: 2023-1-7
 ]] --
 
+local WindowManager = require("UI.WindowManager")
+
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
@@ -61,7 +63,9 @@ end
 
 ---@param parentWindow Window
 function Label:Ctor(parentWindow)
-    assert(parentWindow, "must assign parent window")
+    if parentWindow == nil then
+        parentWindow = WindowManager.DefaultWindow
+    end
     ---@type Window
     self.parentWindow = parentWindow
 
@@ -251,6 +255,11 @@ function Label:AdjustHeightByContent()
     local lineCount = #lineStrList
     local fontHeight = _Graphics.GetFontHeight()
     self:SetSize(self.width, lineCount * fontHeight)
+end
+
+function Label:AdjustWidthByContent()
+    local fontWidth = _Graphics.GetFontWidth(self.text)
+    self:SetSize(fontWidth, self.height)
 end
 
 function Label:updateSprite()

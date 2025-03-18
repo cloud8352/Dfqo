@@ -4,25 +4,33 @@
 ]]--
 
 local Common = require("UI.ui_common")
+local Util = require("util.Util")
 
 local DrawableSprite = require("actor.drawable.sprite")
 local ResMgr = require("actor.resmgr")
 local Factory = require("actor.factory")
+local EcsMgr = require("actor.ecsmgr")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
 
--- 物品掉落音效
-local ItemDroppedSoundData = ResLib.GetSoundData("ui/InventoryItemDropped")
 
 ---@class Actor.Service.InventoryItemsSrv
 local InventoryItemsSrv = {}
+
+-- 物品掉落音效
+local ItemDroppedSoundData = ResLib.GetSoundData("ui/InventoryItemDropped")
 
 ---@param entity Actor.Entity
 local function updateEntityAspect(entity)
     local inventoryItems = entity.InventoryItems
     local articleInfo = inventoryItems:GetFirstNotEmptyItem()
     if entity.identity.Job == Common.JobEnum.InventoryItem then
+        entity.identity.name = articleInfo.name
+        if articleInfo.count > 1 then
+            entity.identity.name = articleInfo.name .. " ×" .. tostring(articleInfo.count)
+        end
+
         local aspect = entity.aspect
         local configData = {}
         configData.spriteData = ResMgr.GetSpriteData(articleInfo.iconPath)
@@ -34,6 +42,7 @@ local function updateEntityAspect(entity)
         local spriteXScale = 20 / spriteWidth
         local spriteYScale = 20 / spriteHeight
         sprite:SetAttri("scale", spriteXScale, spriteYScale)
+        sprite:SetAttri("origin", spriteWidth / 2, spriteHeight / 2)
     end
 end
 
@@ -116,8 +125,8 @@ function InventoryItemsSrv.DropItemFromEntity(entity, index, count)
     if transform == nil then
         return
     end
-    local x = transform.position.x - 10
-    local y = transform.position.y - 10
+    local x = transform.position.x
+    local y = transform.position.y
     local z = 0
 
     local inventoryItems = entity.InventoryItems

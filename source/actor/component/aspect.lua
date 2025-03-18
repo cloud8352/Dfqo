@@ -25,6 +25,7 @@ local _Layer = require("actor.drawable.layer")
 ---@field public height int
 ---@field public avatarCaller Core.Caller
 ---@field public portrait Lib.RESOURCE.SpriteData
+---@field public IsNameHightLight boolean
 local _Aspect = require("core.class")()
 
 local function _HandleData(data)
@@ -89,6 +90,8 @@ function _Aspect:Ctor(data)
     if (data.blendmode) then
         self.layer:SetAttri("blendmode", data.blendmode)
     end
+
+    self.IsNameHightLight = false
 end
 
 return _Aspect

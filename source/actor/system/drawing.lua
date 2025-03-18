@@ -5,6 +5,8 @@
 	alter: 2019-8-25
 ]]--
 
+local Common = require("UI.ui_common")
+
 local _CONFIG = require("config")
 local _GRAPHICS = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
@@ -21,6 +23,8 @@ local _shader_white = _RESOURCE.NewShader(_RESOURCE.GetShaderData("white"))
 -- DrawingVisibleArea size
 local DrawingVisibleAreaW = 2000;
 local DrawingVisibleAreaH = 2000;
+
+local Font = love.graphics.newFont("asset/font/yan_zhen_qing_kai_shu_font.TTF", 11)
 
 ---@param a Actor.Entity
 ---@param b Actor.Entity
@@ -83,6 +87,7 @@ end
 
 function _Drawing:LateUpdate()
     for n = 1, self._list:GetLength() do
+        ---@type Actor.Entity
         local e = self._list:Get(n)
         local aspect = e.aspect ---@type Actor.Component.Aspect
         local transform = e.transform ---@type Actor.Component.Transform
@@ -192,6 +197,28 @@ function _Drawing:Draw()
 
         if (_CONFIG.debug.point) then
             entity.transform.position:Draw(4)
+        end
+
+
+        if entity.identity.Job == Common.JobEnum.InventoryItem then
+            _GRAPHICS.SetFont(Font)
+            local text = entity.identity.name
+            local textWidth  = _GRAPHICS.GetFontWidth(text)
+            local textHeight = _GRAPHICS.GetFontHeight()
+            local position = entity.transform.position
+            local textX = position.x - textWidth / 2
+            local textY = position.y - textHeight - 15
+
+            _GRAPHICS.SetColor(0, 0, 0, 180)
+            _GRAPHICS.DrawRect(textX - 2, textY - 2, textWidth + 4, textHeight + 4, "fill")
+            if entity.aspect.IsNameHightLight then
+                _GRAPHICS.SetColor(255, 255, 255, 255)
+                _GRAPHICS.DrawRect(textX - 2, textY - 2, textWidth + 4, textHeight + 4, "line")
+            end
+            
+            _GRAPHICS.SetColor(255, 255, 255, 255)
+            _GRAPHICS.Print(text, textX, textY)
+            _GRAPHICS.ResetFont()
         end
     end
 

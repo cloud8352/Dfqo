@@ -27,6 +27,8 @@ function InventoryItemsSys:Ctor(upperEvent)
 
     -- itemGotSoundData
     self.itemGotSoundData = ResLib.GetSoundData("ui/InventoryItemGot")
+
+    self.hasFocusedItem = false
 end
 
 function InventoryItemsSys:Update()
@@ -35,31 +37,12 @@ function InventoryItemsSys:Update()
     end
 
     -- 判断物品拾取
+    self.hasFocusedItem = false
     for n = self._list:GetLength(), 1, -1 do
         ---@type Actor.Entity
         local e = self._list:Get(n)
         if e.identity.Job == Common.JobEnum.InventoryItem then
-            local inventoryItems = e.InventoryItems
-            -- 更新物品项碰撞盒坐标
-            MotionSrv.AdjustCollider(e.transform, inventoryItems.Collider, 0, 0)
-
-            local playerTransformPos = Config.user.player.transform.position
-            if inventoryItems.Collider:CheckPoint(playerTransformPos.x, playerTransformPos.y,
-                    playerTransformPos.z) and
-                InputSrv.IsPressed(Config.user.player.input, Common.InputKeyValueStruct.GetItem)
-            then
-                local articleInfo = inventoryItems:GetFirstNotEmptyItem()
-                StateSrv.Play(Config.user.player.states, "sit")
-                InventoryItemsSrv.AddItemToEntity(Config.user.player,
-                    articleInfo.count, articleInfo.path)
-
-                -- 播放物品放置音效
-                SoundLib.Play(self.itemGotSoundData)
-
-                -- destroy inventoryItems entity
-                e.identity.destroyProcess = 1
-                break
-            end
+            self:checkAndExecGetItemByPlayer(e)
         end
     end
 end
@@ -74,6 +57,51 @@ if (Config.debug.InventoryItems) then
                 inventoryItems.Collider:Draw()
             end
         end
+    end
+end
+
+---@param e Actor.Entity
+function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
+    local inventoryItems = e.InventoryItems
+    -- 更新物品项碰撞盒坐标
+    MotionSrv.AdjustCollider(e.transform, inventoryItems.Collider, 0, 0)
+
+    local playerTransformPos = Config.user.player.transform.position
+    if self.hasFocusedItem
+        or false == inventoryItems.Collider:CheckPoint(playerTransformPos.x,
+            playerTransformPos.y, playerTransformPos.z)
+    then
+        if e.aspect.IsNameHightLight then
+            e.aspect.IsNameHightLight = false
+            e.aspect.stroke.scaleRate = 0
+        end
+        return
+    end
+    if e.aspect.IsNameHightLight == false then
+        e.aspect.IsNameHightLight = true
+        e.aspect.stroke.color:Set(255, 255, 255)
+        e.aspect.stroke.pixel = 1
+        e.aspect.stroke.scaleRate = 1
+    end
+
+    self.hasFocusedItem = true
+
+    local player = Config.user.player
+    if player.transform.position.z < 0 then
+        return
+    end
+
+    if InputSrv.IsPressed(player.input, Common.InputKeyValueStruct.GetItem) then
+        local articleInfo = inventoryItems:GetFirstNotEmptyItem()
+        StateSrv.Play(Config.user.player.states, "sit")
+        InventoryItemsSrv.AddItemToEntity(Config.user.player,
+            articleInfo.count, articleInfo.path)
+
+        -- 播放物品放置音效
+        SoundLib.Play(self.itemGotSoundData)
+
+        -- destroy inventoryItems entity
+        e.identity.destroyProcess = 1
     end
 end
 

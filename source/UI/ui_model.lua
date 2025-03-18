@@ -805,6 +805,7 @@ function UiModel:GetWindowSizePercentage()
     return _CONFIG.setting.WindowSizePercentage
 end
 
+
 --- signals
 
 --- 请求去设置物品栏某一显示项的信息

@@ -76,8 +76,10 @@ function UI.Init(director)
     bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
     UI.characterTopBtn = PushButton.New(bottomWindow)
     UI.characterTopBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
-    UI.characterTopBtn:SetContentsMargins(5, 5, 5, 5)
-    UI.characterTopBtn:SetPosition(10, 10)
+    local characterTopBtnContentsMargin = 3 * windowSizeScale
+    UI.characterTopBtn:SetContentsMargins(characterTopBtnContentsMargin, characterTopBtnContentsMargin,
+        characterTopBtnContentsMargin, characterTopBtnContentsMargin)
+    UI.characterTopBtn:SetPosition(10 * windowSizeScale, 10 * windowSizeScale)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
     UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.characterTopBtn:SetHoveringSpriteDataPath("ui/CharacterPortraits/Swordsman/Hovering")

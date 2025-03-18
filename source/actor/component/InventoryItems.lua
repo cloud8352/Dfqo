@@ -28,11 +28,11 @@ function InventoryItems:Ctor(data)
     
     local colliderData = {
         {
-            x = 0,
-            y1 = 0,
+            x = -15,
+            y1 = -15,
             z = 0,
-            y2 = 20,
-            w = 20,
+            y2 = 15,
+            w = 30,
             h = 5
         }
     }
