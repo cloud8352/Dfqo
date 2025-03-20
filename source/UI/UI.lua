@@ -564,6 +564,10 @@ function UI.OnWindowResize(w, h)
 end
 
 function UI.Slot_EnemyCleared()
+    if UI.gameState ~= Common.GameState.Started then
+        return
+    end
+
     local dirStr = UI.model:GetBossRoomDirection()
     local dirTranStr = ""
     if dirStr == Map.DirectionStruct.Up then

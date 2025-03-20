@@ -5,14 +5,16 @@
 	alter: 2019-9-23
 ]]--
 
+local UI = require("UI.UI")
+
 local _CONFIG = require("config")
 local _MAP = require("map.init")
 local _WORLD = require("actor.world")
 local _FACTORY = require("actor.factory")
+local LifeSrv = require("actor.service.LifeSrv")
 
 local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
-local UI = require("UI.UI")
 
 ---@class DIRECTOR
 local _DIRECTOR = { rate = 1 }
@@ -106,12 +108,18 @@ end
 function _DIRECTOR.StartGame(actorSimplePath)
     -- local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
     -- playerInstanceCfgSimplePath = "duelist/Fighter"
-    local player = _FACTORY.New(actorSimplePath, {
-        x = 700,
-        y = 500,
-        direction = 1,
-        camp = 1
-    })
+    ---@type Actor.Entity
+    local player = _CONFIG.user.player
+    if player and player.Data.path == actorSimplePath then
+        LifeSrv.RebornEntity(player)
+    else
+        player = _FACTORY.New(actorSimplePath, {
+            x = 700,
+            y = 500,
+            direction = 1,
+            camp = 1
+        })
+    end
 
     _CONFIG.user:ClearPartnerList()
     -- 创建伙伴
