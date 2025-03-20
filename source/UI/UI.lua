@@ -575,8 +575,11 @@ function UI.Slot_EnemyCleared()
     elseif dirStr == Map.DirectionStruct.Right then
         dirTranStr = "右"
     end
+    local text = "感受到来自于 " .. dirTranStr .. " 方的领主气息..."
     UI.bossDirectionTipLabel:SetVisible(true)
-    UI.bossDirectionTipLabel:SetText("感受到来自于 " .. dirTranStr .. " 方的领主气息...")
+    UI.bossDirectionTipLabel:SetText(text)
+
+    UI.ShowNotification(3000, text)
 end
 
 function UI.Slot_EnemyAppeared()
