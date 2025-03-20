@@ -56,7 +56,7 @@ function _Jump:Update(rate)
         ) then
         self._process = ProcessEnum.Down2
         self:_Func(self._process)
-    elseif (self._process == ProcessEnum.Down2 and self._transform.position.z > 0) then
+    elseif (self._transform.position.z > -0.1) then
         self._process = ProcessEnum.Ground
         self._transform.position.z = 0
         self._transform.positionTick = true
