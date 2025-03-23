@@ -7,7 +7,7 @@
 
 local _ECSMGR = require("actor.ecsmgr")
 
-local _list = _ECSMGR.NewComboList({article_pathgate = true})
+local _list = _ECSMGR.NewComboList({ article_pathgate = true })
 
 ---@class Actor.Service.PATHGATE
 local _PATHGATE = {}
@@ -18,9 +18,9 @@ end
 
 ---@return Actor.Entity
 function _PATHGATE.GetEntrance()
-    for n=1, _list:GetLength() do
+    for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
-        
+
         if (e.article_pathgate.isEntrance) then
             return e
         end
@@ -29,46 +29,56 @@ end
 
 ---@param isLock boolean
 function _PATHGATE.LockGate(isLock)
-    for n=1, _list:GetLength() do
+    for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
         local pathgate = e.article_pathgate ---@type Actor.Component.Article.Pathgate
         pathgate.isLock = isLock
     end
 end
 
+---@param e Actor.Entity
 ---@param isForce boolean
-function _PATHGATE.OpenGate(isForce)
-    for n=1, _list:GetLength() do
+function _PATHGATE.OpenGate(e, isForce)
+    if e.article_pathgate == nil or e.transport == nil then
+        return
+    end
+    local pathgate = e.article_pathgate
+
+    if ((pathgate.enable or isForce) and not pathgate.isLock and not pathgate.isEntrance) then
+        local doorTarget = pathgate.doorTweener:GetTarget() ---@type Graphics.Drawunit.Color
+        doorTarget.alpha = 0
+
+        local lightTarget = pathgate.lightTweener:GetTarget() ---@type Graphics.Drawunit.Color
+        lightTarget.alpha = 255
+
+        pathgate.doorTweener:Enter()
+        pathgate.lightTweener:Enter()
+        pathgate.isOpened = true
+        e.transport.enable = true
+    end
+end
+
+---@param isForce boolean
+function _PATHGATE.OpenAllGate(isForce)
+    for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
-        local pathgate = e.article_pathgate ---@type Actor.Component.Article.Pathgate
-        
-        if ((pathgate.enable or isForce) and not pathgate.isLock and not pathgate.isEntrance) then
-            local doorTarget = pathgate.doorTweener:GetTarget() ---@type Graphics.Drawunit.Color
-            doorTarget.alpha = 0
 
-            local lightTarget = pathgate.lightTweener:GetTarget() ---@type Graphics.Drawunit.Color
-            lightTarget.alpha = 255
-
-            pathgate.doorTweener:Enter()
-            pathgate.lightTweener:Enter()
-            pathgate.isOpened = true
-            e.transport.enable = true
-        end
+        _PATHGATE.OpenGate(e, isForce)
     end
 end
 
 function _PATHGATE.CloseGate()
-    for n=1, _list:GetLength() do
+    for n = 1, _list:GetLength() do
         local e = _list:Get(n) ---@type Actor.Entity
         local pathgate = e.article_pathgate ---@type Actor.Component.Article.Pathgate
-        
+
         if (pathgate.isOpened and not pathgate.isLock) then
             local doorTarget = pathgate.doorTweener:GetTarget() ---@type Graphics.Drawunit.Color
             doorTarget.alpha = 255
-    
+
             local lightTarget = pathgate.lightTweener:GetTarget() ---@type Graphics.Drawunit.Color
             lightTarget.alpha = 0
-    
+
             pathgate.doorTweener:Enter()
             pathgate.lightTweener:Enter()
             pathgate.isOpened = false
@@ -100,7 +110,7 @@ function _PATHGATE.GetRelative(direction)
     if (direction == "left") then
         return "right"
     elseif (direction == "right") then
-        return "left" 
+        return "left"
     elseif (direction == "up") then
         return "down"
     elseif (direction == "down") then

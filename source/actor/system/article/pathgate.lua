@@ -28,12 +28,12 @@ function _Pathgate:Ctor(upperEvent)
     }, "article_pathgate")
 
     _DUELIST.AddListener("appeared", _, function ()
-        _PATHGATE.CloseGate()
+        -- _PATHGATE.CloseGate()
     end)
 
     _DUELIST.AddListener("clear", _, function ()
         _SOUND.Play(_openSoundData)
-        _PATHGATE.OpenGate()
+        _PATHGATE.OpenAllGate()
     end)
 end
 
@@ -54,12 +54,13 @@ function _Pathgate:OnEnter(entity)
     pathgate.lightTweener:SetTime(pathgate.lightTime)
     light:SetAttri("color", lightColor:Get())
 
-    entity.transport.enable = false
+    -- post init
+    _PATHGATE.OpenGate(entity, false)
 end
 
 function _Pathgate:OnInit()
     if (_DUELIST.GetEnemyCount() == 0) then
-        _PATHGATE.OpenGate()
+        _PATHGATE.OpenAllGate()
     end
 end
 

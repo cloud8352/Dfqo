@@ -208,6 +208,7 @@ function UI.Init(director)
     UI.mapSelectComboBox:SetPosition(Util.GetWindowWidth() - 170 * windowSizeScale, 10 * windowSizeScale)
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.mapSelectComboBox)
+    UI.mapSelectComboBox:SetVisible(false)
 
     -- load Map Simple Path List
     for _, simplePath in pairs(UI.model:GetMapSimplePathList()) do
@@ -565,6 +566,9 @@ end
 
 function UI.Slot_EnemyCleared()
     if UI.gameState ~= Common.GameState.Started then
+        return
+    end
+    if false == UI.model:IsInRougelikeMode() then
         return
     end
 

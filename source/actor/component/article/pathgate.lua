@@ -22,7 +22,7 @@ local _Point = require("graphics.drawunit.point")
 local _Pathgate = require("core.class")()
 
 function _Pathgate:Ctor(data, param)
-    self.isOpened = false
+    self.isOpened = true
     self.isLock = false
     self.enable = param.pathgateEnable
     self.doorTime = data.doorTime or 500

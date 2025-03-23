@@ -23,12 +23,12 @@ end
 
 function _Transport:Ctor(data, param)
     self.enable = true
-    self.type = data.type
+    self.type = param.type or data.type
     self.direction = data.direction
-    self.map = data.map or param.map
+    self.map = param.map or data.map
     self.collider = _Collider.New(data.collider)
 
-    self.ToPos = data.ToPos or { X = 0, Y = 0 }
+    self.ToPos = param.ToPos or data.ToPos or { X = 0, Y = 0 }
 end
 
 return _Transport

@@ -81,6 +81,8 @@ function UiModel:Ctor(director)
     ---@type Actor.Entity
     self.hitEnemyOfPlayer = nil
 
+    self.isInRougelikeMode = false
+
     -- connect signals
     _CONFIG.user.setPlayerCaller:AddListener(self, function(sender, lastPlayer, player) 
         self:Slot_PlayerChanged(player)
@@ -804,6 +806,10 @@ end
 
 function UiModel:GetWindowSizePercentage()
     return _CONFIG.setting.WindowSizePercentage
+end
+
+function UiModel:IsInRougelikeMode()
+    return self.isInRougelikeMode
 end
 
 

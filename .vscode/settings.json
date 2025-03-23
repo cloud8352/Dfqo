@@ -21,7 +21,8 @@
         "Cmpt",
         "Swordman",
         "Tepes",
-        "Noirpera"
+        "Noirpera",
+        "Rougelike"
     ],
     "files.exclude": {
         "**/love2d": true,
