@@ -755,7 +755,6 @@ function UiModel:RequestUiToShowNotification(timeMs, text)
 end
 
 function UiModel:GoToGameStartPage()
-    _CONFIG.user:ClearPartnerList()
     _MAP.Load("NoMap", true)
     LifeSrv.KillAllEntity()
 

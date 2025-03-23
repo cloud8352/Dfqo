@@ -121,18 +121,27 @@ function _DIRECTOR.StartGame(actorSimplePath)
         })
     end
 
-    _CONFIG.user:ClearPartnerList()
-    -- 创建伙伴
-    local partner = _FACTORY.New("duelist/atswordman", {
-        x = 400,
-        y = 400,
-        direction = 1,
-        camp = 1,
-        dulist = {
-            isEnemy = false
-        }
-    })
-    _CONFIG.user:AddPartner(partner)
+    local partnerList = _CONFIG.user:GetPartnerList()
+    if #partnerList == 0 then
+        -- 创建伙伴
+        local partner = _FACTORY.New("duelist/atswordman", {
+            x = 400,
+            y = 400,
+            direction = 1,
+            camp = 1,
+            dulist = {
+                isEnemy = false
+            }
+        })
+        partner.attributes.maxHp = 5000
+        partner.attributes.hp = 5000
+        partner.attributes.hpRecovery = 150
+        _CONFIG.user:AddPartner(partner)
+    else
+        for _, p in pairs(partnerList) do
+            LifeSrv.RebornEntity(p)
+        end
+    end
 
     _DIRECTOR.firstUpdate() -- Flush player.
 
