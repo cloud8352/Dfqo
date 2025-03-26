@@ -22,13 +22,12 @@ local _Base = require("actor.state.base")
 ---@field protected _effect Actor.Entity
 local _Jump = require("core.class")(_Base)
 
-local AddJumpPowerTimeS = 0.3
+local AddJumpPowerTimeS = 0.4
 
 function _Jump:Ctor(data, ...)
     _Base.Ctor(self, data, ...)
 
     self._easemoveParam = data.easemove
-    self._jumpParam = data.jump
 
     self.autoPlayStateToEnd = false
     self.startTime = 0
@@ -78,12 +77,14 @@ function _Jump:NormalUpdate(dt, rate)
     self.jumpAttack:Update(dt)
 
     -- 判断是否常按了跳跃键
-    if self.startTime + AddJumpPowerTimeS > _TIME.GetTime() and
-        _INPUT.IsHold(self._entity.input, "jump")
+    if (self.jumpStatus == GearJump.ProcessEnum.Up1
+            or self.jumpStatus == GearJump.ProcessEnum.Up2)
+        and self.startTime + AddJumpPowerTimeS > _TIME.GetTime()
+        and _INPUT.IsHold(self._entity.input, "jump")
     then
-        local jumpParam = self._jumpParam
-        self._jump:Enter(jumpParam.power, jumpParam.speed, 0.5)
+        self._jump:AddUpPower(0.71)
     end
+
     -- 判断是否常按了方向键
     if not self.isOnGround then
         local needEaseMoveX = false
@@ -147,6 +148,8 @@ function _Jump:Enter(laterState, skill)
     self._yEasemove:Exit()
     self._jump:Exit()
     self.jumpAttack:Exit()
+
+    self._jump:Enter(10, 1, 0.5)
 
     Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
 end

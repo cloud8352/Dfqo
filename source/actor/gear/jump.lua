@@ -18,7 +18,7 @@ local _MATH = require("lib.math")
 ---@field protected _originZ int
 local _Jump = require("core.class")(_Gear)
 
-local ProcessEnum = {Up1 = 1, Up2 = 2, Up3 = 3, Down1 = 4, Down2 = 5, Ground = 6}
+local ProcessEnum = { Up1 = 1, Up2 = 2, Up3 = 3, Down1 = 4, Down2 = 5, Ground = 6 }
 _Jump.ProcessEnum = ProcessEnum
 
 ---@param transform Actor.Component.Transform
@@ -90,6 +90,12 @@ end
 ---@return number
 function _Jump:GetPower()
     return self._easemove:GetPower()
+end
+
+---@param value number
+function _Jump:AddUpPower(value)
+    local power = self._easemove:GetPower() + value
+    self._easemove:SetPower(power)
 end
 
 ---@return number
