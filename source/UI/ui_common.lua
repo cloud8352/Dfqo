@@ -102,7 +102,6 @@ mapOfJobToTxt[JobEnum.InventoryItem] = "物品"
 mapOfJobToTxt[JobEnum.Kyo] = "草薙京"
 UiCommon.MapOfJobToTxt = mapOfJobToTxt
 
-
 ---@type table<int, string>
 local mapOfJobToPath = {}
 mapOfJobToPath[JobEnum.Other] = "----"
@@ -111,6 +110,24 @@ mapOfJobToPath[JobEnum.Fighter] = "duelist/Fighter"
 mapOfJobToPath[JobEnum.InventoryItem] = "----"
 mapOfJobToPath[JobEnum.Kyo] = "duelist/Kyo"
 UiCommon.MapOfJobToPath = mapOfJobToPath
+
+---@type table<int, string>
+local mapOfJobToIntroVideoPath = {}
+mapOfJobToIntroVideoPath[JobEnum.Other] = ""
+mapOfJobToIntroVideoPath[JobEnum.SwordMan] = "asset/Video/MaleSwormanSkillIntro.ogv"
+mapOfJobToIntroVideoPath[JobEnum.Fighter] = "asset/Video/FemaleFighterSkillIntro.ogv"
+mapOfJobToIntroVideoPath[JobEnum.InventoryItem] = ""
+mapOfJobToIntroVideoPath[JobEnum.Kyo] = ""
+UiCommon.MapOfJobToIntroVideoPath = mapOfJobToIntroVideoPath
+
+---@type table<int, string>
+local mapOfJobToIntroStr = {}
+mapOfJobToIntroStr[JobEnum.Other] = "其他职业"
+mapOfJobToIntroStr[JobEnum.SwordMan] = "鬼剑士，能够使用鬼神的力量和独特的剑术进行战斗"
+mapOfJobToIntroStr[JobEnum.Fighter] = "格斗家，擅长使用拳法和腿法进行快速连击"
+mapOfJobToIntroStr[JobEnum.InventoryItem] = "物品"
+mapOfJobToIntroStr[JobEnum.Kyo] = "草薙京，草薙流古武术的继承者，拥有操控赤炎的能力"
+UiCommon.MapOfJobToIntroStr = mapOfJobToIntroStr
 
 ---@type table<int, string>
 local mapOfEquTypeToTag = {}
@@ -480,5 +497,15 @@ MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Small] = 0.5
 MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Medium] = 0.7
 MapOfWindowSizeEnumToPercentage[WindowSizeEnum.Large] = 0.85
 UiCommon.MapOfWindowSizeEnumToPercentage = MapOfWindowSizeEnumToPercentage
+
+----- 开始界面相关参数
+
+UiCommon.UserActorPageColCount = 7
+UiCommon.UserActorPageRowCount = 2
+UiCommon.UserActorPageTotalCount = UiCommon.UserActorPageColCount * UiCommon.UserActorPageRowCount
+
+UiCommon.JobActorPageColCount = 3
+UiCommon.JobActorPageRowCount = 3
+UiCommon.JobActorPageTotalCount = UiCommon.JobActorPageColCount * UiCommon.JobActorPageRowCount
 
 return UiCommon

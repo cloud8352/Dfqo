@@ -88,6 +88,30 @@ function Widget:MocConnectSignal(signal, receiver)
     table.insert(receiverList, receiver)
 end
 
+---@param signal function can nil
+---@param obj Object can nil
+function Widget:MocDisconnectSignal(signal, obj)
+    if signal == nil then
+        self.mapOfSignalToReceiverList = {}
+        return
+    end
+    if obj == nil then
+        self.mapOfSignalToReceiverList[signal] = nil
+        return
+    end
+
+    local receiverList = self.mapOfSignalToReceiverList[signal]
+    if receiverList == nil then
+        return
+    end
+    for i, objTmp in pairs(receiverList) do
+        if objTmp == obj then
+            table.remove(receiverList, i)
+            break
+        end
+    end
+end
+
 ---@param signal function
 function Widget:GetReceiverListOfSignal(signal)
     local receiverList = self.mapOfSignalToReceiverList[signal]

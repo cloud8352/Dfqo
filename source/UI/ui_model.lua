@@ -31,6 +31,7 @@ local Table = require("lib.table")
 local _RESOURCE = require("lib.resource")
 local File = require("lib.file")
 local String = require("lib.string")
+local GraphicsLib = require("lib.graphics")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -39,7 +40,6 @@ local RebornEffectInstanceData = ResMgr.GetInstanceData("effect/death/normal")
 local CounterattackEffectInstanceData = ResMgr.GetInstanceData("effect/battle/counterattack2")
 local DotAreaBulletInstanceData = ResMgr.GetInstanceData("bullet/swordman/dotarea")
 
-local PlayerCfgSavedFileName = "player"
 local PlayerCfgSavedFileSuffix = ".cfg"
 
 -- SoundData
@@ -114,10 +114,17 @@ function UiModel:Ctor(director)
     -- 复活音效
     self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
 
-    -- actor simple path list
-    ---@type table<int, string>
-    self.actorSimplePathList = {}
-    self:loadActorSimplePathList()
+    ---@type table<int, Actor.Entity>
+    self.userActorList = {}
+    self:loadUserActorList()
+
+    ---@type table<int, Actor.Entity>
+    self.jobActorList = {}
+    self:loadJobActorList()
+
+    ---@type table<int, love.Video>
+    self.mapOfJobToIntroVideo = {}
+    self:loadMapOfJobToIntroVideo()
 
     -- map simple path list
     ---@type table<int, string>
@@ -147,6 +154,9 @@ function UiModel:SetPlayer(player)
     self.player = player
 
     -- 设置物品数据
+    for _, articleInfo in pairs(self.articleInfoList) do
+        articleInfo.type = Common.ArticleType.Empty
+    end
     local inventoryItemsComponent = self.player.InventoryItems
     if inventoryItemsComponent then
         for i, item in pairs(inventoryItemsComponent:GetList()) do
@@ -155,6 +165,9 @@ function UiModel:SetPlayer(player)
     end
 
     -- equ
+    for _, articleInfo in pairs(self.mountedEquInfoList) do
+        articleInfo.type = Common.ArticleType.Empty
+    end
     if self.player.equipments then
         ---@type Actor.RESMGR.EquipmentData
         local resMgrEquData
@@ -453,12 +466,11 @@ function UiModel:DropArticleDockItem()
     self:RequestSetDraggingItemVisibility(false)
 end
 
----@param actorIndex int
-function UiModel:StartGame(actorIndex)
-    if actorIndex <= 0 then
+---@param actorSimplePath string
+function UiModel:StartGame(actorSimplePath)
+    if actorSimplePath == "" then
         return
     end
-    local actorSimplePath = self.actorSimplePathList[actorIndex]
     self.director.StartGame(actorSimplePath)
 
     self.partnerList = _CONFIG.user:GetPartnerList()
@@ -669,24 +681,13 @@ function UiModel:SavePlayerData()
     local dataStr = Table.Deserialize(data)
 
     -- 7. 保存数据
-    local dirPath = "config/actor/instance/duelist/"
-    local fileName = PlayerCfgSavedFileName .. PlayerCfgSavedFileSuffix
+    local dirPath = "config/actor/instance/"
+    local fileName = playerInstanceCfgSimplePath .. PlayerCfgSavedFileSuffix
     local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
     if not ok then
         print("UiModel:SavePlayerData()", errMsg, dirPath .. fileName, "file write failed！")
         return
     end
-end
-
-function UiModel:GetPlayerInstanceCfgSimplePath()
-    local simplePath = "duelist/" .. PlayerCfgSavedFileName
-    local pathPrefix = "config/actor/instance/"
-    local path = pathPrefix .. simplePath .. ".cfg"
-
-    if not File.Exists(path) then
-        simplePath = "duelist/swordman"
-    end 
-    return simplePath
 end
 
 ---@return table<string, string>
@@ -740,12 +741,62 @@ function UiModel:SaveConfig()
     end
 end
 
-function UiModel:GetActorSimplePathList()
-    return self.actorSimplePathList
+function UiModel:GetUserActorList()
+    return self.userActorList
+end
+
+function UiModel:NewAUserActorSimplePath()
+    for i = 1, Common.UserActorPageTotalCount do
+        local simplePath = "duelist/Actor" .. tostring(i)
+        local playerCfgFilePath = "config/actor/instance/" .. simplePath .. ".cfg"
+        if false == File.Exists(playerCfgFilePath) then
+            return simplePath
+        end
+    end
+
+    return ""
+end
+
+function UiModel:GetJobActorList()
+    return self.jobActorList
+end
+
+---@param job int JobEnum
+function UiModel:GetJobIntroVideo(job)
+    return self.mapOfJobToIntroVideo[job]
 end
 
 function UiModel:GetMapSimplePathList()
     return self.mapSimplePathList
+end
+
+---@param jobActorSimplePath string
+---@param name string
+function UiModel:CreateUserActor(jobActorSimplePath, name)
+    -- 1. 读取职业实例配置
+    local playerInstanceCfgSimplePath = jobActorSimplePath
+    local data, path = _RESOURCE.ReadConfig(playerInstanceCfgSimplePath, "config/actor/instance/%s.cfg", nil)
+    if data == nil then
+        print("UiModel:CreateUserActor()", "job actor instance cfg read failed!")
+        return
+    end
+
+    data.identity.name = name
+
+    -- 2. 序列化数据
+    local dataStr = Table.Deserialize(data)
+
+    -- 3. 保存数据
+    local dirPath = "config/actor/instance/"
+    local fileName = self:NewAUserActorSimplePath() .. PlayerCfgSavedFileSuffix
+    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    if not ok then
+        print("UiModel:CreateUserActor()", errMsg, dirPath .. fileName, "file write failed！")
+        return
+    end
+
+    -- 重新加载用户角色列表
+    self:loadUserActorList()
 end
 
 ---@param timeMs int
@@ -758,6 +809,8 @@ function UiModel:GoToGameStartPage()
     _MAP.Load("NoMap", true)
     LifeSrv.KillAllEntity()
 
+    self:loadUserActorList()
+    self:loadJobActorList()
     self:Signal_RequestSetUiGameState(Common.GameState.ActorSelect)
 end
 
@@ -775,6 +828,14 @@ end
 
 function UiModel:GetMusicVol()
     return _CONFIG.setting.music
+end
+
+function UiModel:PauseMusic()
+    MusicLib.Pause()
+end
+
+function UiModel:ResumeMusic()
+    MusicLib.Resume()
 end
 
 ---@param value number
@@ -1549,19 +1610,49 @@ function UiModel:unloadPlayerSkill(skillInfo)
     end
 end
 
-function UiModel:loadActorSimplePathList()
+function UiModel:loadUserActorList()
+    for _, e in pairs(self.userActorList) do
+        e.identity.destroyProcess = 1
+    end
+    self.userActorList = {}
+
+    for i = 1, Common.UserActorPageTotalCount do
+        local simplePath = "duelist/Actor" .. tostring(i)
+        local playerCfgFilePath = "config/actor/instance/" .. simplePath .. ".cfg"
+        if File.Exists(playerCfgFilePath) then
+            local e = Factory.New(simplePath, {})
+            e.ais.enable = false
+            table.insert(self.userActorList, e)
+        end
+    end
+end
+
+function UiModel:loadJobActorList()
+    for _, e in pairs(self.jobActorList) do
+        e.identity.destroyProcess = 1
+    end
+    self.jobActorList = {}
+
     local actorSimplePathList = {
-        "duelist/Kyo",
+        "duelist/swordman",
         "duelist/atswordman",
         "duelist/Fighter",
-        "duelist/swordman",
+        "duelist/Kyo",
     }
-    local playerCfgFilePath = "config/actor/instance/duelist/player.cfg"
-    if File.Exists(playerCfgFilePath) then
-        table.insert(self.actorSimplePathList, "duelist/player")
+    assert(#actorSimplePathList < Common.JobActorPageTotalCount, "Exceeding the max job count")
+    for _, actorSimplePath in pairs(actorSimplePathList) do
+        local e = Factory.New(actorSimplePath, {})
+        e.ais.enable = false
+        table.insert(self.jobActorList, e)
     end
-    for _, path in pairs(actorSimplePathList) do
-        table.insert(self.actorSimplePathList, path)
+end
+
+function UiModel:loadMapOfJobToIntroVideo()
+    for i, job in pairs(Common.JobEnum) do
+        local videoFilePath = Common.MapOfJobToIntroVideoPath[job]
+        if videoFilePath ~= "" then
+            self.mapOfJobToIntroVideo[job] = GraphicsLib.NewVideo(videoFilePath)
+        end
     end
 end
 

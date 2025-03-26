@@ -66,7 +66,7 @@ function UI.Init(director)
     toolTipWindow:SetIsTipToolWindow(true)
 
     ---@type StartGameWindow
-    UI.startGameWindow = StartGameWindow.New(UI.model)
+    UI.startGameWindow = StartGameWindow.Create(UI.model)
     UI.appendWindowWidget(UI.startGameWindow, UI.startGameWindow)
 
     -- 角色概况
@@ -371,11 +371,6 @@ function UI.Draw()
 end
 
 --- public function
-
---- 获取玩家实例配置简化路径
-function UI.GetPlayerInstanceCfgSimplePath()
-    return UI.model:GetPlayerInstanceCfgSimplePath()
-end
 
 ---@param timeMs int
 ---@param text string

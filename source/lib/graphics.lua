@@ -23,6 +23,39 @@ local _laterFont
 local savedCanvas = nil
 
 local _GRAPHICS = {} ---@class Lib.GRAPHICS
+
+---@class love.Object
+local Object = {}
+---@return string
+function Object:type()
+end
+
+---@class love.Drawable : love.Object
+local Drawable = {}
+
+---@class love.Video : love.Drawable
+local Video = {}
+---@return int
+function Video:getHeight()
+end
+---@return int
+function Video:getWidth()
+end
+---Gets whether the Video is currently playing
+---@return boolean
+function Video:isPlaying()
+end
+---Gets whether the Video is currently playing
+---@return boolean
+function Video:isPlaying()
+end
+function Video:pause()
+end
+function Video:play()
+end
+function Video:rewind()
+end
+
 _GRAPHICS.Print = love.graphics.print
 _GRAPHICS.SetScissor = love.graphics.setScissor
 _GRAPHICS.DrawLine = love.graphics.line
@@ -209,6 +242,12 @@ end
 ---@param canvas Love.Graphics.Canvas
 function _GRAPHICS.RestoreCanvas()
     _GRAPHICS.SetCanvas(savedCanvas)
+end
+
+---@param filePath string
+---@return love.Video A drawable video
+function _GRAPHICS.NewVideo(filePath)
+    return love.graphics.newVideo(filePath)
 end
 
 return _GRAPHICS

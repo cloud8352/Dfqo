@@ -106,8 +106,6 @@ end
 
 ---@param actorSimplePath string
 function _DIRECTOR.StartGame(actorSimplePath)
-    -- local playerInstanceCfgSimplePath = UI.GetPlayerInstanceCfgSimplePath()
-    -- playerInstanceCfgSimplePath = "duelist/Fighter"
     ---@type Actor.Entity
     local player = _CONFIG.user.player
     if player and player.Data.path == actorSimplePath then

@@ -13,7 +13,7 @@ local _Collider = require("actor.collider")
 local _Graphics_Frameani = require("graphics.drawable.frameani")
 local _Base = require("actor.drawable.base")
 
----@class Actor.Drawable.Frameani:Actor.Drawable
+---@class Actor.Drawable.Frameani : Graphics.Drawable.Frameani Actor.Drawable
 ---@field public avatar Actor.Drawable.Frameani.Avatar
 ---@field protected _collidersPoor table
 ---@field protected _colliders table<int, Actor.Collider>

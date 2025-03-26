@@ -140,8 +140,8 @@ function Label:Draw()
         return
     end
 
-    self.sprite:Draw()
     self.iconSprite:Draw()
+    self.sprite:Draw()
 end
 
 function Label:SetPosition(x, y)
@@ -196,6 +196,10 @@ function Label:SetText(text)
     self.text = text
 end
 
+function Label:GetText()
+    return self.text
+end
+
 ---@param alignments table<i, Label.AlignmentFlag>
 function Label:SetAlignments(alignments)
     self.alignment = 0
@@ -224,6 +228,10 @@ function Label:SetIconSpriteDataPath(path)
     local spriteXScale = self.iconSizeW / spriteWidth
     local spriteYScale = self.iconSizeH / spriteHeight
     self.iconSprite:SetAttri("scale", spriteXScale, spriteYScale)
+end
+
+function Label:GetIconSpriteImgDimensions()
+    return self.iconSprite:GetImageDimensions()
 end
 
 function Label:SetIconSize(w, h)
@@ -271,6 +279,7 @@ function Label:updateSprite()
     local txtR, txtG, txtB, txtA
     txtR = 255; txtG = 255; txtB = 255; txtA = 255
     _Graphics.SetColor(txtR, txtG, txtB, txtA)
+    _Graphics.SetBlendmode("alpha")
 
     -- 文本对象实际显示宽高
     local textSpriteViewWidth = self.width
