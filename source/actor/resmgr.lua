@@ -33,7 +33,7 @@ local _poolGroup = {
     attribute = {}
 }
 
-local _meta = {__mode = 'v'}
+local _meta = { __mode = 'v' }
 
 for k, v in pairs(_poolGroup) do
     -- setmetatable(v, _meta)
@@ -105,6 +105,7 @@ end
 ---@param passMap table @can null
 ---@return Lib.RESOURCE.SpriteData
 local function _NewAvatarSpriteData(path, avatar, passMap)
+    ---@type table<int, Lib.RESOURCE.SpriteData>
     local spriteDatas = {}
     local sortingMap = {}
     passMap = passMap or _emptyMap
@@ -117,13 +118,13 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
             -- 异常数据检查
             if (spriteData.ox and spriteData.oy) then
                 if (spriteData.ox > 50000 or
-                    spriteData.ox < -50000 or
-                    spriteData.oy > 50000 or
-                    spriteData.oy < -50000) then
+                        spriteData.ox < -50000 or
+                        spriteData.oy > 50000 or
+                        spriteData.oy < -50000) then
                     print("_NewAvatarSpriteData", spritePath, "offset may be error!!")
                 end
             end
-    
+
             spriteDatas[#spriteDatas + 1] = spriteData
             sortingMap[spriteData] = avatar.data.layer[k]
         end
@@ -136,7 +137,7 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
     local spriteData = {} ---@type Lib.RESOURCE.SpriteData
     local minX, minY, maxX, maxY
 
-    for n=1, #spriteDatas do
+    for n = 1, #spriteDatas do
         local w = spriteDatas[n].w
         local h = spriteDatas[n].h
 
@@ -158,7 +159,7 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
         end
     end
 
-    for n=1, #spriteDatas do
+    for n = 1, #spriteDatas do
         local colliderData = spriteDatas[n].colliderData
 
         if (colliderData) then
@@ -168,7 +169,7 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
                 spriteData.colliderData[k] = spriteData.colliderData[k] or {}
                 local i = spriteData.colliderData[k]
 
-                for n=1, #v do
+                for n = 1, #v do
                     i[#i + 1] = v[n]
                 end
             end
@@ -198,9 +199,10 @@ end
 local function _InitAvatarSpriteDatas(avatar)
     local data = avatar.data
     local header = avatar.key .. "|" .. data.path .. "/"
+    ---@type table<int, Lib.RESOURCE.SpriteData>
     local spriteDatas = {}
     local partCount = 0
-    
+
     for k, v in pairs(avatar.config) do
         partCount = partCount + 1
 
@@ -209,7 +211,7 @@ local function _InitAvatarSpriteDatas(avatar)
         end
     end
 
-    for n=1, #data.files do
+    for n = 1, #data.files do
         local spriteData = _NewAvatarSpriteData(data.files[n], avatar)
         table.insert(spriteDatas, spriteData)
         _poolGroup.sprite[header .. data.files[n]] = spriteData
@@ -240,7 +242,7 @@ local function _InitAvatarSpriteDatas(avatar)
     local w = 0
     local h = 0
 
-    for n=1, #spriteDatas do
+    for n = 1, #spriteDatas do
         local spriteData = spriteDatas[n]
 
         spriteData.x = x
@@ -262,17 +264,23 @@ local function _InitAvatarSpriteDatas(avatar)
     local canvas = _GRAPHICS.NewCanvas(w, h)
     _GRAPHICS.SetCanvas(canvas)
 
-    for n=1, #spriteDatas do
+    for n = 1, #spriteDatas do
         local spriteData = spriteDatas[n]
         local x = spriteData.x + spriteData.ox
         local y = spriteData.y + spriteData.oy
 
         if (spriteData.subjects) then
-            for m=1, #spriteData.subjects do
+            for m = 1, #spriteData.subjects do
                 local v = spriteData.subjects[m]
-    
+
                 _GRAPHICS.SetBlendmode(v.blendmode or "alpha")
-    
+                local color = v.color
+                if color then
+                    _GRAPHICS.SetColor(color.red, color.green, color.blue, color.alpha)
+                else
+                    _GRAPHICS.SetColor(255, 255, 255, 255)
+                end
+
                 if (v.quad) then
                     _GRAPHICS.DrawObj(v.image, v.quad, x, y, 0, 1, 1, v.ox, v.oy)
                 else
@@ -282,9 +290,10 @@ local function _InitAvatarSpriteDatas(avatar)
         end
     end
 
+    _GRAPHICS.SetBlendmode("alpha")
     _GRAPHICS.RestoreCanvas()
 
-    for n=1, #spriteDatas do
+    for n = 1, #spriteDatas do
         local spriteData = spriteDatas[n]
         spriteData.image = canvas
         spriteData.quad = _RESOURCE.NewQuad(spriteData.x, spriteData.y, spriteData.w, spriteData.h, w, h)
@@ -326,7 +335,7 @@ local function _NewInstanceData(path, keys)
     end
 
     data.path = path
-    
+
     return data
 end
 
@@ -369,9 +378,9 @@ local function _NewAvatarData(path, keys)
     local data = _RESOURCE.ReadConfig(path, "config/actor/avatar/%s.cfg", keys)
     local files = {}
 
-    for n=1, #data.files do
+    for n = 1, #data.files do
         if (type(data.files[n]) == "table") then
-            for m=data.files[n][1], data.files[n][2] do
+            for m = data.files[n][1], data.files[n][2] do
                 table.insert(files, tostring(m))
             end
         else
@@ -391,7 +400,7 @@ end
 local function _NewAttackData(path, keys)
     ---@class Actor.RESMGR.AttackData
     local data = _RESOURCE.ReadConfig(path, "config/actor/attack/%s.cfg", keys)
-    
+
     if (data.effect) then
         data.effectSet = _RESOURCE.Recur(_RESMGR.GetInstanceData, data.effect, "aspect")
         data.effect = nil
@@ -406,7 +415,7 @@ local function _NewAttackData(path, keys)
         if (#data.buff == 0) then
             data.buff = _RESMGR.NewBuffData(data.buff.path, data.buff)
         else
-            for n=1, #data.buff do
+            for n = 1, #data.buff do
                 data.buff[n] = _RESMGR.NewBuffData(data.buff[n].path, data.buff[n])
             end
         end
@@ -423,7 +432,7 @@ local function _NewAIData(path, keys)
     local data = _RESOURCE.ReadConfig(path, "config/actor/ai/%s.cfg", keys)
 
     data.script = string.gsub(data.script, "/", ".")
-    data.class = require("actor.ai.".. data.script)
+    data.class = require("actor.ai." .. data.script)
     data.script = nil
 
     if (data.class.HandleData) then
@@ -509,7 +518,8 @@ local function _NewSkillData(path, keys)
 
     --[[if (data.stateData) then
         data.stateData = _RESMGR.GetStateData(data.stateData)
-    end]]--
+    end]]
+          --
     data.StateName = data.state or ""
     data.StateResMgrDataPath = data.stateData or ""
 
@@ -529,8 +539,8 @@ end
 local function _NewBuffData(path, keys)
     ---@class Actor.RESMGR.BuffData : Actor.RESMGR.ItemData
     local data = _NewItemData(path, "config/actor/buff/%s.cfg", keys, "buff",
-            "actor.buff.", "ui/icon/buff/")
-    
+        "actor.buff.", "ui/icon/buff/")
+
     return data
 end
 
@@ -558,13 +568,13 @@ local function _NewAttributeData(path, keys)
     if not info then
         info = {}
     end
-    
+
     data.HpRecovery = info.HpRecovery or 0
     data.HpRecoveryRate = info.HpRecoveryRate or 0.0
     data.MpRecovery = info.MpRecovery or 0
     data.MpRecoveryRate = info.MpRecoveryRate or 0.0
     data.StateName = info.StateName or ""
-    
+
     return data
 end
 
@@ -597,9 +607,11 @@ function _RESMGR.GetFrameaniData(path, keys, avatar)
         local avatarPath = type(path) == "table" and path.path or path
         local tag = _RESOURCE.GetTag(avatar.key .. "|" .. avatarPath, keys)
 
-        return _RESOURCE.GetResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, tag, keys, _RESMGR.GetSpriteData, _, avatar)
+        return _RESOURCE.GetResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, tag, keys,
+            _RESMGR.GetSpriteData, _, avatar)
     else
-        return _RESOURCE.GetConfigResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, keys, _RESMGR.GetSpriteData)
+        return _RESOURCE.GetConfigResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, keys,
+            _RESMGR.GetSpriteData)
     end
 end
 
@@ -640,7 +652,7 @@ function _RESMGR.GetColliderData(path, keys)
     if (type(path) == "table") then
         return path
     end
-    
+
     if (string.sub(path, 1, 8) == "(sprite)") then
         local spritePath = string.sub(path, 9, #path)
         local pos = string.find(spritePath, "-")
@@ -716,7 +728,7 @@ function _RESMGR.NewBuffData(path, param, keys)
         return data
     end
 
-    setmetatable(param, {__index = data, __base = true})
+    setmetatable(param, { __index = data, __base = true })
 
     return param
 end
@@ -742,7 +754,7 @@ function _RESMGR.NewEquipmentData(path, param, keys, onlyAdd)
         end
     end
 
-    setmetatable(param, {__index = data, __base = true})
+    setmetatable(param, { __index = data, __base = true })
 
     return param
 end
@@ -758,7 +770,7 @@ function _RESMGR.NewAttributeData(path, param, keys)
         return data
     end
 
-    setmetatable(param, {__index = data, __base = true})
+    setmetatable(param, { __index = data, __base = true })
 
     return param
 end
