@@ -48,9 +48,14 @@ end
 
 ---@param param table
 function _Transform:Reborn(param)
-    self.position = _Point3.New(false, param.x, param.y, param.z)
-    self.direction = param.direction or 1
-    self.positionTick = true
+    if param.x and param.y and param.z then
+        self.position:Set(param.x, param.y, param.z)
+        self.positionTick = true
+    end
+
+    if param.direction then
+        self.direction = param.direction
+    end
 end
 
 return _Transform

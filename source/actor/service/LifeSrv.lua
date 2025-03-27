@@ -14,7 +14,8 @@ local LifeSrv = {}
 local List = EcsMgr.NewComboList({ identity = true })
 
 ---@param entity Actor.Entity
-function LifeSrv.RebornEntity(entity)
+---@param param table
+function LifeSrv.RebornEntity(entity, param)
     entity.battle.deadProcess = 0
     entity.identity.destroyProcess = 0
     entity.aspect.isPaused = false
@@ -22,6 +23,13 @@ function LifeSrv.RebornEntity(entity)
 
     entity.aspect.colorTick = true
     AttributeSrv.AddHp(entity.attributes, entity.attributes.maxHp)
+
+    param = param or {}
+    for k, v in pairs(entity) do
+        if (v.Reborn) then
+            v:Reborn(param)
+        end
+    end
 
     for k, component in pairs(entity) do
         EcsMgr.AddComponent(entity, k, component)

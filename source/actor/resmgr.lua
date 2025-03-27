@@ -36,7 +36,7 @@ local _poolGroup = {
 local _meta = { __mode = 'v' }
 
 for k, v in pairs(_poolGroup) do
-    -- setmetatable(v, _meta)
+    setmetatable(v, _meta)
 end
 
 local _colliderMap = _FILE.ReadScript("config/actor/colliderMap.cfg")
@@ -636,6 +636,13 @@ end
 ---@return Actor.RESMGR.InstanceData
 function _RESMGR.GetInstanceData(path, keys)
     return _RESOURCE.GetConfigResource(_poolGroup.instance, _NewInstanceData, path, keys)
+end
+
+---@param path string
+---@param keys table<number, string>
+---@return Actor.RESMGR.InstanceData
+function _RESMGR.GetInstanceDataWithNoPool(path, keys)
+    return _RESOURCE.GetConfigResource({}, _NewInstanceData, path, keys)
 end
 
 ---@param path string

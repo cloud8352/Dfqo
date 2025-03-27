@@ -806,6 +806,7 @@ function UiModel:RequestUiToShowNotification(timeMs, text)
 end
 
 function UiModel:GoToGameStartPage()
+    _CONFIG.user:ClearPartnerList()
     _MAP.Load("NoMap", true)
     LifeSrv.KillAllEntity()
 
@@ -1611,16 +1612,13 @@ function UiModel:unloadPlayerSkill(skillInfo)
 end
 
 function UiModel:loadUserActorList()
-    for _, e in pairs(self.userActorList) do
-        e.identity.destroyProcess = 1
-    end
     self.userActorList = {}
 
     for i = 1, Common.UserActorPageTotalCount do
         local simplePath = "duelist/Actor" .. tostring(i)
         local playerCfgFilePath = "config/actor/instance/" .. simplePath .. ".cfg"
         if File.Exists(playerCfgFilePath) then
-            local e = Factory.New(simplePath, {})
+            local e = Factory.NewWithNoDataPool(simplePath, {})
             e.ais.enable = false
             table.insert(self.userActorList, e)
         end
@@ -1628,9 +1626,6 @@ function UiModel:loadUserActorList()
 end
 
 function UiModel:loadJobActorList()
-    for _, e in pairs(self.jobActorList) do
-        e.identity.destroyProcess = 1
-    end
     self.jobActorList = {}
 
     local actorSimplePathList = {
@@ -1641,7 +1636,7 @@ function UiModel:loadJobActorList()
     }
     assert(#actorSimplePathList < Common.JobActorPageTotalCount, "Exceeding the max job count")
     for _, actorSimplePath in pairs(actorSimplePathList) do
-        local e = Factory.New(actorSimplePath, {})
+        local e = Factory.NewWithNoDataPool(actorSimplePath, {})
         e.ais.enable = false
         table.insert(self.jobActorList, e)
     end

@@ -45,6 +45,7 @@ local _newFuncGroup = {
 }
 
 ---@param data Actor.RESMGR.InstanceData
+---@param param table
 ---@return Actor.Entity
 function _FACTORY.New(data, param)
     if (type(data) == "string") then
@@ -118,6 +119,16 @@ function _FACTORY.New(data, param)
     _pool[path] = entity
 
     return entity
+end
+
+---@param path string
+---@param param table
+---@return Actor.Entity
+function _FACTORY.NewWithNoDataPool(path, param)
+    local data = _RESMGR.GetInstanceDataWithNoPool(path)
+
+    local e = _FACTORY.New(data, param)
+    return e
 end
 
 ---@param data Actor.RESMGR.InstanceData
