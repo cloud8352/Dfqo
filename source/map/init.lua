@@ -701,7 +701,7 @@ function _MAP.Make(path, entry)
     -- local table = require("lib.table")
     -- local file = require("lib.file")
 
-    -- file.WriteFile("1", "testMap.cfg", table.Deserialize(data))
+    -- file.WriteFile("1/testMap.cfg", table.Deserialize(data))
 
     return data
 end
