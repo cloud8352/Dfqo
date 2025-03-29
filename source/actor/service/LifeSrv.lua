@@ -23,6 +23,8 @@ function LifeSrv.RebornEntity(entity, param)
 
     entity.aspect.colorTick = true
     AttributeSrv.AddHp(entity.attributes, entity.attributes.maxHp)
+    entity.transform.position.z = 0
+    entity.transform.positionTick = true
 
     param = param or {}
     for k, v in pairs(entity) do
