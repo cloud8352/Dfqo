@@ -94,6 +94,11 @@ function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
     if InputSrv.IsPressed(player.input, Common.InputKeyValueStruct.GetItem) then
         local articleInfo = inventoryItems:GetFirstNotEmptyItem()
         StateSrv.Play(Config.user.player.states, "sit")
+        if inventoryItems:WhetherHaveUsableIndex() then
+            print("InventoryItemsSys:checkAndExecGetItemByPlayer(e)", "has no empty space!")
+            return
+        end
+
         InventoryItemsSrv.AddItemToEntity(Config.user.player,
             articleInfo.count, articleInfo.path)
 

@@ -282,6 +282,8 @@ UiCommon.ArticleItemWidth = 45
 
 UiCommon.ArticleTableColCount = 8
 UiCommon.ArticleTableRowCount = 12
+---@type int
+UiCommon.ArticleTableTotalCount = UiCommon.ArticleTableColCount * UiCommon.ArticleTableRowCount
 
 -- 物品托盘表格列数
 UiCommon.ArticleDockColCount = 6

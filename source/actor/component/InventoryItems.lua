@@ -157,6 +157,10 @@ function InventoryItems:GetNotEmptyItemCount()
     return self.notEmptyItemCount
 end
 
+function InventoryItems:WhetherHaveUsableIndex()
+    return self.notEmptyItemCount <= UiCommon.ArticleTableTotalCount
+end
+
 ---@param n int
 ---@return ArticleInfo
 function InventoryItems:GetNotEmptyItem(n)
@@ -190,7 +194,7 @@ end
 ---@return int
 function InventoryItems:getMinimumUsableIndex()
     local minimumUsableIndex = 1
-    while (minimumUsableIndex < 99) do
+    while (minimumUsableIndex < 199) do
         local articleInfo = self.list[minimumUsableIndex]
         if articleInfo == nil or articleInfo.type == UiCommon.ArticleType.Empty then
             break
