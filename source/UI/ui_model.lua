@@ -681,11 +681,10 @@ function UiModel:SavePlayerData()
     local dataStr = Table.Deserialize(data)
 
     -- 7. 保存数据
-    local dirPath = "config/actor/instance/"
-    local fileName = playerInstanceCfgSimplePath .. PlayerCfgSavedFileSuffix
-    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    local filePath = "config/actor/instance/" .. playerInstanceCfgSimplePath .. PlayerCfgSavedFileSuffix
+    local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
-        print("UiModel:SavePlayerData()", errMsg, dirPath .. fileName, "file write failed！")
+        print("UiModel:SavePlayerData()", errMsg, filePath, "file write failed！")
         return
     end
 end
@@ -732,9 +731,8 @@ function UiModel:SaveConfig()
     local dataStr = Table.Deserialize(configData)
 
     -- 5. 保存数据
-    local dirPath = _CONFIG.ConfigDirPath
-    local fileName = _CONFIG.SettingsFileName
-    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    local filePath = _CONFIG.ConfigDirPath .. _CONFIG.SettingsFileName
+    local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
         print("UiModel:SaveConfig()", errMsg, dirPath .. fileName, "file write failed！")
         return
@@ -745,12 +743,12 @@ function UiModel:GetUserActorList()
     return self.userActorList
 end
 
-function UiModel:NewAUserActorSimplePath()
+function UiModel:NewAUserActorConfigNoSuffixFileName()
     for i = 1, Common.UserActorPageTotalCount do
-        local simplePath = "duelist/Actor" .. tostring(i)
-        local playerCfgFilePath = "config/actor/instance/" .. simplePath .. ".cfg"
+        local noSuffixFileName = "Actor" .. tostring(i)
+        local playerCfgFilePath = "config/actor/instance/duelist/" .. noSuffixFileName .. ".cfg"
         if false == File.Exists(playerCfgFilePath) then
-            return simplePath
+            return noSuffixFileName
         end
     end
 
@@ -787,9 +785,10 @@ function UiModel:CreateUserActor(jobActorSimplePath, name)
     local dataStr = Table.Deserialize(data)
 
     -- 3. 保存数据
-    local dirPath = "config/actor/instance/"
-    local fileName = self:NewAUserActorSimplePath() .. PlayerCfgSavedFileSuffix
-    local ok, errMsg = File.WriteFile(dirPath, fileName, dataStr)
+    local dirPath = "config/actor/instance/duelist/"
+    local fileName = self:NewAUserActorConfigNoSuffixFileName() .. PlayerCfgSavedFileSuffix
+    local filePath = dirPath .. fileName
+    local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
         print("UiModel:CreateUserActor()", errMsg, dirPath .. fileName, "file write failed！")
         return

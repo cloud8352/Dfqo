@@ -48,39 +48,38 @@ function _FILE.ReadFile(path)
     return love.filesystem.read(path)
 end
 
----@param dirPath string
----@param fileName string
+---@param filePath string
 ---@param str string 数据
 ---@return boolean, string succeed errMsg
-function _FILE.WriteFile(dirPath, fileName, str)
+function _FILE.WriteFile(filePath, str)
+    local stringLib = require("lib.string")
     local errMsg = ""
     -- 如果目录不存在，就创建
-    local absoluteDirPath = dirPath
-    local dirPathStrPrefix = string.sub(dirPath, 1, 1)
-    if dirPathStrPrefix ~= "/" then
+    local dirPath = stringLib.ToDirectory(filePath)
+    local absoluteDirPath = ""
+    local absoluteFilePath = ""
+    local filePathPrefix = string.sub(dirPath, 1, 1)
+    if filePathPrefix ~= "/" then
         absoluteDirPath = _FILE.getSaveDirectory() .. "/" .. dirPath
+        absoluteFilePath = _FILE.getSaveDirectory() .. "/" .. filePath
+    else
+        absoluteDirPath = _FILE.getSaveDirectory() .. dirPath
+        absoluteFilePath = _FILE.getSaveDirectory() .. filePath
     end
     if not _FILE.Exists(absoluteDirPath) then
         local ok = _FILE.MkDir(dirPath)
         if not ok then
             errMsg = dirPath .. " dir make failed!"
-            print("_FILE.WriteFile(dirPath, fileName, str)", errMsg)
+            print("_FILE.WriteFile(filePath, str)", errMsg)
             return false, errMsg
         end
     end
 
     -- 以绝对路径创建文件
-    local filePath = absoluteDirPath .. fileName
-
-    local suffix = string.sub(absoluteDirPath, -1)
-    if suffix ~= "/" then
-        filePath = absoluteDirPath .. "/" .. fileName
-    end
-
-    local file = io.open(filePath, "w")
+    local file = io.open(absoluteFilePath, "w")
     if (not file) then
         errMsg = filePath .. " open failed!"
-        print("_FILE.WriteFile(dirPath, fileName, str)", errMsg)
+        print("_FILE.WriteFile(filePath, str)", errMsg)
         return false, errMsg
     end
 

@@ -507,12 +507,12 @@ function StartGameWindow:Slot_BtnClicked(sender)
     if self.actorCreateBtn == sender then
         self:setPage(PageEnum.ActorCreate)
 
-        local userActorSimplePath = self.model:NewAUserActorSimplePath()
-        local duelistActorHeader = "duelist/"
-        local name = StringLib.Sub(userActorSimplePath, StringLib.Len(duelistActorHeader) + 1,
-            StringLib.Len(userActorSimplePath))
+        local noSuffixFileName = self.model:NewAUserActorConfigNoSuffixFileName()
+        -- local duelistActorHeader = "duelist/"
+        -- local name = StringLib.Sub(userActorSimplePath, StringLib.Len(duelistActorHeader) + 1,
+        --     StringLib.Len(userActorSimplePath))
         
-        self.nameLineEdit:SetText(name)
+        self.nameLineEdit:SetText(noSuffixFileName)
     end
 
     if self.nameConfirmBtn == sender then
