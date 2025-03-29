@@ -62,13 +62,13 @@ end
 
 ---@param e Actor.Entity
 function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
-    local inventoryItems = e.InventoryItems
+    local eInventoryItems = e.InventoryItems
     -- 更新物品项碰撞盒坐标
-    MotionSrv.AdjustCollider(e.transform, inventoryItems.Collider, 0, 0)
+    MotionSrv.AdjustCollider(e.transform, eInventoryItems.Collider, 0, 0)
 
     local playerTransformPos = Config.user.player.transform.position
     if self.hasFocusedItem
-        or false == inventoryItems.Collider:CheckPoint(playerTransformPos.x,
+        or false == eInventoryItems.Collider:CheckPoint(playerTransformPos.x,
             playerTransformPos.y, playerTransformPos.z)
     then
         if e.aspect.IsNameHightLight then
@@ -92,13 +92,13 @@ function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
     end
 
     if InputSrv.IsPressed(player.input, Common.InputKeyValueStruct.GetItem) then
-        local articleInfo = inventoryItems:GetFirstNotEmptyItem()
-        StateSrv.Play(Config.user.player.states, "sit")
-        if inventoryItems:WhetherHaveUsableIndex() then
+        StateSrv.Play(player.states, "sit")
+        if false == player.InventoryItems:WhetherHaveUsableIndex() then
             print("InventoryItemsSys:checkAndExecGetItemByPlayer(e)", "has no empty space!")
             return
         end
 
+        local articleInfo = eInventoryItems:GetFirstNotEmptyItem()
         InventoryItemsSrv.AddItemToEntity(Config.user.player,
             articleInfo.count, articleInfo.path)
 
