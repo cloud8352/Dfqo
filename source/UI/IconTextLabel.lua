@@ -20,6 +20,7 @@ function IconTextLabel:Ctor(parentWindow)
     assert(parentWindow, "must assign parent window")
     -- 父类构造函数
     self.baseWidget = Widget.New(parentWindow)
+    self.baseWidget:SetBgSpriteColor(0, 0, 0, 0)
 
     self.iconBgLabel = Label.New(parentWindow)
     self.iconBgLabel:SetIconSpriteDataPath("icon/characterProfile/profileIconBg")

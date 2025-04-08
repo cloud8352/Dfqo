@@ -10,7 +10,7 @@ fi
 pkgName=dfqo
 pkgVer=${version}
 buildDirPath=buildDir
-buildBranch=dev/0.2
+buildBranch=$(git branch --show-current)
 
 rm -rf $buildDirPath
 #mkdir $buildDirPath

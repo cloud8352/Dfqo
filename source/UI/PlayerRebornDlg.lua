@@ -34,9 +34,6 @@ function PlayerRebornDlg:Ctor(model)
     self:SetIsWindowStayOnTopHint(true)
     self:SetTitleBarVisible(false)
 
-    local contentWidget = Widget.Create(self)
-    self:SetContentWidget(contentWidget)
-
     local label = Label.Create(self)
     self.label = label
 

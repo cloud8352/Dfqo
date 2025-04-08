@@ -6,17 +6,17 @@
 ]] --
 
 local WindowManager = require("UI.WindowManager")
+local Widget = require("UI.Widget")
 
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
 local _String = require("lib.string")
-local _Rect = require("graphics.drawunit.rect")
 
 local bit = require("bit")
 
----@class Label
-local Label = require("core.class")()
+---@class Label : Widget
+local Label = require("core.class")(Widget)
 
 ---@enum Label.AlignmentFlag
 local localAlignLeft = 0x0001
@@ -63,14 +63,8 @@ end
 
 ---@param parentWindow Window
 function Label:Ctor(parentWindow)
-    if parentWindow == nil then
-        parentWindow = WindowManager.DefaultWindow
-    end
-    ---@type Window
-    self.parentWindow = parentWindow
-
-    -- 鼠标判断矩形区域
-    self.checkRect = _Rect.New()
+    Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     -- 文字显示对象
     self.sprite = _Sprite.New()
@@ -83,20 +77,9 @@ function Label:Ctor(parentWindow)
     self.lastIconSizeH = 0
     ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
     self.iconSprite = _Sprite.New()
-    self.width = 30
-    self.lastWidth = 0
-    self.height = 10
-    self.lastHeight = 0
-    self.xPos = 0
-    self.lastXPos = 0
-    self.yPos = 0
-    self.lastYPos = 0
-    self.enable = true
 
     self.text = ""
     self.lastText = ""
-
-    self.isVisible = true
 
     self.alignment = Label.AlignmentFlag.AlignCenter
     self.lastAlignment = self.alignment
@@ -112,8 +95,7 @@ function Label:Update(dt)
         return
     end
 
-    if (self.lastWidth ~= self.width
-            or self.lastHeight ~= self.height
+    if (self:IsSizeChanged()
             or self.lastText ~= self.text
             or self.lastAlignment ~= self.alignment
             or self.lastIconSpriteDataPath ~= self.iconSpriteDataPath
@@ -124,33 +106,27 @@ function Label:Update(dt)
         self:updateSprite()
     end
 
-    self.lastXPos = self.xPos
-    self.lastYPos = self.yPos
-    self.lastWidth = self.width
-    self.lastHeight = self.height
     self.lastText = self.text
     self.lastAlignment = self.alignment
     self.lastIconSpriteDataPath = self.iconSpriteDataPath
     self.lastIconSizeW = self.iconSizeW
     self.lastIconSizeH = self.iconSizeH
+
+    Widget.Update(self, dt)
 end
 
 function Label:Draw()
     if not self.isVisible then
         return
     end
+    Widget.Draw(self)
 
     self.iconSprite:Draw()
     self.sprite:Draw()
 end
 
 function Label:SetPosition(x, y)
-    self.xPos = x
-    self.yPos = y
-
-
-    -- 设置鼠标判断矩形数据
-    self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0)
+    Widget.SetPosition(self, x, y)
 
     self.sprite:SetAttri("position", self.xPos, self.yPos)
 
@@ -160,35 +136,36 @@ end
 
 ---@return int, int
 function Label:GetPosition()
-    return self.xPos, self.yPos
+    return Widget.GetPosition(self)
 end
 
 function Label:SetSize(width, height)
-    if self.width == width and self.height == height then
-        return
-    end
-
-    self.width = width
-    self.height = height
+    Widget.SetSize(self, width, height)
 end
 
 ---@return int, int
 function Label:GetSize()
-    return self.width, self.height
+    return Widget.GetSize(self)
 end
 
 function Label:SetEnable(enable)
-    self.enable = enable
+    Widget.SetEnable(self, enable)
 end
 
 ---@param isVisible boolean
 function Label:SetVisible(isVisible)
-    self.isVisible = isVisible
+    Widget.SetVisible(self, isVisible)
 end
 
 ---@return boolean isVisible
 function Label:IsVisible()
-    return self.isVisible
+    return Widget.IsVisible(self)
+end
+
+---@param x integer
+---@param y integer
+function Label:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
 end
 
 ---@param text string
@@ -241,12 +218,6 @@ function Label:SetIconSize(w, h)
     
     self.iconSizeW = w
     self.iconSizeH = h
-end
-
----@param x integer
----@param y integer
-function Label:CheckPoint(x, y)
-    return self.checkRect:CheckPoint(x, y)
 end
 
 ---@return integer w, integer h
@@ -316,9 +287,6 @@ function Label:updateSprite()
 
     -- 还原绘图数据
     _Graphics.RestoreCanvas()
-
-    -- 设置鼠标判断矩形数据
-    self.checkRect:Set(self.xPos, self.yPos, self.width, self.height, 0, 0)
 
     -- 设置文字对象数据
     self.sprite:SetImage(canvas)

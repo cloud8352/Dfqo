@@ -9,8 +9,12 @@ local Sprite = require("graphics.drawable.sprite")
 local Rect = require("graphics.drawunit.rect")
 local WindowManager = require("UI.WindowManager")
 
+local ResourceLib = require("lib.resource")
+
 ---@class Widget
 local Widget = require("core.class")()
+
+local EmptyImgPath = "ui/WidgetBg"
 
 ---@param parentWindow Window
 function Widget.Create(parentWindow)
@@ -46,6 +50,8 @@ function Widget:Ctor(parentWindow)
     self.isVisible = true
 
     self.bgSprite = Sprite.New()
+    local imgData = ResourceLib.GetSpriteData(EmptyImgPath)
+    self.bgSprite:SetData(imgData)
     self.lastBgSprite = nil
 
     self.checkRect = Rect.New()
@@ -73,6 +79,9 @@ function Widget:Update(dt)
 end
 
 function Widget:Draw()
+    if false == self.isVisible then
+        return
+    end
     self.bgSprite:Draw()
 end
 
@@ -155,6 +164,8 @@ end
 ---@param width int
 ---@param height int
 function Widget:SetSize(width, height)
+    width = math.floor(width)
+    height = math.floor(height)
     if self.width == width and self.height == height then
         return
     end
@@ -202,6 +213,14 @@ function Widget:SetBgSprite(sprite)
     self.bgSprite = sprite
 
     self.bgSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+---@param r int
+---@param g int
+---@param b int
+---@param a int
+function Widget:SetBgSpriteColor(r, g, b, a)
+    self.bgSprite:SetAttri("color", r, g, b, a)
 end
 
 function Widget:GetBgSprite()

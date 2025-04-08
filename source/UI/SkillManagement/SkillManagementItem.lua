@@ -18,7 +18,7 @@ local StandardItem = require("UI.StandardItem")
 local Label = require("UI.Label")
 local ProgressBar = require("UI.ProgressBar")
 
----@class SkillManagementItem
+---@class SkillManagementItem : StandardItem
 local SkillManagementItem = require("core.class")(StandardItem)
 
 

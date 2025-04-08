@@ -55,8 +55,8 @@ function _Matrix:MakeSprite()
     _GRAPHICS.SetCanvas(canvas)
     _GRAPHICS.SetColor(255, 0, 0, 127)
 
-    for n=0, self._bstar:GetWidth() do
-        for m=0, self._bstar:GetHeight() do
+    for n = 0, self._bstar:GetWidth() do
+        for m = 0, self._bstar:GetHeight() do
             if (self._bstar:GetNode(n, m)) then
                 _GRAPHICS.DrawRect(n * self._gridSize, m * self._gridSize, self._gridSize, self._gridSize, "fill")
             end
@@ -65,14 +65,49 @@ function _Matrix:MakeSprite()
 
     _GRAPHICS.SetColor(255, 255, 255, 255)
 
-    for n=0, self._bstar:GetWidth() do
-        for m=0, self._bstar:GetHeight() do
+    for n = 0, self._bstar:GetWidth() do
+        for m = 0, self._bstar:GetHeight() do
             _GRAPHICS.DrawRect(n * self._gridSize, m * self._gridSize, self._gridSize, self._gridSize)
         end
     end
 
     _GRAPHICS.RestoreCanvas()
     self._sprite:SetImage(canvas)
+end
+
+function _Matrix:CreatePlaneMapSprite()
+    local planeMapSprite = _Sprite.New()
+    _GRAPHICS.SaveCanvas()
+    local w = self._rect:Get("w")
+    local h = self._rect:Get("h")
+    local canvas = _GRAPHICS.NewCanvas(w, h)
+    _GRAPHICS.SetCanvas(canvas)
+
+    -- 画障碍区
+    _GRAPHICS.SetColor(253, 245, 210, 255)
+    for n = 0, self._bstar:GetWidth() do
+        for m = 0, self._bstar:GetHeight() do
+            if (self._bstar:GetNode(n, m)) then
+                _GRAPHICS.DrawRect(n * self._gridSize, m * self._gridSize, self._gridSize, self._gridSize, "fill")
+            end
+        end
+    end
+
+    -- 画非障碍区
+    _GRAPHICS.SetColor(222, 222, 222, 222)
+    for n = 0, self._bstar:GetWidth() do
+        for m = 0, self._bstar:GetHeight() do
+            if (false == self._bstar:GetNode(n, m)) then
+                _GRAPHICS.DrawRect(n * self._gridSize, m * self._gridSize, self._gridSize, self._gridSize, "fill")
+            end
+        end
+    end
+
+    _GRAPHICS.RestoreCanvas()
+    planeMapSprite:SetImage(canvas)
+    planeMapSprite:AdjustDimensions()
+
+    return planeMapSprite
 end
 
 function _Matrix:Draw()
@@ -112,8 +147,8 @@ function _Matrix:SetNodeWithRect(rect, isObs)
     local xw = self:ToNode(rect:Get("xw"), "x")
     local yh = self:ToNode(rect:Get("yh"), "y")
 
-    for n=x, xw do
-        for m=y, yh do
+    for n = x, xw do
+        for m = y, yh do
             self._bstar:SetNode(n, m, isObs)
         end
     end
@@ -173,7 +208,7 @@ function _Matrix:GetPath(x1, y1, x2, y2)
     local x, y = path[#path].x, path[#path].y
     local type
 
-    for n=#path - 1, 1, -1 do
+    for n = #path - 1, 1, -1 do
         if (type) then
             if ((type == "x" and x ~= path[n].x) or (type == "y" and y ~= path[n].y)) then
                 type = nil
@@ -191,13 +226,14 @@ function _Matrix:GetPath(x1, y1, x2, y2)
         end
     end
 
-    for n=1, #path do
+    for n = 1, #path do
         path[n].x = self:ToPosition(path[n].x, "x") + shift
         path[n].y = self:ToPosition(path[n].y, "y") + shift
     end
 
     return path
 end
+
 local Point = require("graphics.drawunit.point")
 ---@param x1 int
 ---@param y1 int
@@ -292,11 +328,11 @@ end
 
 function _Matrix:InitOpenNodes()
     self._openNodes = {}
-    
-    for n=0, self:GetHeight() do
+
+    for n = 0, self:GetHeight() do
         self._openNodes[n] = {}
 
-        for m=0, self:GetWidth() do
+        for m = 0, self:GetWidth() do
             if (not self:GetNode(m, n, true)) then
                 table.insert(self._openNodes[n], m)
             end
@@ -334,6 +370,10 @@ end
 ---@return int
 function _Matrix:GetGridSize()
     return self._gridSize
+end
+
+function _Matrix:GetRect()
+    return self._rect
 end
 
 return _Matrix

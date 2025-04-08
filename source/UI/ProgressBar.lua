@@ -29,6 +29,7 @@ end
 function ProgressBar:Ctor(parentWindow)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.lastProgress = 0.0
     --- 1.0% - 100.0%

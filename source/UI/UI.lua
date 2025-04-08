@@ -27,6 +27,7 @@ local DirPadWidget = require("UI.TouchComponents.DirPadWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 local ArticleDockFrame = require("UI.ArticleDockFrame")
 local PlayerRebornDlg = require("UI.PlayerRebornDlg")
+local MiniMapWidget = require("UI.MiniMapWidget")
 
 local Map = require("map.init")
 
@@ -75,11 +76,13 @@ function UI.Init(director)
     UI.bottomWindow = bottomWindow
     bottomWindow:SetSize(Util.GetWindowWidth(), Util.GetWindowHeight())
     UI.characterTopBtn = PushButton.New(bottomWindow)
-    UI.characterTopBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
+    local characterTopBtnW = 60 * windowSizeScale
+    local characterTopBtnH = 60 * windowSizeScale
+    UI.characterTopBtn:SetSize(characterTopBtnW, characterTopBtnH)
     local characterTopBtnContentsMargin = 3 * windowSizeScale
     UI.characterTopBtn:SetContentsMargins(characterTopBtnContentsMargin, characterTopBtnContentsMargin,
         characterTopBtnContentsMargin, characterTopBtnContentsMargin)
-    UI.characterTopBtn:SetPosition(10 * windowSizeScale, 10 * windowSizeScale)
+    UI.characterTopBtn:SetPosition(Util.GetWindowWidth() - characterTopBtnW - 10 * windowSizeScale, 10 * windowSizeScale)
     UI.characterTopBtn:SetBgSpriteDataPath("ui/WindowFrame/charactor_top_window")
     UI.characterTopBtn:SetNormalSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     UI.characterTopBtn:SetHoveringSpriteDataPath("ui/CharacterPortraits/Swordsman/Hovering")
@@ -87,6 +90,12 @@ function UI.Init(director)
     UI.characterTopBtn:SetDisabledSpriteDataPath("ui/CharacterPortraits/Swordsman/Normal")
     -- 将组件添加到窗口组件列表
     UI.appendWindowWidget(bottomWindow, UI.characterTopBtn)
+
+    --- 小地图
+    local miniMapWidget = MiniMapWidget.Create(bottomWindow, UI.model)
+    UI.miniMapWidget = miniMapWidget
+    miniMapWidget:SetPosition(0, 0)
+    UI.appendWindowWidget(bottomWindow, miniMapWidget)
 
     --- 右下角 按钮区
     local rightDownBtnAreaSpace = 5 * windowSizeScale
@@ -177,7 +186,7 @@ function UI.Init(director)
     if IsShowFps then
         -- fps Label
         UI.fpsLabel = Label.New(bottomWindow)
-        UI.fpsLabel:SetPosition(120 * windowSizeScale, 20 * windowSizeScale)
+        UI.fpsLabel:SetPosition(240 * windowSizeScale, 20 * windowSizeScale)
         UI.fpsLabel:SetSize(80 * windowSizeScale, 30 * windowSizeScale)
         -- UI.fpsLabel:SetText(_TIME.GetFPS())
         UI.appendWindowWidget(bottomWindow, UI.fpsLabel)
@@ -331,6 +340,8 @@ end
 
 function UI.Update(dt)
     UI.keyboardEvent()
+
+    UI.model:Update(dt)
 
     if IsShowFps then
         UI.fpsLabel:SetText("fps: " .. tostring(_TIME.GetFPS()))
@@ -798,7 +809,7 @@ function UI.reloadPartnerHpRectBarList()
     UI.partnerHpRectBarList = {}
     local partnerHpRectBarHeight = 15 * windowSizeScale
     local partnerHpRectBarSpace = 8 * windowSizeScale
-    local partnerHpRectBarYPos = 200 * windowSizeScale
+    local partnerHpRectBarYPos = 260 * windowSizeScale
     for i = 1, UI.model:GetPartnerCount() do
         local hpRectBar = HpRectBar.New(bottomWindow)
         hpRectBar:SetRightLabelVisible(false)

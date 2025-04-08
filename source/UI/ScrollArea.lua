@@ -17,11 +17,6 @@ local ScrollArea = require("core.class")(Widget)
 ---@param parentWindow Window
 function ScrollArea:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
-    ---@type Window
-    self.parentWindow = parentWindow
-
-    self.bgSprite = _Sprite.New()
-    self.bgSprite:SwitchRect(true) -- 使用矩形
 
     -- 背景图片数据
     self.leftTopBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/LeftTopBg")
@@ -37,6 +32,7 @@ function ScrollArea:Ctor(parentWindow)
     -- 内容控件
     ---@type Widget
     self.contentWidget = Widget.New(parentWindow)
+    self.contentWidget:SetBgSpriteColor(0, 0, 0, 0)
 
     -- 实际显示内容（超出范围的内容不显示）
     ---@type Graphics.Drawable | Graphics.Drawable.IRect | Graphics.Drawable.IPath | Graphics.Drawable.Sprite
@@ -92,8 +88,6 @@ function ScrollArea:Draw()
     end
     Widget.Draw(self)
 
-    self.bgSprite:Draw()
-
     -- content sprite
     self.contentSprite:Draw()
 
@@ -128,7 +122,6 @@ end
 function ScrollArea:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
-    self.bgSprite:SetAttri("position", x, y)
     self.contentSprite:SetAttri("position", x + self.leftMargin,
         y + self.topMargin)
     self.scrollBar:SetPosition(x + self.width - self.scrollBar:GetWidth() - self.rightMargin,
@@ -183,7 +176,7 @@ end
 ---@param y int
 ---@return boolean
 function ScrollArea:CheckPoint(x, y)
-    return self.bgSprite:CheckPoint(x, y)
+    return Widget.CheckPoint(self, x, y)
 end
 
 ---@param w Widget
@@ -251,6 +244,7 @@ function ScrollArea:updateBgSprite()
     -- 创建背景画布
     local canvas = _Graphics.NewCanvas(self.width, self.height)
     _Graphics.SetCanvas(canvas)
+    _Graphics.SetColor(255, 255, 255, 255)
 
     -- 创建临时绘图精灵
     local painterSprite = _Sprite.New()
@@ -302,8 +296,9 @@ function ScrollArea:updateBgSprite()
     painterSprite:Draw()
 
     _Graphics.RestoreCanvas()
-    self.bgSprite:SetImage(canvas)
-    self.bgSprite:AdjustDimensions()
+    local bgSprite = self:GetBgSprite()
+    bgSprite:SetImage(canvas)
+    bgSprite:AdjustDimensions()
 end
 
 function ScrollArea:updateContentSprite()

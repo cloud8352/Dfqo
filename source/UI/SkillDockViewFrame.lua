@@ -33,6 +33,7 @@ local TimeOfWaiteToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等
 ---@param model UiModel
 function SkillDockViewFrame:Ctor(parentWindow, model)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.model = model
 

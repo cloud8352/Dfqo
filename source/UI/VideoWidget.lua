@@ -112,14 +112,6 @@ function VideoWidget:GetSize()
     return Widget.GetSize(self)
 end
 
-function VideoWidget:GetWidth()
-    return self.width
-end
-
-function VideoWidget:GetHeight()
-    return self.height
-end
-
 function VideoWidget:SetSize(width, height)
     Widget.SetSize(self, width, height)
 end

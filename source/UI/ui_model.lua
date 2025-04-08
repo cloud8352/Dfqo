@@ -82,6 +82,8 @@ function UiModel:Ctor(director)
     self.hitEnemyOfPlayer = nil
 
     self.isInRougelikeMode = false
+    self.mapLoadProcess = _MAP.GetLoadProcess()
+    self.lastMapLoadProcess = self.mapLoadProcess
 
     -- connect signals
     _CONFIG.user.setPlayerCaller:AddListener(self, function(sender, lastPlayer, player) 
@@ -133,6 +135,18 @@ function UiModel:Ctor(director)
 end
 
 --- public function
+
+---@param dt number
+function UiModel:Update(dt)
+    self.mapLoadProcess = _MAP.GetLoadProcess()
+    if self.mapLoadProcess == 0 and self.lastMapLoadProcess ~= 0 then
+        local rect = _MAP.GetMatrix("normal"):GetRect()
+        rect = Table.DeepClone(rect)
+        self:Signal_MapLoaded(rect)
+    end
+
+    self.lastMapLoadProcess = self.mapLoadProcess
+end
 
 --- 连接信号
 ---@param signal function
@@ -872,6 +886,15 @@ function UiModel:IsInRougelikeMode()
     return self.isInRougelikeMode
 end
 
+function UiModel:CreatePlaneMapSprite()
+    local m = _MAP.GetMatrix("normal")
+    local s = m:CreatePlaneMapSprite()
+    return s
+end
+
+function UiModel:GetMapInfo()
+    return _MAP.info
+end
 
 --- signals
 
@@ -1316,6 +1339,26 @@ function UiModel:Signal_RequestSetUiGameState(state)
         end
 
         func(receiver, self, state)
+
+        ::continue::
+    end
+end
+
+---@param scopeRect Graphics.Drawunit.Rect
+function UiModel:Signal_MapLoaded(scopeRect)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_MapLoaded]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_MapLoaded
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, scopeRect)
 
         ::continue::
     end

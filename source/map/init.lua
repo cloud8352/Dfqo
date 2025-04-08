@@ -122,6 +122,34 @@ local DirectionStruct = {
 }
 _MAP.DirectionStruct = DirectionStruct
 
+---@class MapDataInfo
+---@field name string
+---@field theme string
+---@field isTown boolean
+---@field width int
+---@field height int
+---@field horizon int
+---@field bgm string
+---@field bgs string
+---@field NearBgTranslateRate number
+local MapDataInfo = {
+    name = "",
+    theme = "",
+    isTown = true,
+    width = 1000,
+    height = 1000,
+    horizon = 255,
+    bgm = "",
+    bgs = "",
+    NearBgTranslateRate = 0.0,
+}
+
+---@class MapData
+---@field info MapDataInfo
+local MapData = {
+    info = {}
+}
+
 -- 到达领主房间需要经过的房间数
 local roomCountNeedToPassToGetToBossRoom = 1
 --- 到达领主房间需要经过的房间数范围
@@ -202,6 +230,7 @@ end
 
 ---@param path string | table
 local function _Load(path)
+    ---@type MapData
     local data = _RESOURCE.ReadConfig(path, "config/map/instance/%s.cfg")
 
     if _load.playerInitPos.X or _load.playerInitPos.Y then

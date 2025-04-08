@@ -22,6 +22,7 @@ local PressingImgPath = "ui/PushButton/Rectangle/Pressing"
 ---@param parentWindow Window
 function DirPadItemWidget:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.isTransparent = false
 

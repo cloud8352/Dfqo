@@ -8,7 +8,7 @@ local Sprite = require("graphics.drawable.sprite")
 
 local Widget = require("UI.Widget")
 
----@class StandardItem
+---@class StandardItem : Widget
 local StandardItem = require("core.class")(Widget)
 
 ---@enum StandardItem.DisplayState

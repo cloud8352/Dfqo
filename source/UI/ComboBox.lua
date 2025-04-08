@@ -42,6 +42,7 @@ end
 ---@param parentWindow Window
 function ComboBox:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     -- clicked sound
     self.clickedSoundSource = _RESOURCE.NewSource("asset/sound/ui/btn_clicked.wav")

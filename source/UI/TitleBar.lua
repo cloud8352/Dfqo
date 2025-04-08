@@ -17,7 +17,7 @@ local WindowManager = require("UI.WindowManager")
 local PushButton = require("UI.PushButton")
 local Widget = require("UI.Widget")
 
----@class TitleBar
+---@class TitleBar : Widget
 local TitleBar = require("core.class")(Widget)
 
 local CloseBtnWidth = 15
@@ -25,6 +25,8 @@ local CloseBtnWidth = 15
 ---@param parentWindow Window
 function TitleBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
+    
     local windowSizeScale = Util.GetWindowSizeScale()
 
     self.closeBtnWidth = CloseBtnWidth * windowSizeScale

@@ -36,6 +36,7 @@ end
 ---@param parentWindow Window
 function PushButton:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.normalSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/normal")
     self.hoveringSpriteData = _RESOURCE.GetSpriteData("ui/PushButton/hovering")

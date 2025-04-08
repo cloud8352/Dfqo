@@ -27,6 +27,7 @@ local TitleBarHeight = 20
 
 function Window:Ctor()
     Widget.Ctor(self, self)
+
     MarginSpace = math.floor(5 * _Util.GetWindowSizeScale())
     TitleBarHeight = math.floor(40 * _Util.GetWindowSizeScale())
 
@@ -50,6 +51,7 @@ function Window:Ctor()
     self.rightBottomBgImgDate = _RESOURCE.GetSpriteData("ui/WindowFrame/RightBottomBg")
 
     self.contentWidget = Widget.New(self)
+    self.contentWidget:SetBgSpriteColor(0, 0, 0, 0)
 
     -- title bar
     self.titleBar = TitleBar.New(self)

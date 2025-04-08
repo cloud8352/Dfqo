@@ -34,6 +34,7 @@ local RoleInfoWidget = require("core.class")(Widget)
 function RoleInfoWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     LeftPartWidth = _MATH.Round(570 * Util.GetWindowSizeScale())
     EachPartSpace = _MATH.Round(30 * Util.GetWindowSizeScale())

@@ -28,6 +28,7 @@ local SkillMountContentWidget = require("core.class")(Widget)
 function SkillMountContentWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.model = model
     self.needMountingSkillInfo = Common.NewSkillInfo()

@@ -11,7 +11,7 @@ local _Graphics = require("lib.graphics")
 local Widget = require("UI.Widget")
 local Label = require("UI.Label")
 
----@class ArticleViewItem
+---@class ArticleViewItem : Widget
 local ArticleViewItem = require("core.class")(Widget)
 
 ---@param parentWindow Window
@@ -19,6 +19,7 @@ function ArticleViewItem:Ctor(parentWindow)
     assert(parentWindow, "must assign parent window")
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.iconLabel = Label.New(parentWindow)
     self.coolDownShadowSprite = _Sprite.New()

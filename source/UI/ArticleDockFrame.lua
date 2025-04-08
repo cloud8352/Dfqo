@@ -30,13 +30,14 @@ local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等�
 
 local ColCount = Common.ArticleDockColCount
 
----@class ArticleDockFrame
+---@class ArticleDockFrame : Widget
 local ArticleDockFrame = require("core.class")(Widget)
 
 ---@param parentWindow Window
 ---@param model UiModel
 function ArticleDockFrame:Ctor(parentWindow, model)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
     ItemWidth = math.floor(ItemWidth)

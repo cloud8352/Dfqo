@@ -40,6 +40,8 @@ local RowCount = Common.EquTableRowCount
 function RoleEquTableWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
+    
     ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
     ItemWidth = math.floor(ItemWidth)
 

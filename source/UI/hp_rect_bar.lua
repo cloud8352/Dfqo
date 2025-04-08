@@ -14,7 +14,7 @@ local Label = require("UI.Label")
 
 local RightLabelWidth = 100
 
----@class HpRectBar
+---@class HpRectBar : Widget
 local HpRectBar = require("core.class")(Widget)
 
 ---@param parentWindow Window
@@ -23,10 +23,7 @@ function HpRectBar:Ctor(parentWindow)
     RightLabelWidth = 100 * Util.GetWindowSizeScale()
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
-    self.baseWidget = Widget.New(parentWindow)
-
-    self.baseWidget.width = 100
-    self.baseWidget.height = 20
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.lastHp = 0
     self.currentHp = 0
@@ -34,7 +31,6 @@ function HpRectBar:Ctor(parentWindow)
     self.maxHp = 0
     self.rectSprite = _Sprite.New()
     self.textLabel = Label.New(parentWindow)
-    self.textLabel:SetSize(self.baseWidget.width, self.baseWidget.height)
 
     self.rightLabel = Label.New(parentWindow)
     self.rightLabel:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignVCenter })
@@ -42,64 +38,64 @@ function HpRectBar:Ctor(parentWindow)
 end
 
 function HpRectBar:Update(dt)
-    if (not self.baseWidget:IsVisible()) then
+    if (not self:IsVisible()) then
         return
     end
 
-    if (self.baseWidget:IsSizeChanged()
+    if (self:IsSizeChanged()
             or self.lastHp ~= self.currentHp
             or self.lastMaxHp ~= self.maxHp
         )
     then
         self:updateSprite()
 
-        self.textLabel:SetSize(self.baseWidget.width, self.baseWidget.height)
+        self.textLabel:SetSize(self.width, self.height)
 
-        self.rightLabel:SetSize(RightLabelWidth, self.baseWidget.height)
-        self.rightLabel:SetIconSize(RightLabelWidth, self.baseWidget.height)
+        self.rightLabel:SetSize(RightLabelWidth, self.height)
+        self.rightLabel:SetIconSize(RightLabelWidth, self.height)
     end
 
     self.textLabel:Update(dt)
     self.rightLabel:Update(dt)
 
-    self.baseWidget:Update(dt)
     self.lastHp = self.currentHp
     self.lastMaxHp = self.maxHp
+    Widget.Update(self, dt)
 end
 
 function HpRectBar:Draw()
-    if (not self.baseWidget:IsVisible()) then
+    if (not self:IsVisible()) then
         return
     end
+    Widget.Draw(self)
 
-    self.baseWidget:Draw()
     self.rectSprite:Draw()
     self.textLabel:Draw()
     self.rightLabel:Draw()
 end
 
 function HpRectBar:SetPosition(x, y)
-    self.baseWidget:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
     self.textLabel:SetPosition(x, y)
-    self.rightLabel:SetPosition(self.baseWidget.xPos + self.baseWidget.width - RightLabelWidth,
-        self.baseWidget.yPos)
+    self.rightLabel:SetPosition(self.xPos + self.width - RightLabelWidth,
+        self.yPos)
 end
 
 function HpRectBar:SetSize(width, height)
-    self.baseWidget:SetSize(width, height)
+    Widget.SetSize(self, width, height)
     self.textLabel:SetSize(width - RightLabelWidth, height)
     self.rightLabel:SetSize(RightLabelWidth, height)
 end
 
 function HpRectBar:SetEnable(enable)
-    self.baseWidget:SetEnable(enable)
+    Widget.SetEnable(self, enable)
     self.textLabel:SetEnable(enable)
     self.rightLabel:SetEnable(enable)
 end
 
 ---@param isVisible boolean
 function HpRectBar:SetVisible(isVisible)
-    self.baseWidget:SetVisible(isVisible)
+    Widget.SetVisible(self, isVisible)
     self.textLabel:SetVisible(isVisible)
     self.rightLabel:SetVisible(self.rightLabelVisible)
 end
@@ -138,27 +134,27 @@ function HpRectBar:updateSprite()
         local tmpH
         rightLabelWidth, tmpH = self.rightLabel:GetSize()
     end
-    local canvas = _Graphics.NewCanvas(self.baseWidget.width - rightLabelWidth, self.baseWidget.height)
+    local canvas = _Graphics.NewCanvas(self.width - rightLabelWidth, self.height)
     _Graphics.SetCanvas(canvas)
 
     -- 先画血槽背景
     _Graphics.SetColor(10, 10, 10, 150)
-    _Graphics.DrawRect(0, 0, self.baseWidget.width - rightLabelWidth, self.baseWidget.height, "fill")
+    _Graphics.DrawRect(0, 0, self.width - rightLabelWidth, self.height, "fill")
 
     -- 再画血条
     _Graphics.SetColor(255, 0, 0, 200)
     local hpRectWidth = 0
     if self.maxHp ~= 0 then
-        hpRectWidth = (self.baseWidget.width - rightLabelWidth) * (self.currentHp / self.maxHp)
+        hpRectWidth = (self.width - rightLabelWidth) * (self.currentHp / self.maxHp)
     end
-    _Graphics.DrawRect(0, 0, hpRectWidth, self.baseWidget.height, "fill")
+    _Graphics.DrawRect(0, 0, hpRectWidth, self.height, "fill")
 
     -- 还原绘图数据
     _Graphics.RestoreCanvas()
 
     self.rectSprite:SetImage(canvas)
     self.rectSprite:AdjustDimensions()
-    self.rectSprite:SetAttri("position", self.baseWidget.xPos, self.baseWidget.yPos)
+    self.rectSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 return HpRectBar

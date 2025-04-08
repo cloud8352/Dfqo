@@ -32,8 +32,6 @@ end
 ---@param parentWindow Window
 function ListView:Ctor(parentWindow)
     ScrollArea.Ctor(self, parentWindow)
-    ---@type Window
-    self.parentWindow = parentWindow
 
     -- 列表项内容控件（相当于全图，但滑动区域只显示列表项内容控件的部分区域）
     self.itemListContentWidget = Widget.New(parentWindow)
@@ -79,10 +77,10 @@ function ListView:Update(dt)
 end
 
 function ListView:Draw()
-    ScrollArea.Draw(self)
     if false == self.isVisible then
         return
     end
+    ScrollArea.Draw(self)
 end
 
 function ListView:MouseEvent()

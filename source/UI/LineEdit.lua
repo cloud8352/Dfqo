@@ -30,6 +30,7 @@ end
 ---@param parentWindow Window
 function LineEdit:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.label = Label.Create(parentWindow)
     self.label:SetIconSpriteDataPath(NormalImgPath)

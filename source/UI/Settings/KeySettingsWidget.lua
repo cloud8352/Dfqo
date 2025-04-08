@@ -88,7 +88,8 @@ end
 function KeySettingsWidget:Ctor(parentWindow, model)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
-    
+    self:SetBgSpriteColor(0, 0, 0, 0)
+
     self.model = model
 
     self.bottomMargin = 8 * Util.GetWindowSizeScale()

@@ -19,6 +19,7 @@ local ScrollBar = require("core.class")(Widget)
 ---@param parentWindow Window
 function ScrollBar:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
     
     self.isMovingSlider = false -- 是否请求移动滑动条
     self.lastMouseYPos = 0

@@ -16,6 +16,7 @@ local HoveringSkillItemTipWidget = require("core.class")(Widget)
 function HoveringSkillItemTipWidget:Ctor(parentWindow)
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.isSillInfoChanged = false
 

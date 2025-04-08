@@ -30,6 +30,7 @@ local MainKeyBtnHeight = 80
 ---@param model UiModel
 function DirPadWidget:Ctor(parentWindow, model)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     MainKeyBtnWidth = _MATH.Round(90 * Util.GetWindowSizeScale())
     MainKeyBtnHeight = _MATH.Round(110 * Util.GetWindowSizeScale())
