@@ -1503,6 +1503,13 @@ function UiModel:mountEquipment(articleTableIndex, itemInfo)
             "equ is not fit for gender:", gender)
         return
     end
+    local stateName = self.player.states.current:GetName()
+    if stateName ~= "stay" then
+        SoundLib.Play(NotFitAlertSoundData)
+        print("UiModel:mountEquipment(index, itemInfo)",
+            "can not mount equ, until player is in stay state:", stateName)
+        return
+    end
 
     local lastEquItemInfo = self.mountedEquInfoList[itemInfo.equInfo.type]
     -- 在ui上卸载原有装备到物品栏
