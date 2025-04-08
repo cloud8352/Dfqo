@@ -79,11 +79,13 @@ function LineEdit:Draw()
     Widget.Draw(self)
 
     -- 绘制背景
-    GraphicsLib.SetColor(self.backgroundColor)
+    GraphicsLib.SetColor(self.backgroundColor[1], self.backgroundColor[2], self.backgroundColor[3],
+        self.backgroundColor[4])
     GraphicsLib.DrawRect(self.xPos, self.yPos, self.width, self.height, "fill")
     
     -- 绘制边框
-    GraphicsLib.SetColor(self.borderColor)
+    GraphicsLib.SetColor(self.borderColor[1], self.borderColor[2], self.borderColor[3],
+        self.borderColor[4])
     GraphicsLib.DrawRect(self.xPos, self.yPos, self.width, self.height, "line")
     
     -- 绘制文本
@@ -94,7 +96,8 @@ function LineEdit:Draw()
     
     -- 绘制光标（当获得焦点时）
     if self.focused and self.cursorBlinkTimeMs < self.cursorBlinkIntervalMs then
-        GraphicsLib.SetColor(self.cursorColor)
+        GraphicsLib.SetColor(self.cursorColor[1], self.cursorColor[2], self.cursorColor[3],
+            self.cursorColor[4])
         GraphicsLib.DrawLine(self.cursorX, self.yPos + 5, self.cursorX, self.yPos + self.height - 5)
     end
 end
@@ -311,7 +314,8 @@ function LineEdit:updateTextCanvas()
     GraphicsLib.SetCanvas(canvas)
     
     -- 绘制文本
-    GraphicsLib.SetColor(self.textColor)
+    GraphicsLib.SetColor(self.textColor[1], self.textColor[2], self.textColor[3],
+        self.textColor[4])
     GraphicsLib.Print(self.text, -self.xOffset, (height - GraphicsLib.GetFontHeight()) / 2, 
         0, 1, 1, 0, 0)
 

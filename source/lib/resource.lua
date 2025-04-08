@@ -141,7 +141,7 @@ function _RESOURCE.NewSource(path)
 
     local fileData = _FILE.NewFileData(path)
 
-    return love.audio.newSource(fileData)
+    return love.audio.newSource(fileData, "stream")
 end
 
 ---@param path string

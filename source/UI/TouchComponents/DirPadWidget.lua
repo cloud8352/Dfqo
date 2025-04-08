@@ -32,8 +32,8 @@ function DirPadWidget:Ctor(parentWindow, model)
     Widget.Ctor(self, parentWindow)
     self:SetBgSpriteColor(0, 0, 0, 0)
 
-    MainKeyBtnWidth = _MATH.Round(90 * Util.GetWindowSizeScale())
-    MainKeyBtnHeight = _MATH.Round(110 * Util.GetWindowSizeScale())
+    MainKeyBtnWidth = _MATH.Round(110 * Util.GetWindowSizeScale())
+    MainKeyBtnHeight = _MATH.Round(130 * Util.GetWindowSizeScale())
 
     self.model = model
 

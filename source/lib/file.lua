@@ -15,7 +15,8 @@ end
 ---@param path string
 ---@return bool
 function _FILE.Exists(path)
-    return love.filesystem.exists(path)
+    local info = love.filesystem.getInfo(path)
+    return info ~= nil
 end
 
 ---@param path string

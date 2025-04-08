@@ -4,7 +4,7 @@ function love.conf(t)
     -- t.console = true -- Attach a console (boolean, Windows only)
 
     t.identity = "com.ccc.dfqo"
-    t.version = "0.10.2" -- The LÖVE version this game was made for (string)
+    t.version = "11.5" -- The LÖVE version this game was made for (string)
     t.externalstorage = true
 
     t.window.title = "Dungeon Fighter Quest Original"
@@ -24,8 +24,8 @@ function love.conf(t)
     t.window.depth = 0 -- The number of bits per sample in the depth buffer
     t.window.stencil = 0 -- The number of bits per sample in the stencil buffer
     t.window.display = 1 -- 显示器的指示显示窗口 (number)
-    t.window.highdpi = true -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
-    t.window.usedpiscale = true -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
+    t.window.highdpi = false -- 允许在视网膜显示器(Retina)下使用高DPI模式 (boolean)
+    t.window.usedpiscale = false -- Enable automatic DPI scaling when highdpi is set to true as well (boolean)
     t.window.srgb = false -- 在屏幕上显示时允许使用sRGB伽马校正 (boolean)
 
     t.modules.audio = true -- 加载 audio        模块 (boolean)

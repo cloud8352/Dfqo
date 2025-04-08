@@ -42,7 +42,10 @@ local WindowsOsDpi = 1.0
 local _SYSTEM = {} ---@class Lib.SYSTEM
 
 function _SYSTEM.Init()
-    -- _SYSTEM.initWindowOsDpi()
+    if _SYSTEM.IsMobile() then
+        love.window.setFullscreen(true)
+    end
+    
     _SYSTEM.initWindowSize()
 
     -- 把窗口移到屏幕中央
@@ -94,8 +97,15 @@ end
 function _SYSTEM.OnResize(w, h)
     _width = w
     _height = h
-    _sx = _width / _stdWidth
-    _sy = _height / _stdHeight
+    local xScaleTmp = _width / _stdWidth
+    local yScaleTmp = _height / _stdHeight
+    if xScaleTmp < yScaleTmp then
+        _sx = xScaleTmp
+        _sy = xScaleTmp
+    else
+        _sx = yScaleTmp
+        _sy = yScaleTmp
+    end
 
     -- 设置字体
     --字体文件,支持中文 SourceHanSerifSC-Medium.otf yan_zhen_qing_kai_shu_font.TTF
@@ -104,19 +114,21 @@ function _SYSTEM.OnResize(w, h)
 end
 
 function _SYSTEM.initWindowSize()
-    local windowWidth, windowHeight = love.graphics.getDimensions()
+    local _, _, windowFlags = love.window.getMode()
+    local screenW, screenH = love.window.getDesktopDimensions(windowFlags.display)
+    local windowWidth = screenW
+    local windowHeight = screenH
     local whetherWindowIsFullScreen = love.window.getFullscreen()
+
     if (WhetherSetWindowToDefaultSize and
             not whetherWindowIsFullScreen and
             not _SYSTEM.IsMobile()
         ) then
-        local _, _, flags = love.window.getMode()
-        local screenW, screenH = love.window.getDesktopDimensions(flags.display)
         local percentage = _CONFIG.setting.WindowSizePercentage
 
         windowWidth = screenW * percentage
         windowHeight = screenW * percentage * 9 / 16
-        love.window.setMode(windowWidth, windowHeight, flags)
+        love.window.setMode(windowWidth, windowHeight, windowFlags)
     end
 
     _SYSTEM.OnResize(windowWidth, windowHeight)

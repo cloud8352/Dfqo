@@ -9,7 +9,7 @@
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "command": "${workspaceFolder}/debug.sh"
+                "command": "${workspaceFolder}/Debug.sh"
             },
             "args": [
                 "${workspaceFolder}"
@@ -20,7 +20,7 @@
             "type": "lua-local",
             "request": "launch",
             "program": {
-                "command": "${workspaceFolder}/debug.bat"
+                "command": "${workspaceFolder}/Debug.bat"
             },
             "args": [
             ]

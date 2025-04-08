@@ -46,9 +46,9 @@ end
 function ItemKeyGroup:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
 
-    SmallBtnWidth = 40 * Util.GetWindowSizeScale()
-    NormalBtnWidth = 90 * Util.GetWindowSizeScale()
-    LargeBtnWidth = 180 * Util.GetWindowSizeScale()
+    SmallBtnWidth = 50 * Util.GetWindowSizeScale()
+    NormalBtnWidth = 100 * Util.GetWindowSizeScale()
+    LargeBtnWidth = 200 * Util.GetWindowSizeScale()
 
     self.isVisible = true
 

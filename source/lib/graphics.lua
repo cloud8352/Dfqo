@@ -113,7 +113,7 @@ end
 ---@param alpha integer
 function _GRAPHICS.SetColor(red, green, blue, alpha)
     if (_nowColor[1] ~= red or _nowColor[2] ~= green or _nowColor[3] ~= blue or _nowColor[4] ~= alpha) then
-        love.graphics.setColor(red, green, blue, alpha)
+        love.graphics.setColor(red / 255, green / 255, blue / 255, alpha / 255)
 
         _TABLE.Paste(_nowColor, _lateColor)
 
