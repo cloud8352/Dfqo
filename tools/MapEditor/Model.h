@@ -16,6 +16,15 @@ enum FileDialogType {
     Save, Open
 };
 
+struct ImgInfoStruct {
+    QString ImgPath;
+    QString ImgSetPath;
+    int Qx = 0;
+    int Qy = 0;
+    int Qw = 0;
+    int Qh = 0;
+};
+
 struct ColorInfoStruct {
     uchar R = 255;
     uchar G = 255;
@@ -44,7 +53,8 @@ struct SpriteInfoStruct
 {
     QString Tag;
     QString LinkTag; // 链接的标签
-    QString ImgPath;
+    QString ImgTag;
+    ImgInfoStruct ImgInfo;
     int OX = 0;
     int OY = 0;
     ColorInfoStruct ColorInfo;
@@ -325,6 +335,8 @@ Q_SIGNALS:
 private:
     void loadAppSettings();
     void saveAppSettings();
+    void loadImgInfosFromImgDir(const QString &imgDirRelativePath);
+    void loadImgInfosFromCfgDir(const QString &imgCfgDirRelativePath);
     void loadSpriteInfosFromImgDir(const QString &imgDirRelativePath);
     void loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath);
     void loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelativePath);
@@ -337,6 +349,7 @@ private:
 private:
     QString m_gameRootPath;
     QString m_mapFilePath;
+    QMap<QString, ImgInfoStruct> m_mapOfTagToImgInfo;
     QMap<QString, SpriteInfoStruct> m_mapOfTagToSpriteInfo;
     QMap<QString, FrameAniInfoList> m_mapOfTagToFrameAniInfoList;
     QMap<QString, EquInfoStruct> m_mapOfTagToEquInfo;

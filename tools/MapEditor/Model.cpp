@@ -33,6 +33,39 @@ QFileInfoList listDirFilePath(const QString &path)
     return retList;
 }
 
+
+ImgInfoStruct getImgInfoFromFile(const QString &tag, const QString &path)
+{
+    ImgInfoStruct retInfo;
+
+    QFile f(path);
+    if (!f.open(QIODevice::OpenModeFlag::ReadOnly)) {
+        qCritical() << Q_FUNC_INFO << path << "open failed!";
+        return retInfo;
+    }
+
+    QString contentStr = f.readAll().trimmed();
+    f.close();
+
+    QStringList tagPathList = tag.split("/");
+    tagPathList.pop_back();
+    const QString tagParentPath = tagPathList.join("/");
+
+    // to json obj
+    const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
+    // 装载数值
+    retInfo.ImgSetPath = jsonObj.value("image").toString();
+    retInfo.ImgSetPath = retInfo.ImgSetPath.replace("$0", tagParentPath);
+    retInfo.ImgSetPath = retInfo.ImgSetPath.replace("$A", tag);
+
+    retInfo.Qx = jsonObj.value("qx").toInt();
+    retInfo.Qy = jsonObj.value("qy").toInt();
+    retInfo.Qw = jsonObj.value("qw").toInt();
+    retInfo.Qh = jsonObj.value("qh").toInt();
+
+    return retInfo;
+}
+
 SpriteInfoStruct getSpriteInfoFromFile(const QString &tag, const QString &path)
 {
     SpriteInfoStruct retInfo;
@@ -65,9 +98,9 @@ SpriteInfoStruct getSpriteInfoFromFile(const QString &tag, const QString &path)
     // to json obj
     const QJsonObject &jsonObj = Lua::LuaStrToJsonObj(contentStr);
     // 装载数值
-    retInfo.ImgPath = jsonObj.value("image").toString();
-    retInfo.ImgPath = retInfo.ImgPath.replace("$0", tagParentPath);
-    retInfo.ImgPath = retInfo.ImgPath.replace("$A", tag);
+    retInfo.ImgTag = jsonObj.value("image").toString();
+    retInfo.ImgTag = retInfo.ImgTag.replace("$0", tagParentPath);
+    retInfo.ImgTag = retInfo.ImgTag.replace("$A", tag);
 
     retInfo.OX = jsonObj.value("ox").toInt();
     retInfo.OY = jsonObj.value("oy").toInt();
@@ -280,6 +313,9 @@ InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &pa
     aspectInfo.Path = aspectJsonObj.value("path").toString();
     aspectInfo.Path = aspectInfo.Path.replace("$0", tagParentPath);
     aspectInfo.Path = aspectInfo.Path.replace("$A", tag);
+    if (aspectInfo.Path.isEmpty()) {
+        aspectInfo.Path = tag;
+    }
     aspectInfo.Order = aspectJsonObj.value("order").toInt();
     aspectInfo.HasShadow = aspectJsonObj.value("hasShadow").toBool();
 
@@ -384,6 +420,55 @@ void Model::SetGameRootPath(const QString &path)
 }
 
 
+void Model::loadImgInfosFromImgDir(const QString &imgDirRelativePath)
+{
+    const QString &imgRootDirPath = QString("%1/%2").arg(m_gameRootPath).arg("asset/image");
+    const QString &imgRootDirAbsPath = QFileInfo(imgRootDirPath).absoluteFilePath();
+    const int imgRootDirAbsPathStrLength = imgRootDirAbsPath.length();
+    const QString &imgDirAbsPath = QString("%1/%2").arg(imgRootDirAbsPath).arg(imgDirRelativePath);
+
+    const QString &ImgFileSuffixStr = ".png";
+    const int ImgFileSuffixStrLength = ImgFileSuffixStr.length();
+
+    const QFileInfoList &imgFileInfoList = listDirFilePath(imgDirAbsPath);
+    for (const QFileInfo &info : imgFileInfoList) {
+        // 提取出 tag
+        QString tag = info.absoluteFilePath();
+        tag = tag.mid(imgRootDirAbsPathStrLength + 1,
+                      tag.length() - imgRootDirAbsPathStrLength - ImgFileSuffixStrLength - 1);
+
+        ImgInfoStruct imgInfo;
+        imgInfo.ImgPath = info.absoluteFilePath();
+
+        m_mapOfTagToImgInfo.insert(tag, imgInfo);
+    }
+}
+
+void Model::loadImgInfosFromCfgDir(const QString &imgCfgDirRelativePath)
+{
+    const QString &GameRootDirAbsPath = QFileInfo(m_gameRootPath).absoluteFilePath();
+    const QString &imgCfgRootDirAbsPath = QString("%1/%2").arg(GameRootDirAbsPath).arg("config/asset/image");
+    const int imgCfgRootDirAbsPathStrLength = imgCfgRootDirAbsPath.length();
+    const QString &imgCfgDirAbsPath = QString("%1/%2").arg(imgCfgRootDirAbsPath).arg(imgCfgDirRelativePath);
+
+    const QString &imgCfgFileSuffixStr = ".cfg";
+    const int imgCfgFileSuffixStrLength = imgCfgFileSuffixStr.length();
+
+    const QFileInfoList &imgCfgFileInfoList = listDirFilePath(imgCfgDirAbsPath);
+    for (const QFileInfo &info : imgCfgFileInfoList) {
+        // 提取出 tag
+        QString tag = info.absoluteFilePath();
+        tag = tag.mid(imgCfgRootDirAbsPathStrLength + 1,
+                      tag.length() - imgCfgRootDirAbsPathStrLength - imgCfgFileSuffixStrLength - 1);
+
+        ImgInfoStruct imgInfo = getImgInfoFromFile(tag, info.absoluteFilePath());
+        imgInfo.ImgSetPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
+                                .arg("asset/image").arg(imgInfo.ImgSetPath);
+
+        m_mapOfTagToImgInfo.insert(tag, imgInfo);
+    }
+}
+
 void Model::loadSpriteInfosFromImgDir(const QString &imgDirRelativePath)
 {
     const QString &imgRootDirPath = QString("%1/%2").arg(m_gameRootPath).arg("asset/image");
@@ -403,7 +488,8 @@ void Model::loadSpriteInfosFromImgDir(const QString &imgDirRelativePath)
 
         SpriteInfoStruct spriteInfo;
         spriteInfo.Tag = tag;
-        spriteInfo.ImgPath = info.absoluteFilePath();
+        spriteInfo.ImgTag = tag;
+        spriteInfo.ImgInfo = m_mapOfTagToImgInfo.value(tag);
 
         m_mapOfTagToSpriteInfo.insert(tag, spriteInfo);
     }
@@ -433,19 +519,18 @@ void Model::loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath
     QMap<QString, QString>::const_iterator cIt = mapOfTagToSpriteCfgFilePath.constBegin();
     for (; cIt != mapOfTagToSpriteCfgFilePath.constEnd(); cIt++) {
         SpriteInfoStruct spriteInfo = getSpriteInfoFromFile(cIt.key(), cIt.value());
-        if (spriteInfo.ImgPath.isEmpty()) {
-            spriteInfo.ImgPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
-                                .arg("asset/image").arg(cIt.key());
+        if (spriteInfo.ImgTag.isEmpty()) {
+            // spriteInfo.ImgTag = QString("%1/%2")
+            //                     .arg("asset/image").arg(cIt.key());
+            spriteInfo.ImgTag = cIt.key();
+            spriteInfo.ImgInfo = m_mapOfTagToImgInfo.value(spriteInfo.ImgTag);
         } else {
-            spriteInfo.ImgPath = QString("%1/%2/%3.png").arg(GameRootDirAbsPath)
-                                .arg("asset/image").arg(spriteInfo.ImgPath);
+            // spriteInfo.ImgTag = QString("%1/%2")
+            // .arg("asset/image").arg(spriteInfo.ImgTag);
+            spriteInfo.ImgInfo = m_mapOfTagToImgInfo.value(spriteInfo.ImgTag);
         }
-        QFileInfo fInfo(spriteInfo.ImgPath);
-        // if(!fInfo.exists()) {
-        //     continue;
-        // }
 
-       m_mapOfTagToSpriteInfo.insert(cIt.key(), spriteInfo);
+        m_mapOfTagToSpriteInfo.insert(cIt.key(), spriteInfo);
     }
 
     // load link sprite info
@@ -463,7 +548,6 @@ void Model::loadSpriteInfosFromCfgDir(const QString &spriteConfigDirRelativePath
             }
         }
     }
-
 }
 
 void Model::loadFrameAniInfosFromCfgDir(const QString &frameAniConfigDirRelativePath)
@@ -738,6 +822,11 @@ void Model::setMapFilePath(const QString &filePath)
 
 void Model::LoadItems()
 {
+    // 0.1 读取图片信息 config/asset/image 或 asset/image
+    m_mapOfTagToImgInfo.clear();
+    loadImgInfosFromImgDir("./");
+    loadImgInfosFromCfgDir("./");
+
     // 1. 静态图片 config\asset\sprite 或 asset\image\map
     m_mapOfTagToSpriteInfo.clear();
     loadSpriteInfosFromImgDir("./");
