@@ -335,7 +335,7 @@ void MainWindow::loadTreeItems()
         item->setCheckable(false);
         // item->setData("")
         item->setSizeHint(QSize(30, 50));
-        item->setIcon(QIcon(cIt.value().ImgPath));
+        item->setIcon(QIcon(cIt.value().ImgInfo.ImgPath));
 
         m_spriteTreeItem->appendRow(item);
     }

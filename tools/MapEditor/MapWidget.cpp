@@ -4,7 +4,33 @@
 #include <QDebug>
 
 // 精灵图片指针 资源池
-static QMap<QString, QImage*> SpriteImgPtrPool;
+static QMap<QString, QImage*> ImgSetPtrPool; // path -> img ptr
+static QMap<QString, QImage*> SpriteImgPtrPool; // tag -> img ptr
+
+QImage getImgFromImgInfo(const ImgInfoStruct &info) {
+    if (false == info.ImgSetPath.isEmpty()) {
+        QImage *img = nullptr;
+        if (ImgSetPtrPool.contains(info.ImgSetPath)) {
+            img = ImgSetPtrPool[info.ImgSetPath];
+        } else {
+            const QImage &imgTmp1 = QImage(info.ImgSetPath);
+            const QImage &imgTmp2 = imgTmp1.convertToFormat(QImage::Format::Format_ARGB32);
+            img = new QImage(imgTmp2);
+            ImgSetPtrPool.insert(info.ImgSetPath, img);
+        }
+        QRect rect(info.Qx, info.Qy, info.Qw, info.Qh);
+        const QImage &retImg = img->copy(rect);
+        return retImg;
+    }
+
+    if (false == info.ImgPath.isEmpty()) {
+        const QImage &img = QImage(info.ImgPath);
+        const QImage &retImg = img.convertToFormat(QImage::Format::Format_ARGB32);
+        return retImg;
+    }
+
+    return QImage();
+}
 
 void adjustImgByColor(QImage &image, const ColorInfoStruct &color) {
     float rPercent = float(color.R) / 255;
@@ -13,20 +39,35 @@ void adjustImgByColor(QImage &image, const ColorInfoStruct &color) {
     float aPercent = float(color.A) / 255;
     for (int y = 0; y < image.height(); ++y) {
         for (int x = 0; x < image.width(); ++x) {
-            QRgb color = image.pixel(x, y);
+            QColor pixColor = image.pixelColor(x, y);
             // 调整颜色分量
-            int red = qRed(color) * rPercent;
-            int green = qGreen(color) * gPercent;
-            int blue = qBlue(color) * bPercent;
-            int alpha = qAlpha(color) * aPercent;
+            int red = pixColor.red() * rPercent;
+            int green = pixColor.green() * gPercent;
+            int blue = pixColor.blue() * bPercent;
+            int alpha = pixColor.alpha() * aPercent;
 
             // 重新合成颜色
-            color = qRgba(red, green, blue, alpha);
+            pixColor.setRgb(red, green, blue, alpha);
 
             // 设置新的像素值
-            image.setPixel(x, y, color);
+            image.setPixelColor(x, y, pixColor);
         }
     }
+}
+
+QImage* getImgPtrFromSpriteInfo(const SpriteInfoStruct &spriteInfo) {
+    QImage *retImg = nullptr;
+    const QString &tag = spriteInfo.Tag;
+    if (SpriteImgPtrPool.contains(tag)) {
+        retImg = SpriteImgPtrPool.value(tag);
+    } else {
+        QImage img = getImgFromImgInfo(spriteInfo.ImgInfo);
+        retImg = new QImage(img);
+        adjustImgByColor(*retImg, spriteInfo.ColorInfo);
+        SpriteImgPtrPool.insert(tag, retImg);
+    }
+
+    return retImg;
 }
 
 MapWidget::MapWidget(QWidget *parent, Model *model)
@@ -75,6 +116,17 @@ MapWidget::MapWidget(QWidget *parent, Model *model)
 
 MapWidget::~MapWidget()
 {
+    for (QMap<QString, QImage*>::Iterator iter = ImgSetPtrPool.begin();
+         iter != ImgSetPtrPool.end(); iter++) {
+        delete iter.value();
+    }
+    ImgSetPtrPool.clear();
+
+    for (QMap<QString, QImage*>::Iterator iter = SpriteImgPtrPool.begin();
+         iter != SpriteImgPtrPool.end(); iter++) {
+        delete iter.value();
+    }
+    SpriteImgPtrPool.clear();
 }
 
 void MapWidget::SetViewTypeList(QList<ViewTypeEnum> viewTypeList)
@@ -385,15 +437,7 @@ DrawingObjStruct MapWidget::createDrawingObjFromLayerSpriteInfo(const ViewTypeEn
     const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(tag);
     drawingUnit.OX = spriteInfo.OX;
     drawingUnit.OY = spriteInfo.OY;
-    if (SpriteImgPtrPool.contains(tag)) {
-        drawingUnit.Img = SpriteImgPtrPool.value(tag);
-    } else {
-        QImage *img = new QImage(spriteInfo.ImgPath);
-        adjustImgByColor(*img, spriteInfo.ColorInfo);
-        drawingUnit.Img = img;
-
-        SpriteImgPtrPool.insert(tag, img);
-    }
+    drawingUnit.Img = getImgPtrFromSpriteInfo(spriteInfo);
 
     // load drawing avatar
     DrawingAvatarStruct drawingAvatar;
@@ -424,8 +468,7 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
             const SpriteInfoStruct &spriteInfo = m_mapOfTagToSpriteInfo.value(spriteTag);
             drawingUnit.OX = spriteInfo.OX;
             drawingUnit.OY = spriteInfo.OY;
-            QImage *img = new QImage(spriteInfo.ImgPath);
-            adjustImgByColor(*img, spriteInfo.ColorInfo);
+            QImage *img = getImgPtrFromSpriteInfo(spriteInfo);
             if (actorInfo.Direction == -1) {
                 *img = img->mirrored(true, false);
                 drawingUnit.OX = img->width() - drawingUnit.OX;
@@ -451,10 +494,10 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
     }
     if (instanceInfo.AspectInfo.Type == "frameani") {
         QString frameAniTag;
-        if (instanceInfo.AspectInfo.Path.isEmpty()) {
+        if (!instanceInfo.AspectInfo.Avatar.isEmpty()) {
             frameAniTag = "actor/" + instanceInfo.AspectInfo.Avatar + "/stay";
         } else {
-            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path;
+            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/stay";
         }
         const FrameAniInfoList &frameAniInfoList =
             m_mapOfTagToFrameAniInfoList.value(frameAniTag);
