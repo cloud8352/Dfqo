@@ -240,9 +240,11 @@ function ScrollArea:Slot_RequestMoveContent(sender, xOffset, yOffset)
 end
 
 function ScrollArea:updateBgSprite()
+    local width = self.width
+    local height = self.height
     _Graphics.SaveCanvas()
     -- 创建背景画布
-    local canvas = _Graphics.NewCanvas(self.width, self.height)
+    local canvas = _Graphics.NewCanvas(width, height)
     _Graphics.SetCanvas(canvas)
     _Graphics.SetColor(255, 255, 255, 255)
 
@@ -255,44 +257,46 @@ function ScrollArea:updateBgSprite()
     -- 画上中段背景
     painterSprite:SetData(self.topBgImgDate)
     painterSprite:SetAttri("position", self.leftTopBgImgDate.w, 0)
-    local topCenterBgXScale = (self.width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.topBgImgDate.w
+    local topCenterBgXScale = (width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.topBgImgDate.w
     painterSprite:SetAttri("scale", topCenterBgXScale, 1)
     painterSprite:Draw()
 
     -- 画右上角背景
     painterSprite:SetData(self.rightTopBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightTopBgImgDate.w, 0)
+    painterSprite:SetAttri("position", width - self.rightTopBgImgDate.w, 0)
     painterSprite:Draw()
 
     -- 画左中段背景
     painterSprite:SetData(self.leftBgImgDate)
     painterSprite:SetAttri("position", 0, self.leftTopBgImgDate.h)
-    local centerBgYScale = (self.height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.leftBgImgDate.h
-    painterSprite:SetAttri("scale", 1, centerBgYScale)
+    local leftCenterBgYScale = (height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.leftBgImgDate.h
+    painterSprite:SetAttri("scale", 1, leftCenterBgYScale)
     painterSprite:Draw()
     -- 画中间部分的背景
+    local centerBgXScale = (width - self.leftTopBgImgDate.w - self.rightTopBgImgDate.w) / self.centerBgImgDate.w
+    local centerBgYScale = (height - self.leftTopBgImgDate.h - self.leftBottomBgImgDate.h) / self.centerBgImgDate.h
     painterSprite:SetData(self.centerBgImgDate)
     painterSprite:SetAttri("position", self.leftBgImgDate.w, self.leftTopBgImgDate.h)
-    painterSprite:SetAttri("scale", topCenterBgXScale, centerBgYScale)
+    painterSprite:SetAttri("scale", centerBgXScale, centerBgYScale)
     painterSprite:Draw()
     -- 画右中段背景
     painterSprite:SetData(self.rightBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBgImgDate.w, self.leftTopBgImgDate.h)
-    painterSprite:SetAttri("scale", 1, centerBgYScale)
+    painterSprite:SetAttri("position", width - self.rightBgImgDate.w, self.leftTopBgImgDate.h)
+    painterSprite:SetAttri("scale", 1, leftCenterBgYScale)
     painterSprite:Draw()
 
     -- 画左下角背景
     painterSprite:SetData(self.leftBottomBgImgDate)
-    painterSprite:SetAttri("position", 0, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", 0, height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
     -- 画下中段背景
     painterSprite:SetData(self.bottomBgImgDate)
-    painterSprite:SetAttri("position", self.leftBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", self.leftBottomBgImgDate.w, height - self.leftBottomBgImgDate.h)
     painterSprite:SetAttri("scale", topCenterBgXScale, 1)
     painterSprite:Draw()
     -- 画右下角背景
     painterSprite:SetData(self.rightBottomBgImgDate)
-    painterSprite:SetAttri("position", self.width - self.rightBottomBgImgDate.w, self.height - self.leftBottomBgImgDate.h)
+    painterSprite:SetAttri("position", width - self.rightBottomBgImgDate.w, height - self.leftBottomBgImgDate.h)
     painterSprite:Draw()
 
     _Graphics.RestoreCanvas()
