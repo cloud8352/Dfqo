@@ -16,6 +16,7 @@ local _MUSIC = require("lib.music")
 local _RESOURCE = require("lib.resource")
 local _DIRECTOR = require("director")
 local _CONFIG = require("config")
+local TextInputLib = require("lib.TextInput")
 
 local _User = require("user")
 local JobsModel = require("Jobs.JobsModel")
@@ -40,11 +41,12 @@ local function _Update()
     _MOUSE.LateUpdate()
     _TOUCH.LateUpdate()
     _KEYBOARD.LateUpdate()
+    TextInputLib.LateUpdate()
 end
 
 function love.load()
     -- 禁用文本输入
-    love.keyboard.setTextInput(false)
+    TextInputLib.EnableTextInput(false)
     -- JobsModel.Init()
 
     _SYSTEM.Init()
@@ -82,6 +84,11 @@ end
 
 function love.keyreleased(key, scancode)
     _KEYBOARD.Released(key)
+end
+
+---@param t string
+function love.textinput(t)
+    TextInputLib.SetText(t)
 end
 
 if (not _SYSTEM.IsMobile()) then
