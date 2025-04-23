@@ -3,6 +3,8 @@
     author: keke
 ]]--
 
+local KeyboardLib = require("lib.keyboard")
+
 ---@class Lib.TextInput
 local TextInput = {}
 
@@ -24,6 +26,10 @@ end
 
 function TextInput.LateUpdate()
     Text = ""
+
+    if KeyboardLib.IsHold("lctrl") and KeyboardLib.IsPressed("v") then
+        Text = love.system.getClipboardText()
+    end
 end
 
 return TextInput

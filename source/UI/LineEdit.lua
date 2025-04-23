@@ -16,6 +16,8 @@ local TextInputLib = require("lib.TextInput")
 ---@class LineEdit : Widget
 local LineEdit = require("core.class")(Widget)
 
+local CursorMovePersistentlyIntervalMs = 150
+
 ---@param parentWindow Window
 function LineEdit.Create(parentWindow)
     -- 用于定义构造函数，解释使用，不做实际用途
@@ -41,6 +43,7 @@ function LineEdit:Ctor(parentWindow)
     self.borderColor = { 100, 100, 100, 255 }
 
     self.textCanvas = nil
+    self.keyHoldTimeMs = 0
 end
 
 function LineEdit:Update(dt)
@@ -49,7 +52,7 @@ function LineEdit:Update(dt)
     end
 
     self:mouseEvent()
-    self:keyboardEvent()
+    self:keyboardEvent(dt)
     self:textInputEvent()
 
     if self:IsSizeChanged()
@@ -220,22 +223,45 @@ function LineEdit:textInputEvent()
     self:setCursorPos(self.cursorPos + StringLib.Len(text))
 end
 
-function LineEdit:keyboardEvent()
-    if self.focused then
-        if KeyboardLib.IsPressed("backspace") then
-            if self.cursorPos > 1 then
-                local leftText = StringLib.Offset(self.text, self.cursorPos - 1)
-                local rightText = StringLib.Offset(self.text, self.cursorPos, true)
-                self.text = leftText .. rightText
-                self:setCursorPos(self.cursorPos - 1)
-            end
-        elseif KeyboardLib.IsPressed("left") then
-            local cursorPos = math.max(1, self.cursorPos - 1)
-            self:setCursorPos(cursorPos)
-        elseif KeyboardLib.IsPressed("right") then
-            local cursorPos = math.min(StringLib.Len(self.text) + 1, self.cursorPos + 1)
-            self:setCursorPos(cursorPos)
+---@param dt int
+function LineEdit:keyboardEvent(dt)
+    if false == self.focused then
+        return
+    end
+    if KeyboardLib.IsPressed("backspace") then
+        self:backspace()
+    elseif KeyboardLib.IsPressed("left") then
+        self:moveCursorToLeft()
+    elseif KeyboardLib.IsPressed("right") then
+        self:moveCursorToRight()
+    end
+
+    -- 判断持续按键
+    if KeyboardLib.IsHold("backspace") then
+        self.keyHoldTimeMs = self.keyHoldTimeMs + dt
+        if self.keyHoldTimeMs > CursorMovePersistentlyIntervalMs then
+            self.keyHoldTimeMs = 0
+            self:backspace()
         end
+    elseif KeyboardLib.IsHold("left") then
+        self.keyHoldTimeMs = self.keyHoldTimeMs + dt
+        if self.keyHoldTimeMs > CursorMovePersistentlyIntervalMs then
+            self.keyHoldTimeMs = 0
+            self:moveCursorToLeft()
+        end
+    elseif KeyboardLib.IsHold("right") then
+        self.keyHoldTimeMs = self.keyHoldTimeMs + dt
+        if self.keyHoldTimeMs > CursorMovePersistentlyIntervalMs then
+            self.keyHoldTimeMs = 0
+            self:moveCursorToRight()
+        end
+    end
+
+    if KeyboardLib.IsReleased("backspace")
+        or KeyboardLib.IsReleased("left")
+        or KeyboardLib.IsReleased("right")
+    then
+        self.keyHoldTimeMs = 0
     end
 end
 
@@ -264,6 +290,8 @@ function LineEdit:updateDataByCursorPos()
     local leftToCursorTextWidth = GraphicsLib.GetFontWidth(leftToCursorText)
     if leftToCursorTextWidth > textMaxWidth then
         self.xOffset = leftToCursorTextWidth - textMaxWidth
+    else 
+        self.xOffset = 0
     end
     if self.xOffset > leftToCursorTextWidth then
         self.xOffset = leftToCursorTextWidth       
@@ -289,6 +317,25 @@ function LineEdit:updateTextCanvas()
 
     GraphicsLib.RestoreCanvas()
     self.textCanvas = canvas
+end
+
+function LineEdit:backspace()
+    if self.cursorPos > 1 then
+        local leftText = StringLib.Offset(self.text, self.cursorPos - 1)
+        local rightText = StringLib.Offset(self.text, self.cursorPos, true)
+        self.text = leftText .. rightText
+        self:setCursorPos(self.cursorPos - 1)
+    end
+end
+
+function LineEdit:moveCursorToLeft()
+    local cursorPos = math.max(1, self.cursorPos - 1)
+    self:setCursorPos(cursorPos)
+end
+
+function LineEdit:moveCursorToRight()
+    local cursorPos = math.min(StringLib.Len(self.text) + 1, self.cursorPos + 1)
+    self:setCursorPos(cursorPos)
 end
 
 return LineEdit

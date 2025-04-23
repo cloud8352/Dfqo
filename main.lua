@@ -38,10 +38,10 @@ local function _Update()
     _DIRECTOR.Update(dt)
     _SOUND.LateUpdate()
     _MUSIC.LateUpdate(dt)
+    TextInputLib.LateUpdate()
     _MOUSE.LateUpdate()
     _TOUCH.LateUpdate()
     _KEYBOARD.LateUpdate()
-    TextInputLib.LateUpdate()
 end
 
 function love.load()
