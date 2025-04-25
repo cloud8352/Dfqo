@@ -128,6 +128,7 @@ function UI.Init(director)
 
     -- characterInfoWindow
     UI.characterInfoWindow = Window.New()
+    UI.characterInfoWindow:SetTitleBarIconPath("ui/TitleBar/Icon/Info")
     UI.characterInfoWindow:SetSize(977 * windowSizeScale,
         622 * windowSizeScale)
     local characterInfoWindowWidth, characterInfoWindowHeight = UI.characterInfoWindow:GetSize()
@@ -143,6 +144,7 @@ function UI.Init(director)
 
     -- skillManagementWindow
     UI.skillManagementWindow = Window.New()
+    UI.skillManagementWindow:SetTitleBarIconPath("ui/TitleBar/Icon/Skill")
     UI.skillManagementWindow:SetSize(977 * windowSizeScale,
         622 * windowSizeScale)
     UI.skillManagementWindow:SetPosition(characterInfoWindowOriginXPos + 10, characterInfoWindowOriginYPos + 10)
@@ -155,6 +157,7 @@ function UI.Init(director)
 
     -- settingsWindow
     UI.settingsWindow = Window.New()
+    UI.settingsWindow:SetTitleBarIconPath("ui/TitleBar/Icon/Setting");
     UI.settingsWindow:SetSize(977 * windowSizeScale,
         622 * windowSizeScale)
     UI.settingsWindow:SetPosition(characterInfoWindowOriginXPos + 20, characterInfoWindowOriginYPos + 20)

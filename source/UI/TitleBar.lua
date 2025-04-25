@@ -59,12 +59,12 @@ function TitleBar:Ctor(parentWindow)
 
     -- 图标
     self.iconSprite = _Sprite.New()
-    local spriteData = _RESOURCE.GetSpriteData("ui/TitleBar/TaskIcon")
+    local spriteData = _RESOURCE.GetSpriteData("ui/TitleBar/Icon/Info")
     self.iconSprite:SetData(spriteData)
     self.iconLeftMargin = 5 * windowSizeScale
     self.iconTopMargin = 5 * windowSizeScale
-    self.iconRightMargin = 6 * windowSizeScale
-    self.iconBottomMargin = 6 * windowSizeScale
+    self.iconRightMargin = 5 * windowSizeScale
+    self.iconBottomMargin = 5 * windowSizeScale
 
     -- 关闭按钮
     self.closeBtn = PushButton.New(self.parentWindow)
@@ -214,24 +214,25 @@ function TitleBar:createFrameCanvasBySize(width, height)
     _Graphics.SetCanvas(canvas)
 
     local allYScale = height / self.centerFrameImgData.h
+    local yOffset = -2
 
     -- 创建临时绘图精灵
     local painterSprite = _Sprite.New()
     -- 画左侧图片
     painterSprite:SetData(self.leftFrameImgData)
-    painterSprite:SetAttri("position", 0, 0)
+    painterSprite:SetAttri("position", 0, yOffset)
     painterSprite:SetAttri("scale", 1, allYScale)
     painterSprite:Draw()
     -- 画中间图片
     painterSprite:SetData(self.centerFrameImgData)
-    painterSprite:SetAttri("position", self.leftFrameImgData.w, 0)
+    painterSprite:SetAttri("position", self.leftFrameImgData.w, yOffset)
     local centerXScale = (width - self.leftFrameImgData.w - self.rightFrameImgData.w) / self.centerFrameImgData.w
     painterSprite:SetAttri("scale", centerXScale, allYScale)
     painterSprite:Draw()
 
     -- 画右侧图片
     painterSprite:SetData(self.rightFrameImgData)
-    painterSprite:SetAttri("position", width - self.rightFrameImgData.w, 0)
+    painterSprite:SetAttri("position", width - self.rightFrameImgData.w, yOffset)
     painterSprite:SetAttri("scale", 1, allYScale)
     painterSprite:Draw()
 
