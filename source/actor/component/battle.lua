@@ -19,6 +19,7 @@ local _Caller = require("core.caller")
 ---@field public dmgSoundDatas table<number, SoundData>
 ---@field public dieSoundDatas table<number, SoundData>
 ---@field public beatenCaller Core.Caller
+---@field public beforeBeatenCaller Core.Caller
 ---@field public deadCaller Core.Caller
 ---@field public deadProcess int
 ---@field public overKill boolean
@@ -46,6 +47,7 @@ function _Battle:Ctor(data, param)
     self.dmgSoundDatas = data.dmgSound
     self.dieSoundDatas = data.dieSound
     self.beatenCaller = _Caller.New()
+    self.beforeBeatenCaller = _Caller.New()
     self.deadCaller = _Caller.New()
     self.hasEffect = data.hasEffect
     self.hasDestroy = data.hasDestroy
@@ -72,6 +74,18 @@ function _Battle:Ctor(data, param)
         pure = banCountMap.pure or 0,
     }
 
+    self.beforeBeatenConfig = {
+        position = _Point3.New(true),
+        damageReduceRate = 0,
+        direction = 0,
+        isPhysical = false,
+        isCritical = false,
+        element = "",
+        entity = nil, ---@type Actor.Entity
+        ---@type Actor.Gear.Attack
+        attack = nil,
+    }
+
     self.beatenConfig = {
         position = _Point3.New(true),
         damage = 0,
@@ -80,8 +94,10 @@ function _Battle:Ctor(data, param)
         isCritical = false,
         isTurn = false,
         element = "",
-        entity = nil, ---@type Actor.Entity
-        attack = nil, ---@type Actor.Gear.Attack
+        ---@type Actor.Entity
+        entity = nil,
+        ---@type Actor.Gear.Attack
+        attack = nil,
     }
 end
 

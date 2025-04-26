@@ -250,6 +250,17 @@ function _Attack:Update(dt)
             direction = direction or self._entity.transform.direction
 
             if (isdone) then
+                local beforeBeatenConfig = e.battle.beforeBeatenConfig
+                beforeBeatenConfig.position:Set(x, y, z)
+                beforeBeatenConfig.damageReduceRate = 0
+                beforeBeatenConfig.isPhysical = self.isPhysical
+                beforeBeatenConfig.isCritical = isCritical
+                beforeBeatenConfig.direction = direction
+                beforeBeatenConfig.element = self.element or nil
+                beforeBeatenConfig.entity = self._entity
+                beforeBeatenConfig.attack = self
+                e.battle.beforeBeatenCaller:Call(self._entity)
+
                 ax = ax or self._entity.transform.position.x
                 local turnDirection = self.direction
                 isCritical = isCritical or self.isCritical
@@ -378,6 +389,9 @@ function _Attack:Update(dt)
 
                 local damage = math.floor(self.damage * damageRate)
                 damage = isCritical and math.floor(damage * 1.5) or damage
+
+                -- 整合伤害减少比例
+                damage = damage - math.floor(damage * e.battle.beforeBeatenConfig.damageReduceRate)
 
                 local beatenConfig = e.battle.beatenConfig
                 beatenConfig.position:Set(x, y, z)
