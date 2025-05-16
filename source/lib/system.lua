@@ -126,8 +126,16 @@ function _SYSTEM.initWindowSize()
         ) then
         local percentage = _CONFIG.setting.WindowSizePercentage
 
-        windowWidth = screenW * percentage
-        windowHeight = screenW * percentage * 9 / 16
+        local screenWidthHeightRate = screenW / screenH
+        local stdWidthHeightRate = _stdWidth / _stdHeight
+        -- 兼容带鱼屏分辨率
+        if screenWidthHeightRate > stdWidthHeightRate then
+            windowHeight = screenH * percentage
+            windowWidth = windowHeight * stdWidthHeightRate
+        else
+            windowWidth = screenW * percentage
+            windowHeight = windowWidth / stdWidthHeightRate
+        end
         love.window.setMode(windowWidth, windowHeight, windowFlags)
     end
 
