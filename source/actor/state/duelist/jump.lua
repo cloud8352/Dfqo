@@ -17,9 +17,10 @@ local GearJump = require("actor.gear.jump")
 local _Attack = require("actor.gear.attack")
 local _Base = require("actor.state.base")
 
----@class Actor.State.Duelist.Jump:Actor.State
+---@class Actor.State.Duelist.Jump : Actor.State
 ---@field protected _skill Actor.Skill
 ---@field protected _effect Actor.Entity
+---@field public jumpAttack Actor.Gear.Attack
 local _Jump = require("core.class")(_Base)
 
 local AddJumpPowerTimeS = 0.4
