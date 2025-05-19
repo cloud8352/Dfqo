@@ -329,7 +329,7 @@ function _Attack:Update(dt)
                     end
 
                     if (not hasFlight and self.stun.time) then
-                        if (e.transform.position.z < 0 and _STATE.HasTag(e.states, "jump")) then
+                        if (e.transform.position.z < 0) then
                             _BATTLE.Flight(e.battle, e.states)
                         else
                             local stun = self.stun
