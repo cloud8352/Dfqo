@@ -24,7 +24,7 @@ private slots:
 Q_SIGNALS:
 private:
     QStringList getFilePathListByFileDlg();
-    void loadToListViewModel(QStandardItemModel *itemModel, const QStringList &filePathList);
+    void appendToListViewModel(QStandardItemModel *itemModel, const QStringList &filePathList);
 
 private:
     Model *m_model;

@@ -30,6 +30,10 @@ SpriteTrimDlg::SpriteTrimDlg(Model *model, QWidget *parent)
     leftHeaderTitleLabel->setText("图片文件列表：");
     leftHeaderLayout->addWidget(leftHeaderTitleLabel, 1);
 
+    QPushButton *clearBtn = new QPushButton(this);
+    clearBtn->setText("清空");
+    leftHeaderLayout->addWidget(clearBtn);
+
     QPushButton *addBtn = new QPushButton(this);
     addBtn->setText("添加");
     leftHeaderLayout->addWidget(addBtn);
@@ -46,6 +50,10 @@ SpriteTrimDlg::SpriteTrimDlg(Model *model, QWidget *parent)
     QLabel *leftHeaderTitleLabel2 = new QLabel(this);
     leftHeaderTitleLabel2->setText("偏移文件列表：");
     leftHeaderLayout2->addWidget(leftHeaderTitleLabel2, 1);
+
+    QPushButton *clearBtn2 = new QPushButton(this);
+    clearBtn2->setText("清空");
+    leftHeaderLayout2->addWidget(clearBtn2);
 
     QPushButton *addBtn2 = new QPushButton(this);
     addBtn2->setText("添加");
@@ -92,11 +100,19 @@ SpriteTrimDlg::SpriteTrimDlg(Model *model, QWidget *parent)
     // connect
     connect(addBtn, &QPushButton::clicked, this, [=] {
         const QStringList &filePathList = getFilePathListByFileDlg();
-        loadToListViewModel(imgFileListViewModel, filePathList);
+        appendToListViewModel(imgFileListViewModel, filePathList);
+    });
+    connect(clearBtn, &QPushButton::clicked, this, [=] {
+        int rowCount = imgFileListViewModel->rowCount();
+        imgFileListViewModel->removeRows(0, rowCount);
     });
     connect(addBtn2, &QPushButton::clicked, this, [=] {
         const QStringList &filePathList = getFilePathListByFileDlg();
-        loadToListViewModel(offsetFileListViewModel, filePathList);
+        appendToListViewModel(offsetFileListViewModel, filePathList);
+    });
+    connect(clearBtn2, &QPushButton::clicked, this, [=] {
+        int rowCount = offsetFileListViewModel->rowCount();
+        offsetFileListViewModel->removeRows(0, rowCount);
     });
 
     connect(trimBtn, &QPushButton::clicked, this, [=] {
@@ -138,8 +154,16 @@ SpriteTrimDlg::SpriteTrimDlg(Model *model, QWidget *parent)
 
             // save
             QFileInfo info(item->text());
-            QString outputFilePath = QString("%1/SpritTrimOutput/Offset/%2").arg(desktopPath).arg(info.fileName());
-
+            const QString &fileName = info.fileName();
+            const QString &dirPath = info.dir().absolutePath();
+            const QString &dirName = info.dir().dirName();
+            info.setFile(dirPath);
+            const QString &parentDirName = info.dir().dirName();
+            const QString &outputFilePath = QString("%1/SpritTrimOutput/OffsetInfo/%2/%3/%4")
+                                         .arg(desktopPath)
+                                         .arg(parentDirName)
+                                         .arg(dirName)
+                                         .arg(fileName);
             info.setFile(outputFilePath);
             if (!info.dir().exists()) {
                 info.dir().mkpath(info.dir().absolutePath());
@@ -170,7 +194,7 @@ QStringList SpriteTrimDlg::getFilePathListByFileDlg()
     return QFileDialog::getOpenFileNames(this, "添加文件", m_model->GetGameRootPath());
 }
 
-void SpriteTrimDlg::loadToListViewModel(QStandardItemModel *itemModel, const QStringList &filePathList)
+void SpriteTrimDlg::appendToListViewModel(QStandardItemModel *itemModel, const QStringList &filePathList)
 {
     for (const QString &filePath : filePathList) {
         QFileInfo info(filePath);

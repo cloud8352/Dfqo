@@ -41,12 +41,19 @@ MainWindow::MainWindow(QWidget *parent)
     fileMenu->addAction(saveAsAction);
     menuBar->addMenu(fileMenu);
 
+    QMenu *settingsMenu = new QMenu(this);
+    settingsMenu->setTitle("设置");
     QAction *mapSettingsAction = new QAction("地图设置", this);
-    menuBar->addAction(mapSettingsAction);
+    settingsMenu->addAction(mapSettingsAction);
     QAction *appSettingsAction = new QAction("软件设置", this);
-    menuBar->addAction(appSettingsAction);
-    QAction *spriteTrimDlgAction = new QAction("素材修剪工具", this);
-    menuBar->addAction(spriteTrimDlgAction);
+    settingsMenu->addAction(appSettingsAction);
+    menuBar->addMenu(settingsMenu);
+
+    QMenu *spriteTrimDlgMenu = new QMenu(this);
+    spriteTrimDlgMenu->setTitle("素材修剪工具");
+    QAction *openSpriteTrimDlgAction = new QAction("打开", this);
+    spriteTrimDlgMenu->addAction(openSpriteTrimDlgAction);
+    menuBar->addMenu(spriteTrimDlgMenu);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -207,7 +214,7 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(menuBar, &QMenuBar::triggered, this, [=](QAction *action) {
+    connect(settingsMenu, &QMenu::triggered, this, [=](QAction *action) {
         if (action == mapSettingsAction) {
             mapWidget->OpenMapSettingsDlg();
         }
@@ -215,7 +222,10 @@ MainWindow::MainWindow(QWidget *parent)
             m_settingsDlg->Reset();
             m_settingsDlg->setVisible(true);
         }
-        if (action == spriteTrimDlgAction && !m_spriteTrimDlg->isVisible()) {
+    });
+
+    connect(spriteTrimDlgMenu, &QMenu::triggered, this, [=](QAction *action) {
+        if (action == openSpriteTrimDlgAction && !m_spriteTrimDlg->isVisible()) {
             m_spriteTrimDlg->setVisible(true);
         }
     });
