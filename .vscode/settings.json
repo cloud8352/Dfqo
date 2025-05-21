@@ -22,7 +22,8 @@
         "Swordman",
         "Tepes",
         "Noirpera",
-        "Rougelike"
+        "Rougelike",
+        "Suplex"
     ],
     "files.exclude": {
         "**/love2d": true,
