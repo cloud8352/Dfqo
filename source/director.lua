@@ -25,7 +25,7 @@ local _speedTweener = _Tweener.New(_DIRECTOR, { rate = 1 })
 local playerInstanceCfgSimplePath = ""
 
 function _DIRECTOR.Init()
-    ---@type Graphics.Curtain
+    ---@type Graphics.Curtain 幕布类
     _curtain = _Curtain.New()
 
     -- ui
@@ -136,7 +136,7 @@ function _DIRECTOR.StartGame(actorSimplePath)
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
     -- 加载地图
     -- _MAP.Load(_MAP.Make("lightAltar")) -- lorien, WhiteNight, WestCoast, noirpera, lightAltar
-    _MAP.Load("WestCoast")
+    _MAP.Load("WhiteNight")
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
 end
