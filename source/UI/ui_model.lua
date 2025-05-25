@@ -32,6 +32,8 @@ local _RESOURCE = require("lib.resource")
 local File = require("lib.file")
 local String = require("lib.string")
 local GraphicsLib = require("lib.graphics")
+local KeyboardLib = require("lib.keyboard")
+local BuffSrv = require("actor.service.buff")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -45,6 +47,8 @@ local PlayerCfgSavedFileSuffix = ".cfg"
 -- SoundData
 local NotFitAlertSoundData = ResLib.GetSoundData("ui/Alert1")
 local SkillConsumableUsedSoundData = ResLib.GetSoundData("ui/AbilityUpItem")
+
+local InvincibilityBuffData = ResMgr.NewBuffData("invincibility")
 
 ---@param director DIRECTOR
 function UiModel:Ctor(director)
@@ -523,7 +527,8 @@ function UiModel:IsPressedPlayerKey(key)
         return
     end
 
-    return InputSrv.IsPressed(self.player.input, key)
+    local KeyboardKey = _CONFIG.code[key]
+    return KeyboardLib.IsPressed(KeyboardKey)
 end
 
 ---@param key string
@@ -602,6 +607,9 @@ function UiModel:RebornPlayer()
 
     print("UiModel:RebornPlayer()", "LifeSrv.RebornEntity(self.player)")
     LifeSrv.RebornEntity(self.player)
+
+    local buff = BuffSrv.AddBuff(self.player, InvincibilityBuffData)
+    buff:SetTime(3000)
 
     local pos = self.player.transform.position
     local direction = self.player.transform.direction
