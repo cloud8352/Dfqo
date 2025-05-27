@@ -29,7 +29,7 @@ end
 function VideoWidget:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
 
-    ---@type love.Video
+    ---@type Love.Video
     self.video = nil
     self.isVideoChanged = false
     self.videoFilePath = ""
@@ -147,7 +147,7 @@ function VideoWidget:SetVideoFilePath(filePath)
     self.isVideoChanged = true
 end
 
----@param video love.Video
+---@param video Love.Video
 function VideoWidget:SetVideo(video)
     if self.video == video then
         return

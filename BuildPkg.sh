@@ -30,7 +30,7 @@ cp -rf ../config/asset ./config/
 fileName=${pkgName}_${pkgVer}.zip
 filePath=../$fileName
 rm $filePath
-7z a -tzip -r $filePath * -x!androidBuildEnv
+7z a -tzip -r $filePath * -x!AndroidBuildEnv
 
 cd ..
 rm -rf $buildDirPath

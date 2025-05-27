@@ -128,7 +128,7 @@ function UiModel:Ctor(director)
     self.jobActorList = {}
     self:loadJobActorList()
 
-    ---@type table<int, love.Video>
+    ---@type table<int, Love.Video>
     self.mapOfJobToIntroVideo = {}
     self:loadMapOfJobToIntroVideo()
 

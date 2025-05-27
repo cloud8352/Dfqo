@@ -24,16 +24,19 @@ local savedCanvas = nil
 
 local _GRAPHICS = {} ---@class Lib.GRAPHICS
 
----@class love.Object
+---@class Love.Object
 local Object = {}
 ---@return string
 function Object:type()
 end
 
----@class love.Drawable : love.Object
+function Object:release()
+end
+
+---@class Love.Drawable : Love.Object
 local Drawable = {}
 
----@class love.Video : love.Drawable
+---@class Love.Video : Love.Drawable
 local Video = {}
 ---@return int
 function Video:getHeight()
@@ -55,6 +58,9 @@ function Video:play()
 end
 function Video:rewind()
 end
+
+---@class Love.Canvas : Love.Drawable
+local Canvas = {}
 
 _GRAPHICS.Print = love.graphics.print
 _GRAPHICS.SetScissor = love.graphics.setScissor
@@ -203,7 +209,7 @@ function _GRAPHICS.NewNormalText(text)
 end
 
 --- 画物体
----@param drawable love.Drawable A drawable object.
+---@param drawable Love.Drawable A drawable object.
 ---@param x number The position to draw the object (x-axis).
 ---@param y number The position to draw the object (y-axis).
 ---@param r number Orientation (radians).
@@ -245,7 +251,7 @@ function _GRAPHICS.RestoreCanvas()
 end
 
 ---@param filePath string
----@return love.Video A drawable video
+---@return Love.Video A drawable video
 function _GRAPHICS.NewVideo(filePath)
     return love.graphics.newVideo(filePath)
 end

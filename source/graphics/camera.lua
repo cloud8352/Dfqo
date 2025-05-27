@@ -47,7 +47,7 @@ end
 ---@field protected _world Graphics.Drawunit.Rect
 ---@field protected _canScale boolean
 ---@field protected _canRotate boolean
----@field protected _canvas Canvas
+---@field protected _canvas Love.Canvas
 ---@field protected _shader Shader
 local _Camera = require("core.class")()
 
@@ -180,6 +180,7 @@ function _Camera:Adjust()
     self._shift:Set(tx - px, ty - py)
 
     if (self._canvas and (self._canvas:getWidth() ~= screen_w or self._canvas:getHeight() ~= screen_h)) then
+        self._canvas:release()
         self._canvas = _GRAPHICS.NewCanvas(screen_w, screen_h)
     end
 end
@@ -187,11 +188,13 @@ end
 ---@param shader Shader
 function _Camera:SetShader(shader)
     self._shader = shader
+    if self._canvas then
+        self._canvas:release()
+        self._canvas = nil
+    end
 
     if (self._shader) then
         self._canvas = _GRAPHICS.NewCanvas(self._screen:Get("w"), self._screen:Get("h"))
-    else
-        self._canvas = nil
     end
 end
 

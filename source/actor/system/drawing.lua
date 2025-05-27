@@ -229,6 +229,8 @@ end
 function _Drawing:OnEntityRemoved(entity)
     -- print("_Drawing:OnEntityRemoved(entity)", entity)
 
+    self._list:Del(entity)
+
     for i, entityTmp in pairs(self.needDrawList) do
         if entityTmp == entity then
             table.remove(self.needDrawList, i)
