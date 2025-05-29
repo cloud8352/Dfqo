@@ -320,6 +320,11 @@ function ItemKeyGroup:Slot_BtnClicked(btn)
     -- normal attack
     if (btn == self.normalAttackBtn) then
         self.model:ReleasePlayerKey(Common.InputKeyValueStruct.NormalAttack)
+
+        -- 复活
+        if not self.model:IsPlayerAlive() then
+            self.model:RebornPlayer()
+        end
     end
 
     if btn == self.getItemBtn then
