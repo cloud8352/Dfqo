@@ -773,6 +773,23 @@ function UI.updateWindowVisibilityByGameState()
         if (System.IsMobile()) then
             UI.dirPadWidget:SetVisible(true)
             UI.itemKeyGroup:SetVisible(true)
+
+            local windowSizeScale = Util.GetWindowSizeScale()
+            local characterTopBtnW, _ = UI.characterTopBtn:GetSize()
+            UI.characterTopBtn:SetPosition(Util.GetWindowWidth() - characterTopBtnW - 10 * windowSizeScale - 10 * windowSizeScale,
+                10 * windowSizeScale)
+            local characterTopBtnXPos, _ = UI.characterTopBtn:GetPosition()
+
+            local btnAreaSpace = 5 * windowSizeScale
+            local btnAreaBtnWidth = 40 * windowSizeScale
+            UI.settingsBtn:SetSize(btnAreaBtnWidth, btnAreaBtnWidth)
+            UI.settingsBtn:SetPosition(characterTopBtnXPos - 10 * windowSizeScale - btnAreaBtnWidth,
+                10 * windowSizeScale + 10 * windowSizeScale)
+            local settingsBtnXPos, _ = UI.settingsBtn:GetPosition()
+
+            UI.skillManagementBtn:SetSize(btnAreaBtnWidth, btnAreaBtnWidth)
+            UI.skillManagementBtn:SetPosition(settingsBtnXPos - btnAreaSpace - btnAreaBtnWidth,
+                10 * windowSizeScale + 10 * windowSizeScale)
         else
             UI.skillDockViewFrame:SetVisible(true)
             UI.articleDockFrame:SetVisible(true)
