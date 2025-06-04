@@ -13,7 +13,7 @@ local Widget = require("UI.Widget")
 local Label = require("UI.Label")
 local WindowManager = require("UI.WindowManager")
 
----@class SkillDockViewItem
+---@class SkillDockViewItem : Widget
 local SkillDockViewItem = require("core.class")(Widget)
 
 ---@param parentWindow Window
@@ -21,12 +21,14 @@ function SkillDockViewItem:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
 
     self.iconLabel = Label.New(parentWindow)
-    self.coolDownShadowSprite = _Sprite.New()
     self.rightTopKeyLabel = Label.New(parentWindow)
     self.rightTopKeyLabel:SetAlignments({ Label.AlignmentFlag.AlignRight, Label.AlignmentFlag.AlignTop })
 
     self.coolDownProgress = 1.0
     self.lastCoolDownProgress = 1.0
+
+    self.maskXPosOffset = 0
+    self.maskHeight = 0
 end
 
 function SkillDockViewItem:Update(dt)
@@ -38,7 +40,8 @@ function SkillDockViewItem:Update(dt)
             or self.lastCoolDownProgress ~= self.coolDownProgress
         )
     then
-        self:updateSprite()
+        self.maskXPosOffset = self.height * self.coolDownProgress
+        self.maskHeight = self.height * (1 - self.coolDownProgress)
     end
 
     self.iconLabel:Update(dt)
@@ -55,9 +58,15 @@ function SkillDockViewItem:Draw()
     end
     Widget.Draw(self)
 
+    -- 画背景
+    _Graphics.SetColor(0, 0, 0, 130)
+    _Graphics.DrawRect(self.xPos, self.yPos, self.width, self.height, "fill")
+
     self.iconLabel:Draw()
 
-    self.coolDownShadowSprite:Draw()
+    --- 画遮罩
+    _Graphics.SetColor(0, 0, 0, 200)
+    _Graphics.DrawRect(self.xPos, self.yPos + self.maskXPosOffset, self.width, self.maskHeight, "fill")
 
     self.rightTopKeyLabel:Draw()
 end
@@ -93,7 +102,6 @@ function SkillDockViewItem:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
     
     self.iconLabel:SetPosition(x, y)
-    self.coolDownShadowSprite:SetAttri("position", x, y)
     self.rightTopKeyLabel:SetPosition(x, y)
 end
 
@@ -167,36 +175,5 @@ end
 
 
 --- private function
-
-function SkillDockViewItem:updateSprite()
-    local width, height = self:GetSize()
-
-
-    _Graphics.SaveCanvas()
-    -- 画背景
-    local canvas = _Graphics.NewCanvas(width, height)
-    _Graphics.SetCanvas(canvas)
-
-    _Graphics.SetColor(0, 0, 0, 130)
-    _Graphics.DrawRect(0, 0, width, height, "fill")
-
-    local bgSprite = self:GetBgSprite()
-    bgSprite:SetImage(canvas)
-
-    -- 画冷却阴影
-    -- 创建背景画布
-    canvas = _Graphics.NewCanvas(width, height)
-    _Graphics.SetCanvas(canvas)
-
-    _Graphics.SetColor(0, 0, 0, 200)
-    local shadowHeight = height * (1 - self.coolDownProgress)
-    _Graphics.DrawRect(0, height * self.coolDownProgress, width, shadowHeight, "fill")
-
-    -- 还原绘图数据
-    _Graphics.RestoreCanvas()
-
-    self.coolDownShadowSprite:SetImage(canvas)
-    self.coolDownShadowSprite:AdjustDimensions()
-end
 
 return SkillDockViewItem

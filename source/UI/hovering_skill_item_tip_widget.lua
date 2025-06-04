@@ -44,9 +44,9 @@ end
 
 function HoveringSkillItemTipWidget:Update(dt)
     if (Widget.IsSizeChanged(self)
-        or self.isSkillInfoChanged
+            or self.isSkillInfoChanged
         )
-        then
+    then
         self.nameLabel:Update(dt)
         --- 更新各属性标签控件
         for _, label in pairs(self.mapOfPropTypeToLabel) do

@@ -11,6 +11,7 @@ local Widget = require("UI.Widget")
 local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local Label = require("UI.Label")
+local ProgressBar = require("UI.ProgressBar")
 
 local RightLabelWidth = 100
 
@@ -19,7 +20,6 @@ local HpRectBar = require("core.class")(Widget)
 
 ---@param parentWindow Window
 function HpRectBar:Ctor(parentWindow)
-    assert(parentWindow, "must assign parent window")
     RightLabelWidth = 100 * Util.GetWindowSizeScale()
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
@@ -29,7 +29,8 @@ function HpRectBar:Ctor(parentWindow)
     self.currentHp = 0
     self.lastMaxHp = 0
     self.maxHp = 0
-    self.rectSprite = _Sprite.New()
+    self.progressBar = ProgressBar.Create(parentWindow)
+    self.progressBar:SetBarColor(255, 0, 0, 200)
     self.textLabel = Label.New(parentWindow)
 
     self.rightLabel = Label.New(parentWindow)
@@ -47,7 +48,18 @@ function HpRectBar:Update(dt)
             or self.lastMaxHp ~= self.maxHp
         )
     then
-        self:updateSprite()
+        -- progressBar
+        local rightLabelWidth = 0
+        if self.rightLabel:IsVisible() then
+            local tmpH
+            rightLabelWidth, tmpH = self.rightLabel:GetSize()
+        end
+        self.progressBar:SetSize(self.width - rightLabelWidth, self.height)
+        local progress = 0.0
+        if self.maxHp ~= 0 then
+            progress = self.currentHp / self.maxHp
+        end
+        self.progressBar:SetProgress(progress)
 
         self.textLabel:SetSize(self.width, self.height)
 
@@ -55,6 +67,7 @@ function HpRectBar:Update(dt)
         self.rightLabel:SetIconSize(RightLabelWidth, self.height)
     end
 
+    self.progressBar:Update(dt)
     self.textLabel:Update(dt)
     self.rightLabel:Update(dt)
 
@@ -69,13 +82,14 @@ function HpRectBar:Draw()
     end
     Widget.Draw(self)
 
-    self.rectSprite:Draw()
+    self.progressBar:Draw()
     self.textLabel:Draw()
     self.rightLabel:Draw()
 end
 
 function HpRectBar:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
+    self.progressBar:SetPosition(x, y)
     self.textLabel:SetPosition(x, y)
     self.rightLabel:SetPosition(self.xPos + self.width - RightLabelWidth,
         self.yPos)
@@ -89,6 +103,7 @@ end
 
 function HpRectBar:SetEnable(enable)
     Widget.SetEnable(self, enable)
+    self.progressBar:SetEnable(enable)
     self.textLabel:SetEnable(enable)
     self.rightLabel:SetEnable(enable)
 end
@@ -96,6 +111,7 @@ end
 ---@param isVisible boolean
 function HpRectBar:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
+    self.progressBar:SetVisible(isVisible)
     self.textLabel:SetVisible(isVisible)
     self.rightLabel:SetVisible(self.rightLabelVisible)
 end
@@ -124,37 +140,6 @@ end
 ---@param text string
 function HpRectBar:SetText(text)
     self.textLabel:SetText(text)
-end
-
-function HpRectBar:updateSprite()
-    _Graphics.SaveCanvas()
-    -- 创建背景画布
-    local rightLabelWidth = 0
-    if self.rightLabel:IsVisible() then
-        local tmpH
-        rightLabelWidth, tmpH = self.rightLabel:GetSize()
-    end
-    local canvas = _Graphics.NewCanvas(self.width - rightLabelWidth, self.height)
-    _Graphics.SetCanvas(canvas)
-
-    -- 先画血槽背景
-    _Graphics.SetColor(10, 10, 10, 150)
-    _Graphics.DrawRect(0, 0, self.width - rightLabelWidth, self.height, "fill")
-
-    -- 再画血条
-    _Graphics.SetColor(255, 0, 0, 200)
-    local hpRectWidth = 0
-    if self.maxHp ~= 0 then
-        hpRectWidth = (self.width - rightLabelWidth) * (self.currentHp / self.maxHp)
-    end
-    _Graphics.DrawRect(0, 0, hpRectWidth, self.height, "fill")
-
-    -- 还原绘图数据
-    _Graphics.RestoreCanvas()
-
-    self.rectSprite:SetImage(canvas)
-    self.rectSprite:AdjustDimensions()
-    self.rectSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 return HpRectBar

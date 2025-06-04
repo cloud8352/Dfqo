@@ -67,9 +67,11 @@ function PushButton:Ctor(parentWindow)
     self.isPressing = false
 
     -- mask sprite
-    self.maskSprite = _Sprite.New()
     self.maskPercent = 1.0
     self.isMaskPercentUpdated = true
+
+    self.maskXPosOffset = 0
+    self.maskHeight = 0
 
     self.opacity = 1.0
     self.opacityChanged = true
@@ -97,6 +99,9 @@ function PushButton:Update(dt)
         or self.opacityChanged
     then
         self:updateSprites()
+
+        self.maskXPosOffset = self.height * self.maskPercent
+        self.maskHeight = self.height * (1 - self.maskPercent)
     end
 
     self.textLabel:Update(dt)
@@ -119,7 +124,10 @@ function PushButton:Draw()
 
     self.sprite:Draw()
     self.textLabel:Draw()
-    self.maskSprite:Draw()
+
+    --- 画遮罩
+    _Graphics.SetColor(0, 0, 0, 180)
+    _Graphics.DrawRect(self.xPos, self.yPos + self.maskXPosOffset, self.width, self.maskHeight, "fill")
 end
 
 function PushButton:MouseEvent()
@@ -248,7 +256,6 @@ function PushButton:SetPosition(x, y)
     self.textLabel:SetPosition(x, y)
 
     self.sprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
-    self.maskSprite:SetAttri("position", self.xPos, self.yPos)
 end
 
 ---@return int, int 横坐标， 纵坐标
@@ -444,32 +451,6 @@ function PushButton:updateSprites()
     self.textLabel:SetSize(self.width - self.leftMargin - self.rightMargin,
         self.height - self.topMargin - self.bottomMargin)
     self.textLabel:SetPosition(self.xPos + self.leftMargin, self.yPos + self.topMargin)
-
-    self:updateMaskSprite()
-end
-
-function PushButton:updateMaskSprite()
-    _Graphics.SaveCanvas()
-    -- 创建背景画布
-    local canvas = _Graphics.NewCanvas(self.width, self.height)
-    _Graphics.SetCanvas(canvas)
-
-    ---@type int
-    local r, g, b, a
-    _Graphics.SetColor(0, 0, 0, 200)
-    local shadowHeight = self.height * (1 - self.maskPercent)
-    _Graphics.DrawRect(0, self.height * self.maskPercent, self.width, shadowHeight, "fill")
-
-    -- 还原绘图数据
-    _Graphics.RestoreCanvas()
-
-    self.maskSprite:SetImage(canvas)
-    self.maskSprite:AdjustDimensions()
-
-    -- opacity
-    local r, g, b, a = self.maskSprite:GetAttri("color")
-    a = 255 * self.opacity
-    self.maskSprite:SetAttri("color", r, g, b, a)
 end
 
 function PushButton:judgeSignals()

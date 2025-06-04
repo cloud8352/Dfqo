@@ -25,8 +25,6 @@ local JobsCommon = require("Jobs.JobsCommon")
 -- collectgarbage("setpause",100)
 -- collectgarbage("setstepmul",500)
 
-local WhetherNeedCollectgarbageStep = (_SYSTEM.GetOS() ~= "Windows")
-
 function readconfig(path, pathFormat, keys)
     local config = _RESOURCE.ReadConfig(path, "config/" .. pathFormat .. "%s.cfg", keys)
 
@@ -70,12 +68,6 @@ function love.update(dt)
     while (_TIME.CanUpdate()) do
         _Update()
         _TIME.LateUpdate()
-        
-        -- collectgarbage("step", 100)
-    end
-    
-    if WhetherNeedCollectgarbageStep then
-        collectgarbage("step", 100)
     end
 end
 

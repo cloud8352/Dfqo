@@ -36,7 +36,7 @@ function ProgressBar:Ctor(parentWindow)
     ---@type number
     self.currentProgress = 0.0 
     self.barColor = { r = 100, g = 40, b = 55, a = 255 }
-    self.rectSprite = _Sprite.New()
+    self.rectWidth = 0
 
     self.textLabel = Label.New(parentWindow)
 
@@ -60,7 +60,7 @@ function ProgressBar:Update(dt)
             or math.abs(self.lastProgress - self.currentProgress) > 0.001
         )
     then
-        self:updateSprite()
+        self.rectWidth = self.width * self.currentProgress
 
         local width, height = Widget.GetSize(self)
         self.textLabel:SetSize(width, height)
@@ -77,7 +77,15 @@ function ProgressBar:Draw()
     end
 
     Widget.Draw(self)
-    self.rectSprite:Draw()
+
+    -- 先画背景
+    _Graphics.SetColor(10, 10, 10, 150)
+    _Graphics.DrawRect(self.xPos, self.yPos, self.width, self.height, "fill")
+
+    -- 再画进度条
+    _Graphics.SetColor(self.barColor.r, self.barColor.g, self.barColor.b, self.barColor.a)
+    _Graphics.DrawRect(self.xPos, self.yPos, self.rectWidth, self.height, "fill")
+
     self.textLabel:Draw()
 end
 
@@ -173,8 +181,6 @@ end
 function ProgressBar:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
-    local xPos, yPos = Widget.GetPosition(self)
-    self.rectSprite:SetAttri("position", xPos, yPos)
     self.textLabel:SetPosition(x, y)
 end
 
@@ -210,8 +216,6 @@ function ProgressBar:SetBarColor(red, green, blue, alpha)
     self.barColor.g = green
     self.barColor.b = blue
     self.barColor.a = alpha
-
-    self:updateSprite()
 end
 
 ---@param progress number @0.0 - 1.0
@@ -262,30 +266,6 @@ function ProgressBar:Signal_ProgressChanged(value)
 end
 
 --- private function
-
-function ProgressBar:updateSprite()
-    _Graphics.SaveCanvas()
-    -- 创建背景画布
-    local width, height = Widget.GetSize(self)
-    local canvas = _Graphics.NewCanvas(width, height)
-    _Graphics.SetCanvas(canvas)
-
-    -- 先画背景
-    _Graphics.SetColor(10, 10, 10, 150)
-    _Graphics.DrawRect(0, 0, width, height, "fill")
-
-    -- 再画进度条
-    _Graphics.SetColor(self.barColor.r, self.barColor.g, self.barColor.b, self.barColor.a)
-    local rectWidth = 0
-    rectWidth = width * self.currentProgress
-    _Graphics.DrawRect(0, 0, rectWidth, height, "fill")
-
-    -- 还原绘图数据
-    _Graphics.RestoreCanvas()
-
-    self.rectSprite:SetImage(canvas)
-    self.rectSprite:AdjustDimensions()
-end
 
 ---@param idList table<number, string>
 function ProgressBar:getPressedTouchId(idList)

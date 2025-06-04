@@ -66,8 +66,6 @@ function Label:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
     self:SetBgSpriteColor(0, 0, 0, 0)
 
-    -- 文字显示对象
-    self.sprite = _Sprite.New()
     -- 图标显示对象
     self.iconSpriteDataPath = ""
     self.lastIconSpriteDataPath = ""
@@ -83,6 +81,8 @@ function Label:Ctor(parentWindow)
 
     self.alignment = Label.AlignmentFlag.AlignCenter
     self.lastAlignment = self.alignment
+    self.alignFlagStr = "center"
+    self.textYPosOffset = 0
 
     -- 显示内容尺寸 - 宽
     self.viewContentSizeW = 0
@@ -122,13 +122,12 @@ function Label:Draw()
     Widget.Draw(self)
 
     self.iconSprite:Draw()
-    self.sprite:Draw()
+
+    _Graphics.PrintF(self.text, self.xPos, self.yPos + self.textYPosOffset, self.width, self.alignFlagStr)
 end
 
 function Label:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
-
-    self.sprite:SetAttri("position", self.xPos, self.yPos)
 
     -- 更新图标坐标
     self.iconSprite:SetAttri("position", self.xPos, self.yPos)
@@ -242,16 +241,6 @@ function Label:AdjustWidthByContent()
 end
 
 function Label:updateSprite()
-    _Graphics.SaveCanvas()
-    -- 创建背景画布
-    local canvas = _Graphics.NewCanvas(self.width, self.height)
-    _Graphics.SetCanvas(canvas)
-
-    local txtR, txtG, txtB, txtA
-    txtR = 255; txtG = 255; txtB = 255; txtA = 255
-    _Graphics.SetColor(txtR, txtG, txtB, txtA)
-    _Graphics.SetBlendmode("alpha")
-
     -- 文本对象实际显示宽高
     local textSpriteViewWidth = self.width
     local textSpriteViewHeight = 0
@@ -259,39 +248,25 @@ function Label:updateSprite()
     local lineStrList = _String.WarpStr(self.text, _Graphics.GetFont(), self.width)
     local lineCount = #lineStrList
     local fontHeight = _Graphics.GetFontHeight()
-    for i, str in pairs(lineStrList) do
-        -- 根据对齐方式计算文字x坐标
-        local textXPos = 0
-        if 0 ~= bit.band(Label.AlignmentFlag.AlignHCenter, self.alignment) then
-            textXPos = self.width / 2 - _Graphics.GetFontWidth(str) / 2
-        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignLeft, self.alignment) then
-            textXPos = 0
-        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignRight, self.alignment) then
-            textXPos = self.width - _Graphics.GetFontWidth(str)
-        end
-        -- 根据对齐方式计算文字y坐标
-        local textYPos = (i - 1) * fontHeight
-        if 0 ~= bit.band(Label.AlignmentFlag.AlignVCenter, self.alignment) then
-            textYPos = textYPos + self.height / 2 - _Graphics.GetFontHeight() * lineCount / 2
-        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignTop, self.alignment) then
-            -- do nothing
-        elseif 0 ~= bit.band(Label.AlignmentFlag.AlignBottom, self.alignment) then
-            textYPos = textYPos + self.height - _Graphics.GetFontHeight() * lineCount
-        end
-        
-        local textObj = _Graphics.NewNormalText(str)
-        _Graphics.DrawObj(textObj, textXPos, textYPos, 0, 1, 1, 0, 0)
-        
-        textSpriteViewHeight = textSpriteViewHeight + fontHeight
+    textSpriteViewHeight = fontHeight * lineCount
+    -- 根据对齐方式计算文字水平对齐类型字符串
+    self.alignFlagStr = "left"
+    if 0 ~= bit.band(Label.AlignmentFlag.AlignHCenter, self.alignment) then
+        self.alignFlagStr = "center"
+    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignLeft, self.alignment) then
+        self.alignFlagStr = "left"
+    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignRight, self.alignment) then
+        self.alignFlagStr = "right"
     end
-
-    -- 还原绘图数据
-    _Graphics.RestoreCanvas()
-
-    -- 设置文字对象数据
-    self.sprite:SetImage(canvas)
-    self.sprite:AdjustDimensions()
-    self.sprite:SetAttri("position", self.xPos, self.yPos)
+    -- 根据对齐方式计算文字y坐标
+    self.textYPosOffset = 0
+    if 0 ~= bit.band(Label.AlignmentFlag.AlignVCenter, self.alignment) then
+        self.textYPosOffset = self.height / 2 - textSpriteViewHeight / 2
+    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignTop, self.alignment) then
+        -- do nothing
+    elseif 0 ~= bit.band(Label.AlignmentFlag.AlignBottom, self.alignment) then
+        self.textYPosOffset = self.height - textSpriteViewHeight
+    end
 
     -- 更新图标数据
     local spriteWidth, spriteHeight = self.iconSprite:GetImageDimensions()

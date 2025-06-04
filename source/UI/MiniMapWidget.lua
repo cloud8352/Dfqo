@@ -48,8 +48,8 @@ function MiniMapWidget:Ctor(parentWindow, model)
     self.realMapScopeY = 10
     self.realMapScopeW = 2673
     self.realMapScopeH = 1090
-    self.playerXPos = 0
-    self.playerYPos = 0
+    self.playerDisplayXPos = 0
+    self.playerDisplayYPos = 0
     self.playerLocationCircleX = 0
     self.playerLocationCircleY = 0
     self.scaleOfRealMapToMiniMap = 1.0
@@ -109,11 +109,7 @@ function MiniMapWidget:Update(dt)
     if false == self.isVisible then
         return
     end
-
-    if self.model:GetPlayer() then
-        local player = self.model:GetPlayer()
-        self:SetPlayerPos(player.transform.position.x, player.transform.position.y)
-    end
+    self:updatePlayerPos()
 
     self.titleLabel:Update(dt)
     self.posLabel:Update(dt)
@@ -223,24 +219,21 @@ function MiniMapWidget:SetRealMapScope(x, y, w, h)
 end
 
 function MiniMapWidget:SetPlayerPos(x, y)
-    x = math.floor(x)
-    y = math.floor(y)
-    if self.playerXPos == x and self.playerYPos == y then
+    local displayX = math.floor(x / 10)
+    local displayY = math.floor(y / 10)
+    if self.playerDisplayXPos == displayX and self.playerDisplayYPos == displayY then
         return
     end
 
-    self.playerXPos = x
-    self.playerYPos = y
-
-    local displayX = math.floor(x / 10)
-    local displayY = math.floor(y / 10)
+    self.playerDisplayXPos = displayX
+    self.playerDisplayYPos = displayY
     self.posLabel:SetText(tostring(displayX) .. ", " .. tostring(displayY))
 
     -- 玩家角色位置点
     local miniMapContentX, miniMapContentY = self.miniMapContent:GetPosition()
 
-    local playerXPosInScope = self.playerXPos - self.realMapScopeX
-    local playerYPosInScope = self.playerYPos - self.realMapScopeY
+    local playerXPosInScope = math.floor(x) - self.realMapScopeX
+    local playerYPosInScope = math.floor(y) - self.realMapScopeY
     self.playerLocationCircleX = miniMapContentX + self.miniMapInitX +
         self.scaleOfRealMapToMiniMap * playerXPosInScope
     self.playerLocationCircleY = miniMapContentY + self.miniMapInitY +
@@ -282,11 +275,19 @@ function MiniMapWidget:Slot_MapLoaded(sender, scopeRect)
     self.planeMapSprite = planeMapSprite
     self:updateMiniMapCanvas()
 
-    self.playerXPos = 0
-    self.playerYPos = 0
+    self:updatePlayerPos()
 end
 
+
 --- private func
+
+
+function MiniMapWidget:updatePlayerPos()
+    local player = self.model:GetPlayer()
+    if player then
+        self:SetPlayerPos(player.transform.position.x, player.transform.position.y)
+    end
+end
 
 function MiniMapWidget:updateMiniMapCanvas()
     GraphicsLib.SaveCanvas()

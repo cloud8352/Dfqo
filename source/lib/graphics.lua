@@ -62,7 +62,16 @@ end
 ---@class Love.Canvas : Love.Drawable
 local Canvas = {}
 
-_GRAPHICS.Print = love.graphics.print
+---@return int
+function Canvas:getHeight()
+end
+---@return int
+function Canvas:getWidth()
+end
+--- Clears the contents of a Canvas to a specific color.
+function Canvas:clear()
+end
+
 _GRAPHICS.SetScissor = love.graphics.setScissor
 _GRAPHICS.DrawLine = love.graphics.line
 _GRAPHICS.Push = love.graphics.push
@@ -90,6 +99,22 @@ end
 ---@param oy int
 function _GRAPHICS.Print(text, x, y, r, sx, sy, ox, oy)
     love.graphics.print(text, x, y, r, sx, sy, ox, oy)
+end
+
+---@param text string
+---@param x int
+---@param y int
+---@param limit int Wrap the line after this many horizontal pixels.
+---@param align string center left right
+---@param r int Orientation (radians)
+---@param sx int
+---@param sy int
+---@param ox int
+---@param oy int
+---@param kx int Shearing factor (x-axis).
+---@param ky int Shearing factor (y-axis).
+function _GRAPHICS.PrintF(text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky)
+    love.graphics.printf(text, x, y, limit, align, r, sx, sy, ox, oy, kx, ky)
 end
 
 ---@param shader Shader
