@@ -317,11 +317,13 @@ function ArticleDockFrame:SetIndexItemInfo(index, itemInfo)
     local item = self.viewItemList[index]
     assert(item, "ArticleTableWidget:SetIndexItemInfo(index, itemInfo), not exit item")
     local iconPath = itemInfo.iconPath
+    local count = itemInfo.count
     if itemInfo.type == Common.ArticleType.Empty then
         iconPath = ""
+        count = 0
     end
     item:SetIconSpriteDataPath(iconPath)
-    item:SetCount(itemInfo.count)
+    item:SetCount(count)
 end
 
 --- 当玩家改变后
