@@ -13,7 +13,7 @@ local _Point3 = require("graphics.drawunit.point3")
 local _Caller = require("core.caller")
 
 ---@class Actor.Component.Battle
----@field public camp int @1=we, 2=enemy
+---@field public camp int @0=none, 1=we, 2=enemy
 ---@field public shaker Util.Gear.Shaker
 ---@field public pureColorTweener Util.Gear.Tweener
 ---@field public dmgSoundDatas table<number, SoundData>

@@ -19,6 +19,7 @@ local SkillDockViewItem = require("core.class")(Widget)
 ---@param parentWindow Window
 function SkillDockViewItem:Ctor(parentWindow)
     Widget.Ctor(self, parentWindow)
+    self:SetBgSpriteColor(0, 0, 0, 0)
 
     self.iconLabel = Label.New(parentWindow)
     self.rightTopKeyLabel = Label.New(parentWindow)

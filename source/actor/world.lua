@@ -107,6 +107,7 @@ function _WORLD.Init()
         require("actor.system.article").New(event),
         require("actor.system.article.grass").New(event),
         require("actor.system.article.pathgate").New(event),
+        require("actor.system.article.ArticleWithBuff").New(event),
         require("actor.system.bullet").New(event),
         require("actor.system.bullet.throwStone").New(event),
         require("actor.system.bullet.swordman.BlastBloodBulletSys").New(event),

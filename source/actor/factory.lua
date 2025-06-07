@@ -83,6 +83,7 @@ function _FACTORY.New(data, param)
     ---@field public bullet_swordman_blastBlood Actor.Component.Bullet.Swordman.BlastBloodBullet
     ---@field public article Actor.Component.Article
     ---@field public article_pathgate Actor.Component.Article.Pathgate
+    ---@field public article_ArticleWithBuff Actor.Component.Article.ArticleWithBuff
     ---@field public topic Actor.Component.Topic
     ---@field public npc Actor.Component.Npc
     ---@field public summon Actor.Component.Summon

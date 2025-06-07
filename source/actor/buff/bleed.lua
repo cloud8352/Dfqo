@@ -58,6 +58,7 @@ end
 
 function _Bleed:OnUpdate(dt)
     self._colorTweener:Update(dt)
+    self._attack:Update()
 
     if (not self._colorTweener.isRunning) then
         local target = self._colorTweener:GetTarget() ---@type Graphics.Drawunit.Color
@@ -75,7 +76,6 @@ end
 
 function _Bleed:Exit()
     if (_Base.Exit(self)) then
-        self._attack:Update()
         self._entity.aspect.color:Set(255, 255, 255, 255)
         self._entity.aspect.colorTick = true
 

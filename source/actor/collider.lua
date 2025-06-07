@@ -17,6 +17,12 @@ local function _Handle(v, list)
     table.insert(list, srect)
 end
 
+
+---@param colliderData Actor.RESMGR.ColliderData
+function _Collider.Create(colliderData)
+    return _Collider.New(colliderData)
+end
+
 ---@param colliderData Actor.RESMGR.ColliderData
 function _Collider:Ctor(colliderData)
     self._listMap = {}

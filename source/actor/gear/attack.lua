@@ -57,7 +57,7 @@ local _Gear = require("core.gear")
 ---@field public soundDataSet table
 ---@field public buffDataSet table<int, Actor.RESMGR.BuffData>
 ---@field public color Graphics.Drawunit.Color
----@field public collision table<Actor.Component.Aspect, string>
+---@field public collision table<Actor.Drawable, string>
 ---@field public Collide function
 ---@field public Hit function
 ---@field public isView boolean
@@ -179,6 +179,11 @@ end
 
 function _Attack.Init()
     _MAP.AddLoadListener(self, _OnClean)
+end
+
+---@param entity Actor.Entity
+function _Attack.Create(entity)
+    return _Attack.New(entity)
 end
 
 ---@param entity Actor.Entity

@@ -135,8 +135,8 @@ function _DIRECTOR.StartGame(actorSimplePath)
     -- 刷新距离boss的房间数
     _MAP.RefreshRoomCountNeedToPassToGetToBossRoom()
     -- 加载地图
-    -- _MAP.Load(_MAP.Make("lightAltar")) -- lorien, WhiteNight, WestCoast, noirpera, lightAltar
-    _MAP.Load("WhiteNight")
+    -- _MAP.Load(_MAP.Make("lightAltar")) -- lorien, WhiteNight, WestCoast, noirpera, LightAltar
+    _MAP.Load("LightAltar")
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
 end

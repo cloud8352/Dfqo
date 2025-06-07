@@ -58,6 +58,10 @@ end
 ---@param param table
 function _Identity:Reborn(param)
     self.destroyProcess = 0
+    self.superior = param.entity
+    if param.canCross ~= nil then
+        self.canCross = param.canCross
+    end
 end
 
 return _Identity
