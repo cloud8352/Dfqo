@@ -94,7 +94,7 @@ function _HopSmash:NormalUpdate(dt, rate)
             self._buff = _BUFF.AddBuff(self._entity, self._buffDatas)
             _ASPECT.Play(self._entity.aspect, self._frameaniDataSets.Down)
 
-            self.easeMoveZ:Enter("z", 0, -1.5, 1)
+            self.easeMoveZ:Enter("z", 0, -1.3, 1)
         end
         self.timeMsNeedHoldUp = self.timeMsNeedHoldUp - dt
     end
@@ -103,7 +103,7 @@ function _HopSmash:NormalUpdate(dt, rate)
         and main:TickEnd()
     then
         self.process = ProcessEnum.HoldDown
-        self.easeMoveX:SetPower(3)
+        self.easeMoveX:SetPower(1)
     end
 
     if self.process == ProcessEnum.HoldDown

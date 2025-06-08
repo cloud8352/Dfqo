@@ -56,7 +56,7 @@ function DamageLowKickState:Enter(lastState, skill)
         self._skill = skill
         self._attack:Exit()
 
-        -- Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
+        Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
         _SOUND.Play(self._soundDataSet.swing)
     end
 end

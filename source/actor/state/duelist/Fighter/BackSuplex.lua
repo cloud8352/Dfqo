@@ -78,7 +78,7 @@ function BackSuplexState:NormalUpdate(dt, rate)
             entity = self._entity
         }
         param.attackValue = {
-            damageRate = 2.5,
+            damageRate = 3.5,
             isPhysical = true
         }
 
