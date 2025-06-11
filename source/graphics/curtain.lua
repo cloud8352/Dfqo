@@ -36,6 +36,13 @@ function _Curtain:Ctor()
     self._timer = _Timer.New()
     self._isUp = false
     self.width, self.height = _SYSTEM.GetWindowDimensions()
+
+    -- 加载文字相关
+    self.loadingTextRectWidth = 0
+    self.loadingTextRectHeight = 0
+    self.loadingTextRectX = 0
+    self.loadingTextRectY = 0
+    self.loadingTextY = 0
 end
 
 function _Curtain:Update(dt)
@@ -73,6 +80,14 @@ function _Curtain:Draw()
 
     _GRAPHICS.SetColor(self._color:Get())
     _GRAPHICS.DrawRect(0, 0, self.width, self.height, "fill")
+
+    local alpha = self._color.alpha
+    _GRAPHICS.SetColor(80, 80, 80, 100 * alpha / 255)
+    _GRAPHICS.DrawRect(self.loadingTextRectX, self.loadingTextRectY, 
+        self.loadingTextRectWidth, self.loadingTextRectHeight, "fill")
+
+    _GRAPHICS.SetColor(255, 255, 255, 255 * alpha / 255)
+    _GRAPHICS.PrintF("加载中...", self.loadingTextRectX, self.loadingTextY, self.loadingTextRectWidth, "center")
     _GRAPHICS.ResetColor()
 end
 
@@ -95,6 +110,14 @@ function _Curtain:Enter(color, upTime, downTime, wattingTime, OnFull, OnDown, On
     self._OnEnd = OnEnd or _emptyFunc
     self.isRunning = true
     self.width, self.height = _SYSTEM.GetWindowDimensions()
+
+    -- 加载文字相关
+    local windowSizeScale = _SYSTEM.GetScale()
+    self.loadingTextRectWidth = 200 * windowSizeScale
+    self.loadingTextRectHeight = 30 * windowSizeScale
+    self.loadingTextRectX = self.width / 2 - self.loadingTextRectWidth / 2
+    self.loadingTextRectY = self.height / 2 - self.loadingTextRectHeight / 2
+    self.loadingTextY = self.loadingTextRectY + self.loadingTextRectHeight / 2 - _GRAPHICS.GetFontHeight() / 2
 end
 
 return _Curtain
