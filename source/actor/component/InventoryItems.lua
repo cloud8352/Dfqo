@@ -80,45 +80,7 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
     end
 
     local inventoryItemData = ResMgr.GetItemData(inventoryItemConfigPath)
-    articleInfo.path = inventoryItemConfigPath
-    local typeStr = inventoryItemData.type
-    if typeStr == "equipment" then
-        articleInfo.type = UiCommon.ArticleType.Equipment
-        ---@type Actor.RESMGR.EquipmentData
-        local resMgrEquData = inventoryItemData
-        articleInfo.equInfo.resMgrEquData = resMgrEquData
-        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
-
-        local equType = 0
-        if resMgrEquData.kind == "clothes" then
-            equType = UiCommon.MapOfTagToEquType[resMgrEquData.subKind]
-        else 
-            equType = UiCommon.MapOfTagToEquType[resMgrEquData.kind]
-        end
-        articleInfo.equInfo.type = equType
-    elseif typeStr == "Attribute" then
-        articleInfo.type = UiCommon.ArticleType.Consumable
-        ---@type Actor.RESMGR.AttributeData
-        local resMgrConsumableData = inventoryItemData
-        articleInfo.iconPath = "icon/Attribute/" .. resMgrConsumableData.icon
-        articleInfo.consumableInfo.hpRecovery = resMgrConsumableData.HpRecovery
-        articleInfo.consumableInfo.hpRecoveryRate = resMgrConsumableData.HpRecoveryRate
-        articleInfo.consumableInfo.mpRecovery = resMgrConsumableData.MpRecovery
-        articleInfo.consumableInfo.mpRecoveryRate = resMgrConsumableData.MpRecoveryRate
-        articleInfo.consumableInfo.StateName = resMgrConsumableData.StateName
-    elseif typeStr == "skill" then
-        articleInfo.type = UiCommon.ArticleType.Consumable
-        ---@type Actor.RESMGR.SkillData
-        local resMgrSkillData = inventoryItemData
-        articleInfo.iconPath = "icon/skill/" .. resMgrSkillData.icon
-        articleInfo.consumableInfo.SkillPath = resMgrSkillData.path
-    elseif typeStr == "buff" then
-        --
-    end
-    articleInfo.name = inventoryItemData.name
-    articleInfo.desc = inventoryItemData.special or ""
-    articleInfo.UsableJobs = inventoryItemData.UsableJobs
-    articleInfo.UsableGenders = inventoryItemData.UsableGenders
+    UiCommon.UpdateArticleInfoFromData(articleInfo, inventoryItemData)
 
     -- 加入到列表中
     self.list[index] = articleInfo

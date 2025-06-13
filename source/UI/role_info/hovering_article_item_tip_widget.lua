@@ -375,28 +375,53 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
     label:SetText(equTypeStr)
     self.mapOfEquPropTypeToValue[Common.EquPropType.Type] = equInfo.type
 
-    -- HpExtent
-    label = self.mapOfEquPropTypeToLabel[Common.EquPropType.HpExtent]
-    label:SetText("hp最大值增加量：" .. tostring(equInfo.hpExtent))
-    self.mapOfEquPropTypeToValue[Common.EquPropType.HpExtent] = equInfo.hpExtent
-    -- HpExtentRate
-    label = self.mapOfEquPropTypeToLabel[Common.EquPropType.HpExtentRate]
-    label:SetText("hp最大值增加比例：" .. tostring(equInfo.hpExtentRate * 100) .. "%")
-    self.mapOfEquPropTypeToValue[Common.EquPropType.HpExtentRate] = equInfo.hpExtentRate
-    -- MpExtent
-    label = self.mapOfEquPropTypeToLabel[Common.EquPropType.MpExtent]
-    label:SetText("mp最大值增加量：" .. tostring(equInfo.mpExtent))
-    self.mapOfEquPropTypeToValue[Common.EquPropType.MpExtent] = equInfo.mpExtent
-    -- MpExtentRate
-    label = self.mapOfEquPropTypeToLabel[Common.EquPropType.MpExtentRate]
-    label:SetText("mp最大值增加比例：" .. tostring(equInfo.mpExtentRate * 100) .. "%")
-    self.mapOfEquPropTypeToValue[Common.EquPropType.MpExtentRate] = equInfo.mpExtentRate
+    -- MaxHp
+    self:setEquProp(Common.EquPropType.MaxHp, "hp最大值", equInfo.MaxHp)
+    -- HpRecovery
+    self:setEquProp(Common.EquPropType.HpRecovery, "hp每秒恢复量", equInfo.HpRecovery)
+    -- MaxMp
+    self:setEquProp(Common.EquPropType.MaxMp, "mp最大值", equInfo.MaxMp)
+    -- PhyAtk
+    self:setEquProp(Common.EquPropType.PhyAtk, "物理攻击力", equInfo.PhyAtk)
+    -- MagAtk
+    self:setEquProp(Common.EquPropType.MagAtk, "魔法攻击力", equInfo.MagAtk)
+    -- PhyDef
+    self:setEquProp(Common.EquPropType.PhyDef, "物理防御力", equInfo.PhyDef)
+    -- MagDef
+    self:setEquProp(Common.EquPropType.MagDef, "魔法防御力", equInfo.MagDef)
+    -- MoveSpeedRatio
+    self:setEquProp(Common.EquPropType.MoveSpeedRatio, "移速比例", equInfo.MoveSpeedRatio)
+    -- AttackSpeedRatio
+    self:setEquProp(Common.EquPropType.AttackSpeedRatio, "攻击速度比例", equInfo.AttackSpeedRatio)
+    -- CoolDownSpeedRatio
+    self:setEquProp(Common.EquPropType.CoolDownSpeedRatio, "技能冷却速度比例", equInfo.CoolDownSpeedRatio)
+    -- PhyAtkRatio
+    self:setEquProp(Common.EquPropType.PhyAtkRatio, "物理攻击力比例", equInfo.PhyAtkRatio)
+    -- MagAtkRatio
+    self:setEquProp(Common.EquPropType.MagAtkRatio, "魔法攻击力比例", equInfo.MagAtkRatio)
+    -- HpRecoverySpeedRatio
+    self:setEquProp(Common.EquPropType.HpRecoverySpeedRatio, "Hp恢复速度比例", equInfo.HpRecoverySpeedRatio)
 
     --- 设置 简介 标签控件文字
     self.descriptionLabel:SetText(info.desc)
 
     -- 通过属性调整各控件可见性
     self:AdjustWidgetsVisibilityByProp()
+end
+
+---@param equPropType int EquPropType
+---@param desc string
+---@param value number
+function HoveringArticleItemTipWidget:setEquProp(equPropType, desc, value)
+    local symbolStr = "+"
+    if value < 0 then
+        symbolStr = "-"
+    end
+    local label = self.mapOfEquPropTypeToLabel[equPropType]
+    value = math.abs(value)
+    label:SetText(desc .. "：" .. symbolStr .. tostring(value))
+    label:SetTextColor(255, 215, 0, 255)
+    self.mapOfEquPropTypeToValue[equPropType] = value
 end
 
 return HoveringArticleItemTipWidget

@@ -32,14 +32,6 @@ UiCommon.ArticleType = {
     Equipment = 3,
     Material = 4,
 }
---- 消耗品属性类型
----@enum ConsumablePropType
-UiCommon.ConsumablePropType = {
-    HpRecovery = 1,
-    HpRecoveryRate = 2,
-    MpRecovery = 3,
-    MpRecoveryRate = 4,
-}
 
 ---@enum EquType
 UiCommon.EquType = {
@@ -152,14 +144,13 @@ for k, v in pairs(mapOfEquTypeToTag) do
 end
 UiCommon.MapOfTagToEquType = mapOfTagToEquType
 
---- 装备属性类型
----@enum EquPropType
-UiCommon.EquPropType = {
-    Type = 1,
-    HpExtent = 2,
-    HpExtentRate = 3,
-    MpExtent = 4,
-    MpExtentRate = 5,
+--- 消耗品属性类型
+---@enum ConsumablePropType
+UiCommon.ConsumablePropType = {
+    HpRecovery = 1,
+    HpRecoveryRate = 2,
+    MpRecovery = 3,
+    MpRecoveryRate = 4,
 }
 
 --- 消耗品信息
@@ -180,22 +171,58 @@ local ConsumableInfo = {
     StateName = "",
 }
 
+--- 装备属性类型
+---@enum EquPropType
+UiCommon.EquPropType = {
+    Type = 1,
+    MaxHp = 2,
+    HpRecovery = 3,
+    MaxMp = 4,
+    PhyAtk = 5,
+    MagAtk = 6,
+    PhyDef = 7,
+    MagDef = 8,
+    MoveSpeedRatio = 9,
+    AttackSpeedRatio = 10,
+    CoolDownSpeedRatio = 11,
+    PhyAtkRatio = 12,
+    MagAtkRatio = 13,
+    HpRecoverySpeedRatio = 14
+}
+
 --- 装备信息
 ---@class EquInfo
 ---@field type EquType
 ---@field resMgrEquData Actor.RESMGR.EquipmentData
----@field hpExtent number
----@field hpExtentRate number
----@field mpExtent number
----@field mpExtentRate number
+---@field MaxHp number
+---@field HpRecovery number
+---@field PhyAtk number
+---@field MagAtk number
+---@field PhyDef number
+---@field MagDef number
+---@field MoveSpeedRatio number
+---@field AttackSpeedRatio number
+---@field CoolDownSpeedRatio number
+---@field PhyAtkRatio number
+---@field MagAtkRatio number
+---@field HpRecoverySpeedRatio number
 local EquInfo = {
     type = UiCommon.EquType.Belt,
     ---@type Actor.RESMGR.EquipmentData
     resMgrEquData = { kind = "", subKind = "" },
-    hpExtent = 0,
-    hpExtentRate = 0.0,
-    mpExtent = 0,
-    mpExtentRate = 0.0,
+    MaxHp = 0,
+    HpRecovery = 0,
+    MaxMp = 0,
+    PhyAtk = 0,
+    MagAtk = 0,
+    PhyDef = 0,
+    MagDef = 0,
+    MoveSpeedRatio = 0,
+    AttackSpeedRatio = 0,
+    CoolDownSpeedRatio = 0,
+    PhyAtkRatio = 0,
+    MagAtkRatio = 0,
+    HpRecoverySpeedRatio = 0 
 }
 
 ---@class ArticleInfo 物品项信息
@@ -236,6 +263,70 @@ local ArticleInfo = {
 ---@return ArticleInfo 创建新的物品信息
 function UiCommon.NewArticleInfo()
     return _TABLE.DeepClone(ArticleInfo)
+end
+
+
+---@param articleInfo ArticleInfo
+---@param inventoryItemData Actor.RESMGR.ItemData
+function UiCommon.UpdateArticleInfoFromData(articleInfo, inventoryItemData)
+    local typeStr = inventoryItemData.type
+    articleInfo.path = typeStr .. "/" .. inventoryItemData.path
+    if typeStr == "equipment" then
+        articleInfo.type = UiCommon.ArticleType.Equipment
+        ---@type Actor.RESMGR.EquipmentData
+        local resMgrEquData = inventoryItemData
+        articleInfo.equInfo.resMgrEquData = resMgrEquData
+        articleInfo.iconPath = "icon/equipment/" .. resMgrEquData.icon
+
+        local equType = 0
+        if resMgrEquData.kind == "clothes" then
+            equType = UiCommon.MapOfTagToEquType[resMgrEquData.subKind]
+        else 
+            equType = UiCommon.MapOfTagToEquType[resMgrEquData.kind]
+        end
+        articleInfo.equInfo.type = equType
+
+        ---@type table
+        local addedPropData = resMgrEquData.add
+        local equInfo = articleInfo.equInfo
+        if addedPropData then
+            equInfo.MaxHp = addedPropData.maxHp or 0
+            equInfo.HpRecovery = addedPropData.hpRecovery or 0
+            equInfo.MaxMp = addedPropData.maxMp or 0
+            equInfo.PhyAtk = addedPropData.phyAtk or 0
+            equInfo.MagAtk = addedPropData.magAtk or 0
+            equInfo.PhyDef = addedPropData.phyDef or 0
+            equInfo.MagDef = addedPropData.magDef or 0
+            equInfo.MoveSpeedRatio = addedPropData.moveRate or 0
+            equInfo.AttackSpeedRatio = addedPropData.attackRate or 0
+            equInfo.CoolDownSpeedRatio = addedPropData.coolDownRate or 0
+            equInfo.PhyAtkRatio = addedPropData.phyAtkRate or 0
+            equInfo.MagAtkRatio = addedPropData.magAtkRate or 0
+            equInfo.HpRecoverySpeedRatio = addedPropData.hpRecoveryRate or 0
+        end
+    elseif typeStr == "Attribute" then
+        articleInfo.type = UiCommon.ArticleType.Consumable
+        ---@type Actor.RESMGR.AttributeData
+        local resMgrConsumableData = inventoryItemData
+        articleInfo.iconPath = "icon/Attribute/" .. resMgrConsumableData.icon
+        articleInfo.consumableInfo.hpRecovery = resMgrConsumableData.HpRecovery
+        articleInfo.consumableInfo.hpRecoveryRate = resMgrConsumableData.HpRecoveryRate
+        articleInfo.consumableInfo.mpRecovery = resMgrConsumableData.MpRecovery
+        articleInfo.consumableInfo.mpRecoveryRate = resMgrConsumableData.MpRecoveryRate
+        articleInfo.consumableInfo.StateName = resMgrConsumableData.StateName
+    elseif typeStr == "skill" then
+        articleInfo.type = UiCommon.ArticleType.Consumable
+        ---@type Actor.RESMGR.SkillData
+        local resMgrSkillData = inventoryItemData
+        articleInfo.iconPath = "icon/skill/" .. resMgrSkillData.icon
+        articleInfo.consumableInfo.SkillPath = resMgrSkillData.path
+    elseif typeStr == "buff" then
+        --
+    end
+    articleInfo.name = inventoryItemData.name
+    articleInfo.desc = inventoryItemData.special or ""
+    articleInfo.UsableJobs = inventoryItemData.UsableJobs
+    articleInfo.UsableGenders = inventoryItemData.UsableGenders
 end
 
 ---@param info ArticleInfo

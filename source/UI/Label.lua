@@ -12,6 +12,7 @@ local _Sprite = require("graphics.drawable.sprite")
 local _Graphics = require("lib.graphics")
 local _RESOURCE = require("lib.resource")
 local _String = require("lib.string")
+local Color = require("graphics.drawunit.color")
 
 local bit = require("bit")
 
@@ -78,6 +79,7 @@ function Label:Ctor(parentWindow)
 
     self.text = ""
     self.lastText = ""
+    self.textColor = Color.New()
 
     self.alignment = Label.AlignmentFlag.AlignCenter
     self.lastAlignment = self.alignment
@@ -123,7 +125,9 @@ function Label:Draw()
 
     self.iconSprite:Draw()
 
+    _Graphics.SetColor(self.textColor.red, self.textColor.green, self.textColor.blue, self.textColor.alpha)
     _Graphics.PrintF(self.text, self.xPos, self.yPos + self.textYPosOffset, self.width, self.alignFlagStr)
+    _Graphics.SetColor(255, 255, 255, 255)
 end
 
 function Label:SetPosition(x, y)
@@ -238,6 +242,14 @@ end
 function Label:AdjustWidthByContent()
     local fontWidth = _Graphics.GetFontWidth(self.text)
     self:SetSize(fontWidth, self.height)
+end
+
+---@param r int
+---@param g int
+---@param b int
+---@param a int
+function Label:SetTextColor(r, g, b, a)
+    self.textColor:Set(r, g, b, a)
 end
 
 function Label:updateSprite()
