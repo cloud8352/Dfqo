@@ -162,6 +162,10 @@ end
 ---@param isVisible bool
 function LineEdit:SetVisible(isVisible)
     Widget.SetVisible(self, isVisible)
+
+    if false == isVisible then
+        self:setFocused(false)
+    end
 end
 
 function LineEdit:CheckPoint(x, y)
