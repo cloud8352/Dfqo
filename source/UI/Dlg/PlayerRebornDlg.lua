@@ -107,9 +107,7 @@ end
 ---@param w int
 ---@param h int
 function PlayerRebornDlg:SetSize(w, h)
-    local width = math.floor(w)
-    local height = math.floor(h)
-    Window.SetSize(self, width, height)
+    Window.SetSize(self, w, h)
 
     local windowSizeScale = Util.GetWindowSizeScale()
     local contentWidget = self:GetContentWidget()
@@ -247,7 +245,7 @@ end
 ---@param x int
 ---@param y int
 function PlayerRebornDlg:OnRequestMoveWindow(x, y)
-    Window.OnRequestMoveWindow(self)
+    Window.OnRequestMoveWindow(self, x, y)
 end
 
 function PlayerRebornDlg:OnRequestCloseWindow()

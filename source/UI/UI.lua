@@ -26,7 +26,8 @@ local HpRectBar = require("UI.hp_rect_bar")
 local DirPadWidget = require("UI.TouchComponents.DirPadWidget")
 local ItemKeyGroup = require("UI.TouchComponents.ItemKeyGroup")
 local ArticleDockFrame = require("UI.ArticleDockFrame")
-local PlayerRebornDlg = require("UI.PlayerRebornDlg")
+local PlayerRebornDlg = require("UI.Dlg.PlayerRebornDlg")
+local AboutDlg = require("UI.Dlg.AboutDlg")
 local MiniMapWidget = require("UI.MiniMapWidget")
 
 local Map = require("map.init")
@@ -299,6 +300,14 @@ function UI.Init(director)
     UI.notificationWindow:SetContentWidget(UI.notificationWindowContent)
     UI.appendWindowWidget(UI.notificationWindow, UI.notificationWindow)
 
+    -- 关于对话框
+    UI.aboutDlg = AboutDlg.Create(UI.model)
+    UI.aboutDlg:SetSize(640 * windowSizeScale, 420 * windowSizeScale)
+    UI.aboutDlg:SetPosition(Util.GetWindowWidth() / 2 - 320 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - 210 * windowSizeScale)
+    UI.aboutDlg:SetVisible(false)
+    UI.appendWindowWidget(UI.aboutDlg, UI.aboutDlg)
+
     ---- connect
     -- StartGameWindow
     UI.startGameWindow:MocConnectSignal(StartGameWindow.Signal_GameStarted, UI)
@@ -310,6 +319,9 @@ function UI.Init(director)
     UI.settingsBtn:MocConnectSignal(UI.settingsBtn.Signal_BtnClicked, UI)
     -- mapSelectComboBox
     UI.mapSelectComboBox:MocConnectSignal(UI.mapSelectComboBox.Signal_SelectedItemChanged, UI)
+    -- startGameWindow
+    UI.startGameWindow:MocConnectSignal(UI.startGameWindow.Signal_ReqShowSettingsWindow, UI)
+    UI.startGameWindow:MocConnectSignal(UI.startGameWindow.Signal_ReqShowAboutDlg, UI)
     ---- model
     UI.model:MocConnectSignal(UI.model.RequestSetArticleTableItemInfo, UI)
     UI.model:MocConnectSignal(UI.model.Signal_requestSetArticleDockItemInfo, UI)
@@ -664,6 +676,19 @@ function UI.Slot_RequestSetUiGameState(my, sender, state)
     UI.updateWindowVisibilityByGameState()
 end
 
+---@param my Obj
+---@param sender Obj
+function UI.Slot_ReqShowSettingsWindow(my, sender)
+    UI.settingsWindow:SetVisible(true)
+    WindowManager.SetWindowToTopLayer(UI.settingsWindow)
+end
+
+---@param my Obj
+---@param sender Obj
+function UI.Slot_ReqShowAboutDlg(my, sender)
+    UI.aboutDlg:SetVisible(true)
+end
+
 --- private function
 
 ---
@@ -757,6 +782,7 @@ function UI.updateWindowVisibilityByGameState()
     UI.dirPadWidget:SetVisible(false)
     UI.itemKeyGroup:SetVisible(false)
     UI.playerRebornDlg:SetVisible(false)
+    UI.aboutDlg:SetVisible(false)
     UI.notificationWindow:SetVisible(false)
 
     if UI.gameState == Common.GameState.ActorSelect then

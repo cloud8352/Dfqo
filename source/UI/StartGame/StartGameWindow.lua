@@ -106,11 +106,11 @@ function StartGameWindow:Ctor(model)
     self.centralContentBgWindow = centralContentBgWindow
     centralContentBgWindow:SetIsNormalWidget(true)
     centralContentBgWindow:SetTitleBarVisible(false)
-    local centralContentBgW = 300 * windowSizeScale
-    local centralContentBgH = 185 * windowSizeScale
+    local centralContentBgW = 340 * windowSizeScale
+    local centralContentBgH = 228 * windowSizeScale
     centralContentBgWindow:SetSize(centralContentBgW, centralContentBgH)
     centralContentBgWindow:SetPosition(Util.GetWindowWidth() / 2 - centralContentBgW / 2,
-        Util.GetWindowHeight() / 2 - centralContentBgH / 2 + 110 * windowSizeScale)
+        Util.GetWindowHeight() / 2 - centralContentBgH / 2 + 60 * windowSizeScale)
 
     local centralContentBgX, centralContentBgY = centralContentBgWindow:GetPosition()
     -- actor select btn
@@ -118,7 +118,7 @@ function StartGameWindow:Ctor(model)
     self.actorSelectBtn = actorSelectBtn
     initBtnImgPaths(actorSelectBtn)
     actorSelectBtn:SetText("选择角色")
-    local widgetW = 262 * Util.GetWindowSizeScale()
+    local widgetW = 302 * Util.GetWindowSizeScale()
     local widgetH = 40 * Util.GetWindowSizeScale()
     actorSelectBtn:SetSize(widgetW, widgetH)
     actorSelectBtn:SetPosition(centralContentBgX + centralContentBgW / 2 - widgetW / 2,
@@ -130,7 +130,7 @@ function StartGameWindow:Ctor(model)
     self.settingsBtn = settingsBtn
     initBtnImgPaths(settingsBtn)
     settingsBtn:SetText("设置")
-    local widgetW = 262 * windowSizeScale
+    local widgetW = 302 * windowSizeScale
     local widgetH = 40 * windowSizeScale
     settingsBtn:SetSize(widgetW, widgetH)
     settingsBtn:SetPosition(centralContentBgX + centralContentBgW / 2 - widgetW / 2,
@@ -143,11 +143,24 @@ function StartGameWindow:Ctor(model)
     self.aboutBtn = aboutBtn
     initBtnImgPaths(aboutBtn)
     aboutBtn:SetText("关于")
-    local widgetW = 262 * windowSizeScale
+    local widgetW = 302 * windowSizeScale
     local widgetH = 40 * windowSizeScale
     aboutBtn:SetSize(widgetW, widgetH)
     aboutBtn:SetPosition(centralContentBgX + centralContentBgW / 2 - widgetW / 2,
         settingsBtnY + settingsBtnH + 10 * Util.GetWindowSizeScale())
+    local _, aboutBtnH = aboutBtn:GetSize()
+    local _, aboutBtnY = aboutBtn:GetPosition()
+
+    -- exitBtn
+    local exitBtn = PushButton.Create(self)
+    self.exitBtn = exitBtn
+    initBtnImgPaths(exitBtn)
+    exitBtn:SetText("退出游戏")
+    local widgetW = 302 * windowSizeScale
+    local widgetH = 40 * windowSizeScale
+    exitBtn:SetSize(widgetW, widgetH)
+    exitBtn:SetPosition(centralContentBgX + centralContentBgW / 2 - widgetW / 2,
+        aboutBtnY + aboutBtnH + 10 * Util.GetWindowSizeScale())
 
 
     -- actor select page
@@ -236,6 +249,9 @@ function StartGameWindow:Ctor(model)
 
     --- connection
     self.actorSelectBtn:MocConnectSignal(self.actorSelectBtn.Signal_BtnClicked, self)
+    self.settingsBtn:MocConnectSignal(self.settingsBtn.Signal_BtnClicked, self)
+    self.aboutBtn:MocConnectSignal(self.aboutBtn.Signal_BtnClicked, self)
+    self.exitBtn:MocConnectSignal(self.exitBtn.Signal_BtnClicked, self)
     self.goBackBtn:MocConnectSignal(self.goBackBtn.Signal_BtnClicked, self)
     self.actorCreateBtn:MocConnectSignal(self.actorCreateBtn.Signal_BtnClicked, self)
     self.startGameBtn:MocConnectSignal(self.startGameBtn.Signal_BtnClicked, self)
@@ -258,6 +274,7 @@ function StartGameWindow:Update(dt)
     self.actorSelectBtn:Update(dt)
     self.settingsBtn:Update(dt)
     self.aboutBtn:Update(dt)
+    self.exitBtn:Update(dt)
 
     for _, widget in pairs(self.actorWidgetList) do
         widget.Btn:Update(dt)
@@ -292,6 +309,7 @@ function StartGameWindow:Draw()
     self.actorSelectBtn:Draw()
     self.settingsBtn:Draw()
     self.aboutBtn:Draw()
+    self.exitBtn:Draw()
 
     if self.pageType == PageEnum.ActorSelect then
         for _, widget in pairs(self.actorWidgetList) do
@@ -496,6 +514,18 @@ function StartGameWindow:Slot_BtnClicked(sender)
         self:setPage(PageEnum.ActorSelect)
     end
 
+    if self.settingsBtn == sender then
+        self:Signal_ReqShowSettingsWindow()
+    end
+
+    if self.aboutBtn == sender then
+        self:Signal_ReqShowAboutDlg()
+    end
+
+    if self.exitBtn == sender then
+        self.model:ExitGame()
+    end
+
     if self.goBackBtn == sender then
         if self.pageType == PageEnum.ActorCreate then
             self:setPage(PageEnum.ActorSelect)
@@ -583,6 +613,46 @@ function StartGameWindow:Signal_GameStarted()
     for _, receiver in pairs(receiverList) do
         ---@type function
         local func = receiver.Slot_GameStarted
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function StartGameWindow:Signal_ReqShowSettingsWindow()
+    print("StartGameWindow:Signal_ReqShowSettingsWindow()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_ReqShowSettingsWindow)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_ReqShowSettingsWindow
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+function StartGameWindow:Signal_ReqShowAboutDlg()
+    print("StartGameWindow:Signal_ReqShowAboutDlg()")
+    local receiverList = self:GetReceiverListOfSignal(self.Signal_ReqShowAboutDlg)
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_ReqShowAboutDlg
         if func == nil then
             goto continue
         end
@@ -722,6 +792,7 @@ function StartGameWindow:setPage(type)
     self.actorSelectBtn:SetVisible(false)
     self.settingsBtn:SetVisible(false)
     self.aboutBtn:SetVisible(false)
+    self.exitBtn:SetVisible(false)
     for _, widget in pairs(self.actorWidgetList) do
         widget.Btn:SetVisible(false)
     end
@@ -746,6 +817,7 @@ function StartGameWindow:setPage(type)
         self.actorSelectBtn:SetVisible(true)
         self.settingsBtn:SetVisible(true)
         self.aboutBtn:SetVisible(true)
+        self.exitBtn:SetVisible(true)
 
         self.bgLabel:SetIconSpriteDataPath(StartPageBgImgPath)
     elseif type == PageEnum.ActorSelect then

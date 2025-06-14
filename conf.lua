@@ -8,6 +8,7 @@ function love.conf(t)
     t.externalstorage = true
 
     t.window.title = "Dungeon Fighter Quest Original"
+    t.window.icon = "asset/image/icon/Logo.png"
     t.window.width = 960
     t.window.height = 540
 

@@ -22,6 +22,7 @@ local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
 local LifeSrv = require("actor.service.LifeSrv")
 local StateSrv = require("actor.service.state")
+local BuffSrv = require("actor.service.buff")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
@@ -33,7 +34,7 @@ local File = require("lib.file")
 local String = require("lib.string")
 local GraphicsLib = require("lib.graphics")
 local KeyboardLib = require("lib.keyboard")
-local BuffSrv = require("actor.service.buff")
+local SystemLib = require("lib.system")
 
 ---@class UiModel
 local UiModel = require("core.class")()
@@ -835,6 +836,10 @@ end
 
 function UiModel:GetMapInfo()
     return _MAP.info
+end
+
+function UiModel:ExitGame()
+    SystemLib.Exit()
 end
 
 --- signals

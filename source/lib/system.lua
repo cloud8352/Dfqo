@@ -160,6 +160,10 @@ function _SYSTEM.GetWindowsOsDpi()
     return WindowsOsDpi
 end
 
+function _SYSTEM.Exit()
+    love.event.quit()
+end
+
 function _SYSTEM.initWindowOsDpi()
     if _SYSTEM.IsWindowsOs() then
         local file = io.open("realWindowsOsScreenWidth.tmp", "r")
