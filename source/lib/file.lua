@@ -54,20 +54,11 @@ end
 ---@return boolean, string succeed errMsg
 function _FILE.WriteFile(filePath, str)
     local stringLib = require("lib.string")
+    local succeed = true
     local errMsg = ""
-    -- 如果目录不存在，就创建
     local dirPath = stringLib.ToDirectory(filePath)
-    local absoluteDirPath = ""
-    local absoluteFilePath = ""
-    local filePathPrefix = string.sub(dirPath, 1, 1)
-    if filePathPrefix ~= "/" then
-        absoluteDirPath = _FILE.getSaveDirectory() .. "/" .. dirPath
-        absoluteFilePath = _FILE.getSaveDirectory() .. "/" .. filePath
-    else
-        absoluteDirPath = _FILE.getSaveDirectory() .. dirPath
-        absoluteFilePath = _FILE.getSaveDirectory() .. filePath
-    end
-    if not _FILE.Exists(absoluteDirPath) then
+    -- 如果目录不存在，就创建
+    if not _FILE.Exists(dirPath) then
         local ok = _FILE.MkDir(dirPath)
         if not ok then
             errMsg = dirPath .. " dir make failed!"
@@ -76,24 +67,30 @@ function _FILE.WriteFile(filePath, str)
         end
     end
 
-    -- 以绝对路径创建文件
-    local file = io.open(absoluteFilePath, "w")
-    if (not file) then
-        errMsg = filePath .. " open failed!"
-        print("_FILE.WriteFile(filePath, str)", errMsg)
-        return false, errMsg
-    end
-
-    file:write(str)
-    file:close()
-
-    return true, ""
+    succeed, errMsg = love.filesystem.write(filePath, str)
+    return succeed, errMsg
 end
 
 ---@param path string
 ---@return table
 function _FILE.ReadScript(path)
     return loadstring(_FILE.ReadFile(path))()
+end
+
+---@param filePath string
+---@return boolean, string succeed errMsg
+function _FILE.Delete(filePath)
+    local succeed = true
+    local errMsg = ""
+
+    if not _FILE.Exists(filePath) then
+        succeed = false
+        errMsg = filePath .. " not exists!"
+        return succeed, errMsg
+    end
+
+    succeed, errMsg = love.filesystem.remove(filePath)
+    return succeed, errMsg
 end
 
 ---@param path string

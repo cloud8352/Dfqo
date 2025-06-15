@@ -252,26 +252,6 @@ function AboutDlg:Signal_WindowClosed()
     Window.Signal_WindowClosed(self)
 end
 
-function AboutDlg:Signal_GameStarted()
-    print("AboutDlg:Signal_GameStarted()")
-    local receiverList = self:GetReceiverListOfSignal(self.Signal_GameStarted)
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_GameStarted
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
-
-        ::continue::
-    end
-end
-
 ---- private methods
 
 function AboutDlg:updateUiPosBySize()

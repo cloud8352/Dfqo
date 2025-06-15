@@ -754,6 +754,19 @@ function UiModel:CreateUserActor(jobActorSimplePath, name)
     self:loadUserActorList()
 end
 
+---@param userActorSimplePath string
+function UiModel:DeleteUserActor(userActorSimplePath)
+    local playerCfgFilePath = "config/actor/instance/" .. userActorSimplePath .. ".cfg"
+    local succeed, errMsg = File.Delete(playerCfgFilePath)
+    if not succeed then
+        print("UiModel:DeleteUserActor(userActorSimplePath)", errMsg)
+        return
+    end
+
+    -- 重新加载用户角色列表
+    self:loadUserActorList()
+end
+
 ---@param timeMs int
 ---@param text string
 function UiModel:RequestUiToShowNotification(timeMs, text)

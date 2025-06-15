@@ -74,7 +74,7 @@ function IconTextLabel:SetSize(width, height)
     self.textLabel:SetSize(width - iconSize - IconTextSpace, height)
 end
 
-function Widget:SetEnable(enable)
+function IconTextLabel:SetEnable(enable)
     self.baseWidget:SetEnable(enable)
 end
 

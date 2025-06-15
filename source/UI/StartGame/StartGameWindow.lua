@@ -14,6 +14,7 @@ local PushButton = require("UI.PushButton")
 local WindowManager = require("UI.WindowManager")
 local VideoWidget = require("UI.VideoWidget")
 local LineEdit = require("UI.LineEdit")
+local ConfirmDlg = require("UI.Dlg.ConfirmDlg")
 
 local ResourceLib = require("lib.resource")
 local AspectCmpt = require("actor.component.aspect")
@@ -86,6 +87,7 @@ function StartGameWindow:Ctor(model)
     self.pageType = PageEnum.Start
 
     self.selectedUserActorPath = ""
+    self.selectedUserActorName = ""
     self.selectedJobActorPath = ""
 
     --- 角色选择界面
@@ -187,9 +189,21 @@ function StartGameWindow:Ctor(model)
     actorCreateBtn:SetPosition(190 * windowSizeScale,
         Util.GetWindowHeight() - widgetH - 30 * windowSizeScale)
 
+    -- actor delete btn
+    local actorDeleteBtn = PushButton.Create(self)
+    self.actorDeleteBtn = actorDeleteBtn
+    actorDeleteBtn:SetEnable(false)
+    actorDeleteBtn:SetText("删除角色")
+    local widgetW = 100 * windowSizeScale
+    local widgetH = 40 * windowSizeScale
+    actorDeleteBtn:SetSize(widgetW, widgetH)
+    actorDeleteBtn:SetPosition(320 * windowSizeScale,
+        Util.GetWindowHeight() - widgetH - 30 * windowSizeScale)
+
     -- startGameBtn
     local startGameBtn = PushButton.Create(self)
     self.startGameBtn = startGameBtn
+    startGameBtn:SetEnable(false)
     startGameBtn:SetClickedSoundSourceByPath("asset/sound/ui/BtnClicked2.wav")
     startGameBtn:SetText("开始游戏")
     local widgetW = 120 * windowSizeScale
@@ -197,6 +211,15 @@ function StartGameWindow:Ctor(model)
     startGameBtn:SetSize(widgetW, widgetH)
     startGameBtn:SetPosition(Util.GetWindowWidth() / 2 - widgetW / 2,
         Util.GetWindowHeight() - widgetH - 30 * windowSizeScale)
+
+    -- 角色删除确认对话框
+    local actorDeleteConfirmDlg = ConfirmDlg.Create()
+    self.actorDeleteConfirmDlg = actorDeleteConfirmDlg
+    actorDeleteConfirmDlg:SetText("是否确认删除角色[]？")
+    actorDeleteConfirmDlg:SetSize(360 * windowSizeScale, 200 * windowSizeScale)
+    actorDeleteConfirmDlg:SetPosition(Util.GetWindowWidth() / 2 - 180 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - 100 * windowSizeScale)
+    actorDeleteConfirmDlg:SetVisible(false)
 
     --- 角色创建页面
     ---@type table<int, StartGameWindow.ActorWidgetStruct>
@@ -254,8 +277,10 @@ function StartGameWindow:Ctor(model)
     self.exitBtn:MocConnectSignal(self.exitBtn.Signal_BtnClicked, self)
     self.goBackBtn:MocConnectSignal(self.goBackBtn.Signal_BtnClicked, self)
     self.actorCreateBtn:MocConnectSignal(self.actorCreateBtn.Signal_BtnClicked, self)
+    self.actorDeleteBtn:MocConnectSignal(self.actorDeleteBtn.Signal_BtnClicked, self)
     self.startGameBtn:MocConnectSignal(self.startGameBtn.Signal_BtnClicked, self)
     self.nameConfirmBtn:MocConnectSignal(self.nameConfirmBtn.Signal_BtnClicked, self)
+    self.actorDeleteConfirmDlg:MocConnectSignal(self.actorDeleteConfirmDlg.Signal_Yes, self)
     self.model:MocConnectSignal(self.model.Signal_RequestSetUiGameState, self)
 
     --- post init
@@ -282,6 +307,7 @@ function StartGameWindow:Update(dt)
     end
     self.goBackBtn:Update(dt)
     self.actorCreateBtn:Update(dt)
+    self.actorDeleteBtn:Update(dt)
     self.startGameBtn:Update(dt)
 
     for _, widget in pairs(self.jobActorWidgetList) do
@@ -320,6 +346,7 @@ function StartGameWindow:Draw()
     end
     self.goBackBtn:Draw()
     self.actorCreateBtn:Draw()
+    self.actorDeleteBtn:Draw()
     self.startGameBtn:Draw()
 
     if self.pageType == PageEnum.ActorCreate then
@@ -403,6 +430,10 @@ end
 ---@param visible boolean
 function StartGameWindow:SetVisible(visible)
     Window.SetVisible(self, visible)
+
+    if false == visible then
+        self.actorDeleteConfirmDlg:SetVisible(false)
+    end
 end
 
 ---@param sprite Graphics.Drawable.Sprite
@@ -541,6 +572,14 @@ function StartGameWindow:Slot_BtnClicked(sender)
         self.nameLineEdit:SetText(noSuffixFileName)
     end
 
+    if self.actorDeleteBtn == sender then
+        if self.selectedUserActorName ~= "" then
+            local text = "是否确认删除角色 " .. self.selectedUserActorName .. " ？"
+            self.actorDeleteConfirmDlg:SetText(text)
+            self.actorDeleteConfirmDlg:SetVisible(true)
+        end
+    end
+
     if self.nameConfirmBtn == sender then
         local name = self.nameLineEdit:GetText()
         self.model:CreateUserActor(self.selectedJobActorPath, name)
@@ -565,6 +604,9 @@ function StartGameWindow:Slot_BtnClicked(sender)
 
         widget.Btn:SetForcePressed(true)
         self.selectedUserActorPath = widget.ActorPath
+        self.selectedUserActorName = widget.NameLabel:GetText()
+        self.actorDeleteBtn:SetEnable(true)
+        self.startGameBtn:SetEnable(true)
     end
 
     local widget = self:findInJobActorWidgetList(sender)
@@ -587,13 +629,20 @@ function StartGameWindow:Slot_BtnClicked(sender)
     end
 end
 
-
 ---@param sender Obj
 ---@param state int GameState
 function StartGameWindow:Slot_RequestSetUiGameState(sender, state)
     if state == Common.GameState.ActorSelect then
         self:loadActorWidgetList()
         self:loadJobActorWidgetList()
+    end
+end
+
+---@param sender Obj
+function StartGameWindow:Slot_Yes(sender)
+    if sender == self.actorDeleteConfirmDlg then
+        self.model:DeleteUserActor(self.selectedUserActorPath)
+        self:loadActorWidgetList()
     end
 end
 
@@ -798,6 +847,7 @@ function StartGameWindow:setPage(type)
     end
     self.goBackBtn:SetVisible(false)
     self.actorCreateBtn:SetVisible(false)
+    self.actorDeleteBtn:SetVisible(false)
     self.startGameBtn:SetVisible(false)
 
     for _, widget in pairs(self.jobActorWidgetList) do
@@ -826,6 +876,7 @@ function StartGameWindow:setPage(type)
         end
         self.goBackBtn:SetVisible(true)
         self.actorCreateBtn:SetVisible(true)
+        self.actorDeleteBtn:SetVisible(true)
         self.startGameBtn:SetVisible(true)
 
         self.bgLabel:SetIconSpriteDataPath(ActorSelectPageBgImgPath)
