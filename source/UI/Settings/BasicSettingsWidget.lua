@@ -59,6 +59,11 @@ function BasicSettingsWidget:Ctor(parentWindow, model)
     self.retStartGamePageBtn:SetText("开始\n界面")
     self.retStartGamePageBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
 
+    self.exitGameBtn = PushButton.Create(parentWindow)
+    initBtnImgPaths(self.exitGameBtn)
+    self.exitGameBtn:SetText("退出\n游戏")
+    self.exitGameBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
+
     --- music vol bar
     self.musicVolTitleLabel = Label.Create(parentWindow)
     self.musicVolTitleLabel:SetSize(300 * windowSizeScale, 35 * windowSizeScale)
@@ -102,6 +107,7 @@ function BasicSettingsWidget:Ctor(parentWindow, model)
     
     -- connection
     self.retStartGamePageBtn:MocConnectSignal(self.retStartGamePageBtn.Signal_BtnClicked, self)
+    self.exitGameBtn:MocConnectSignal(self.exitGameBtn.Signal_BtnClicked, self)
     self.musicVolBar:MocConnectSignal(self.musicVolBar.Signal_ProgressChanged, self)
     self.soundVolBar:MocConnectSignal(self.soundVolBar.Signal_ProgressChanged, self)
     self.windowSizePercentageComboBox:MocConnectSignal(self.windowSizePercentageComboBox.Signal_SelectedItemChanged, self)
@@ -132,6 +138,7 @@ function BasicSettingsWidget:Update(dt)
 
     self.goToTitleLabel:Update(dt)
     self.retStartGamePageBtn:Update(dt)
+    self.exitGameBtn:Update(dt)
     self.musicVolTitleLabel:Update(dt)
     self.musicVolBar:Update(dt)
     self.musicVolBarValueLabel:Update(dt)
@@ -152,6 +159,7 @@ function BasicSettingsWidget:Draw()
 
     self.goToTitleLabel:Draw()
     self.retStartGamePageBtn:Draw()
+    self.exitGameBtn:Draw()
     self.musicVolTitleLabel:Draw()
     self.musicVolBar:Draw()
     self.musicVolBarValueLabel:Draw()
@@ -208,6 +216,8 @@ function BasicSettingsWidget:SetPosition(x, y)
 
     widgetX, widgetY = self.retStartGamePageBtn:GetPosition()
     widgetW, widgetH = self.retStartGamePageBtn:GetSize()
+    self.exitGameBtn:SetPosition(widgetX + widgetW + 20 * windowSizeScale, widgetY)
+
     self.musicVolTitleLabel:SetPosition(x + leftMargin, widgetY + widgetH + itemMargin)
 
     widgetX, widgetY = self.musicVolTitleLabel:GetPosition()
@@ -268,6 +278,7 @@ function BasicSettingsWidget:SetEnable(enable)
 
     self.goToTitleLabel:SetEnable(enable)
     self.retStartGamePageBtn:SetEnable(enable)
+    self.exitGameBtn:SetEnable(enable)
     self.musicVolTitleLabel:SetEnable(enable)
     self.musicVolBar:SetEnable(enable)
     self.musicVolBarValueLabel:SetEnable(enable)
@@ -288,6 +299,7 @@ function BasicSettingsWidget:SetVisible(isVisible)
 
     self.goToTitleLabel:SetVisible(isVisible)
     self.retStartGamePageBtn:SetVisible(isVisible)
+    self.exitGameBtn:SetVisible(isVisible)
     self.musicVolTitleLabel:SetVisible(isVisible)
     self.musicVolBar:SetVisible(isVisible)
     self.musicVolBarValueLabel:SetVisible(isVisible)
@@ -320,6 +332,10 @@ end
 function BasicSettingsWidget:Slot_BtnClicked(sender)
     if sender == self.retStartGamePageBtn then
         self.model:GoToGameStartPage()
+    end
+
+    if sender == self.exitGameBtn then
+        self.model:ExitGame()
     end
 end
 
