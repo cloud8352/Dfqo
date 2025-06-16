@@ -21,6 +21,18 @@ end
 
 ---@param path string
 ---@return bool
+function _FILE.ExistsInSaveDir(path)
+    local saveDirAbsolutePath = love.filesystem.getSaveDirectory()
+    local fileRealDirPath = love.filesystem.getRealDirectory(path)
+    if saveDirAbsolutePath ~= fileRealDirPath then
+        return false
+    end
+    local info = love.filesystem.getInfo(path)
+    return info ~= nil
+end
+
+---@param path string
+---@return bool
 function _FILE.MkDir(path)
     return love.filesystem.createDirectory(path)
 end
@@ -58,7 +70,7 @@ function _FILE.WriteFile(filePath, str)
     local errMsg = ""
     local dirPath = stringLib.ToDirectory(filePath)
     -- 如果目录不存在，就创建
-    if not _FILE.Exists(dirPath) then
+    if not _FILE.ExistsInSaveDir(dirPath) then
         local ok = _FILE.MkDir(dirPath)
         if not ok then
             errMsg = dirPath .. " dir make failed!"
@@ -83,7 +95,7 @@ function _FILE.Delete(filePath)
     local succeed = true
     local errMsg = ""
 
-    if not _FILE.Exists(filePath) then
+    if not _FILE.ExistsInSaveDir(filePath) then
         succeed = false
         errMsg = filePath .. " not exists!"
         return succeed, errMsg
