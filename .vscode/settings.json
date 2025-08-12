@@ -23,7 +23,9 @@
         "Tepes",
         "Noirpera",
         "Rougelike",
-        "Suplex"
+        "Suplex",
+        "Shoryuken",
+        "Orochinagi"
     ],
     "files.exclude": {
         "**/love2d": true,

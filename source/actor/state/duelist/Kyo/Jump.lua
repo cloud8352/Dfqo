@@ -23,17 +23,6 @@ local KyoJump = require("core.class")(JumpBase)
 
 function KyoJump:NormalUpdate(dt, rate)
     JumpBase.NormalUpdate(self, dt, rate)
-
-    -- 空中技能逻辑
-    if _INPUT.IsPressed(self._entity.input, "counterAttack") then
-        -- local skill = SkillSrv.GetSkillWithPath(self._entity.skills, "swordman/ashen_fork")
-        -- if skill then
-        --     if skill:CanUse() then
-        --         print("SwordmanJump:NormalUpdate(): jump -> ashenFork")
-        --         skill:Use()
-        --     end
-        -- end
-    end
 end
 
 ---@param currentFrameAni Graphics.Drawable.Frameani
@@ -53,7 +42,7 @@ function KyoJump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
             if self._entity.identity.gender == 1 then
                 _SOUND.Play(self._soundDataSet.voice[2])
             end
-            Util.PlaySoundByGender(self._soundDataSet, 2, self._entity.identity.gender)
+            _SOUND.Play(self._soundDataSet.voice[2])
 
             local skillAttackValues = {
                 {
@@ -62,16 +51,6 @@ function KyoJump:UpdateJumpAttackLogic(currentFrameAni)    -- jump attack
                 }
             }
             self.jumpAttack:Enter(self._attackDataSet[1], skillAttackValues[1], _)
-
-            -- effect
-            local effectParam = {
-                x = self._entity.transform.position.x,
-                y = self._entity.transform.position.y,
-                z = self._entity.transform.position.z,
-                direction = self._entity.transform.direction,
-                entity = self._entity
-            }
-            self.jumpAttackEffectEntity = _FACTORY.New(self._actorDataSet[1], effectParam)
         end
     end
 end

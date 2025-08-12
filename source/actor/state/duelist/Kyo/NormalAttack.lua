@@ -32,24 +32,20 @@ local SkillKeyPressCheckIntervalMs = 150
 ---@field protected _easemove Actor.Gear.Easemove
 ---@field protected _attack Actor.Gear.Attack
 ---@field protected _hasPressed boolean
----@field protected _judgeAis table<number, Actor.Ai.Judge>
 ---@field protected _skill Actor.Skill
----@field protected _colliderDatas table<number, Actor.RESMGR.ColliderData>
----@field protected _easemoveParams table
+---@field protected easeMoveParams table
 ---@field protected _frames table
 ---@field protected _ticks table
----@field protected _hitstopMap table
----@field protected _coolDown table
+---@field protected hitStop table
 local _NormalAttack = require("core.class")(_Base)
 
 function _NormalAttack:Ctor(data, ...)
     _Base.Ctor(self, data, ...)
 
-    self._easemoveParams = data.easemove
+    self.easeMoveParams = data.EaseMove
     self._frames = data.frames
     self._ticks = data.ticks
-    self._hitstopMap = data.hitstop
-    self._coolDown = data.coolDown
+    self.hitStop = { 160, 100 }
 
     self.skillKeyPressCheckTimer = Timer.New()
 end
@@ -59,32 +55,9 @@ function _NormalAttack:Init(entity)
 
     self._easemove = _Easemove.New(self._entity.transform, self._entity.aspect)
     self._attack = _Attack.New(self._entity)
-    self._judgeAis = {}
-    self._aiFrame = 0
-
-    for n=1, #self._colliderDataSet do
-        self._judgeAis[n] = _BattleJudge.New(self._entity, self._colliderDataSet[n])
-    end
 
     ---@param attack Actor.Gear.Attack
     self._OnHit = function(attack)
-        if (not attack:HasAttacked()) then
-            local kind = self:getWeaponKind()
-
-            local cds = {}
-
-            ---@param v Actor.Skill
-            for k, v in self._entity.skills.container:Pairs() do
-                if (v:InCoolDown() and not v.isUltimate) then
-                    table.insert(cds, v)
-                end
-            end
-
-            if (#cds > 0) then
-                local skill = cds[math.random(1, #cds)] ---@type Actor.Skill
-                skill:SetNowTime(skill:GetNowTime() + self._coolDown[kind])
-            end
-        end
     end
 end
 
@@ -102,29 +75,23 @@ function _NormalAttack:NormalUpdate(dt, rate)
 
     self._attack:Update()
 
-    if (tick == self._easemoveParams[self._process].tick) then
+    if (tick == self.easeMoveParams[self._process].tick) then
         local direction = self._entity.transform.direction
         local arrowDirection = _INPUT.GetArrowDirection(self._entity.input, direction)
 
         if (arrowDirection >= 0) then
-            local easemoveParam = self._easemoveParams[self._process][arrowDirection + 1]
-            self._easemove:Enter("x", easemoveParam.power, easemoveParam.speed, direction)
+            local easeMoveParam = self.easeMoveParams[self._process][arrowDirection + 1]
+            self._easemove:Enter("x", easeMoveParam.power, easeMoveParam.speed, direction)
         end
     end
 
     local isEnd = self._process > #self._frames
     local keyFrame = not isEnd and self._frames[self._process] - 1 or 0
 
-    if (not isEnd) then
-        if (tick >= self._aiFrame) then
-            self._judgeAis[self._process]:Tick()
-        end
-    end
-
     if _INPUT.IsPressed(self._entity.input, self._skill:GetKey()) then
         self._hasPressed = true
         self.skillKeyPressCheckTimer:Enter(SkillKeyPressCheckIntervalMs)
-    end    
+    end
     if self._hasPressed and not self.skillKeyPressCheckTimer.isRunning then
         self._hasPressed = false
     end
@@ -141,10 +108,6 @@ function _NormalAttack:Enter(lateState, skill)
         _Base.Enter(self)
 
         self._skill = skill
-
-        for n=1, #self._judgeAis do
-            self._judgeAis[n].key = self._skill:GetKey()
-        end
 
         self._easemove:Exit()
         self:SetProcess(1)
@@ -165,19 +128,11 @@ function _NormalAttack:SetProcess(process)
     self._skill:Reset()
     _MOTION.TurnDirection(self._entity.transform, self._entity.input)
 
-    if (self._frames[self._process]) then
-        local maxFrame = _ASPECT.GetPart(self._entity.aspect):GetLength()
-        self._aiFrame = math.random(self._frames[self._process] - 1, maxFrame)
-    else
-        self._aiFrame = 0
-    end
+    _SOUND.Play(self._soundDataSet.voice[process])
 
-    Util.RandomPlaySoundByGender(self._soundDataSet, self._entity.identity.gender)
-
-    local kind = self:getWeaponKind()
-    local soundDatas = self._soundDataSet.swing[kind]
-    local n = math.random(1, _TABLE.Len(soundDatas))
-    _SOUND.Play(soundDatas[n])
+    local soundDataList = self._soundDataSet.swing
+    local n = math.random(1, _TABLE.Len(soundDataList))
+    _SOUND.Play(soundDataList[n])
 
     _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[process])
 end
@@ -185,15 +140,13 @@ end
 function _NormalAttack:EnterAttack()
     self._attack:Enter(self._attackDataSet[self._process], self._skill.attackValues[1], self._OnHit)
 
-    local kind = self:getWeaponKind()
-    
-    local hitstop = self._hitstopMap[kind]
-    self._attack.hitstop = hitstop[1]
-    self._attack.selfstop = hitstop[2]
-    self._attack.shake.time = hitstop[1]
+    local hitStop = self.hitStop
+    self._attack.hitstop = hitStop[1]
+    self._attack.selfstop = hitStop[2]
+    self._attack.shake.time = hitStop[1]
 
-    local soundDatas = self._soundDataSet.hitting[kind]
-    self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundDatas
+    local soundData = self._soundDataSet.hitting
+    self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundData
 end
 
 ---@return boolean
@@ -206,9 +159,4 @@ function _NormalAttack:GetProcess()
     return self._process
 end
 
-function _NormalAttack:getWeaponKind()
-    return "hsword"
-end
-
 return _NormalAttack
-
