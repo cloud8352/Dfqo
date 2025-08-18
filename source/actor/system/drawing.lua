@@ -226,8 +226,8 @@ function _Drawing:Draw()
 end
 
 ---@param entity Actor.Entity
-function _Drawing:OnEntityRemoved(entity)
-    -- print("_Drawing:OnEntityRemoved(entity)", entity)
+function _Drawing:OnExit(entity)
+    -- print("_Drawing:OnExit(entity)", entity)
 
     self._list:Del(entity)
 

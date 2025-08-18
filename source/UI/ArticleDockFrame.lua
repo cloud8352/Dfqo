@@ -20,9 +20,6 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
---- item background
-local ItemBgImgPath = "ui/WindowFrame/CenterBg"
-
 local ItemWidth = Common.ArticleItemWidth
 ItemWidth = _MATH.Round(ItemWidth)
 local ItemSpace = 1
@@ -48,16 +45,10 @@ function ArticleDockFrame:Ctor(parentWindow, model)
     local height = ItemWidth
     Widget.SetSize(self, width, height)
 
-    ---@type table<number, Label>
-    self.viewItemBgList = {}
     --- item
     ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
     for i = 1, ColCount do
-        local bgLabel = Label.New(parentWindow)
-        bgLabel:SetIconSpriteDataPath(ItemBgImgPath)
-        self.viewItemBgList[i] = bgLabel
-
         local item = ArticleViewItem.New(parentWindow)
         item:SetIconSpriteDataPath("")
         self.viewItemList[i] = item
@@ -131,12 +122,7 @@ function ArticleDockFrame:Update(dt)
         self:updateHoveringItemTipWindowData()
     end
 
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Update(dt)
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Update(dt)
     end
 
@@ -154,12 +140,7 @@ function ArticleDockFrame:Draw()
     end
     Widget.Draw(self)
 
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Draw()
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Draw()
     end
 
@@ -184,8 +165,8 @@ function ArticleDockFrame:MouseEvent()
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
         -- 寻找鼠标悬停处的显示项标签
         local hoveringItemIndex = -1
-        for i, label in pairs(self.viewItemBgList) do
-            if label:CheckPoint(mousePosX, mousePosY) then
+        for i, item in pairs(self.viewItemList) do
+            if item:CheckPoint(mousePosX, mousePosY) then
                 hoveringItemIndex = i
                 break
             end
@@ -250,17 +231,12 @@ end
 function ArticleDockFrame:SetPosition(x, y)
     Widget.SetPosition(self, x, y)
 
-    for i, label in pairs(self.viewItemBgList) do
+    for i, item in pairs(self.viewItemList) do
         local col = math.fmod(i - 1, ColCount) 
         local itemXPos = x + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
         local itemYPos = y + (ItemWidth + ItemSpace) * row
 
-        -- item background
-        label:SetPosition(itemXPos, itemYPos)
-
-        -- item
-        local item = self.viewItemList[i]
         item:SetPosition(itemXPos, itemYPos)
     end
 end
@@ -315,7 +291,7 @@ end
 ---@param itemInfo ArticleInfo
 function ArticleDockFrame:SetIndexItemInfo(index, itemInfo)
     local item = self.viewItemList[index]
-    assert(item, "ArticleTableWidget:SetIndexItemInfo(index, itemInfo), not exit item")
+    assert(item, "ArticleDockFrame:SetIndexItemInfo(index, itemInfo), not exit item")
     local iconPath = itemInfo.iconPath
     local count = itemInfo.count
     if itemInfo.type == Common.ArticleType.Empty then
@@ -342,18 +318,12 @@ end
 
 function ArticleDockFrame:updateData()
     local xPos, yPos = Widget.GetPosition(self)
-    for i, label in pairs(self.viewItemBgList) do
+    for i, item in pairs(self.viewItemList) do
         local col = math.fmod(i - 1, ColCount) 
         local itemXPos = xPos + (ItemWidth + ItemSpace) * col
         local row = math.floor((i - 1) / ColCount)
         local itemYPos = yPos + (ItemWidth + ItemSpace) * row
-
-        -- item background
-        label:SetSize(ItemWidth, ItemWidth)
-        label:SetIconSize(ItemWidth, ItemWidth)
-
-        -- item
-        local item = self.viewItemList[i]
+        
         item:SetSize(ItemWidth, ItemWidth)
     end
 
@@ -363,16 +333,16 @@ end
 
 function ArticleDockFrame:updateHoveringItemFrameData()
     -- hovering item frame label
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         self.hoveringItemFrameLabel:SetVisible(false)
         return
     end
 
-    local x, y = skillItemBgLabel:GetPosition()
+    local x, y = item:GetPosition()
     self.hoveringItemFrameLabel:SetPosition(x, y)
 
-    local w, h = skillItemBgLabel:GetSize()
+    local w, h = item:GetSize()
     self.hoveringItemFrameLabel:SetSize(w, h)
     self.hoveringItemFrameLabel:SetIconSize(w, h)
 
@@ -382,16 +352,16 @@ end
 function ArticleDockFrame:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringArticleItemTipWindowVisibility(self.isShowHoveringItemTip)
 
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         return
     end
 
     -- 设置悬浮框位置
     local tipWindowXPos = 0
     local tipWindowYPos = 0
-    local bgX, bgY = skillItemBgLabel:GetPosition()
-    local bgW, bgH = skillItemBgLabel:GetSize()
+    local bgX, bgY = item:GetPosition()
+    local bgW, bgH = item:GetSize()
     tipWindowXPos = bgX + bgW / 2
     tipWindowYPos = bgY + bgH / 2
 

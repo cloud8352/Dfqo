@@ -601,4 +601,17 @@ UiCommon.JobActorPageColCount = 3
 UiCommon.JobActorPageRowCount = 3
 UiCommon.JobActorPageTotalCount = UiCommon.JobActorPageColCount * UiCommon.JobActorPageRowCount
 
+----- Npc
+---@class NpcInfo
+local NpcInfo = {
+    Name = "",
+    Intro = ""
+}
+
+function UiCommon.NewNpcInfo()
+    ---@type NpcInfo
+    local o = _TABLE.DeepClone(NpcInfo)
+    return o
+end
+
 return UiCommon

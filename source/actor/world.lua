@@ -48,6 +48,7 @@ local function _OnClean()
 end
 
 function _WORLD.Init()
+    ---@class WorldEvent
     local event = {
         AddSystem = function(system)
             if (system.Update and not _updateList:HasValue(system)) then
@@ -122,6 +123,7 @@ function _WORLD.Init()
         require("actor.system.attributes").New(event),
         require("actor.system.life").New(event),
         require("actor.system.input").New(event),
+        require("actor.system.NpcSys").Create(event),
     }
 
     --Init combo list

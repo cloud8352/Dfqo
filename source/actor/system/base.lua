@@ -10,7 +10,6 @@ local _ECSMGR = require("actor.ecsmgr")
 local _count = 0
 
 ---@class Actor.System
----@field protected OnEntityRemoved function override
 ---@field protected _upperEvent event
 ---@field protected _list Core.QuickList
 ---@field protected _id int
@@ -19,6 +18,9 @@ local _count = 0
 ---@field protected _dels table<int, Actor.Entity>
 local _System = require("core.class")()
 
+---@param upperEvent WorldEvent
+---@param passMap table<string, boolean>
+---@param name string
 function _System:Ctor(upperEvent, passMap, name)
     _count = _count + 1
 
@@ -50,8 +52,6 @@ function _System:Ctor(upperEvent, passMap, name)
                 self._upperEvent.Del(self)
             end
         end
-
-        self:OnEntityRemoved(entity)
     end
 
     self._upperEvent = upperEvent
@@ -108,7 +108,7 @@ end
 
 --- protected function, can override, 当系统移除某一实例时调用
 ---@param entity Actor.Entity
-function _System:OnEntityRemoved(entity)
+function _System:OnExit(entity)
 end
 
 return _System

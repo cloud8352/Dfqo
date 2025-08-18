@@ -15,9 +15,14 @@ local _emptyFunc = function() end
 ---@field protected _list Core.QuickList
 ---@field protected _passMap table<string, boolean>
 ---@field protected _OnAdd function
----@field protected _OnDel function
+---@field protected _OnAdd function
+---@field protected _OnInit function
 local _Combo = require("core.class")()
 
+---@param passMap table<string, boolean>
+---@param OnAdd function
+---@param OnDel function
+---@param OnInit function
 function _Combo:Ctor(passMap, OnAdd, OnDel, OnInit)
     self._list = _QuickList.New()
     self._passMap = passMap

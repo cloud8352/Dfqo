@@ -15,7 +15,7 @@ local InventoryItemsSrv = require("actor.service.InventoryItemsSrv")
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
 
----@class Actor.System.Life : Actor.System
+---@class Actor.System.InventoryItemsSys : Actor.System
 local InventoryItemsSys = require("core.class")(_Base)
 
 function InventoryItemsSys:Ctor(upperEvent)

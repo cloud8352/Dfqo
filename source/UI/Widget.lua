@@ -52,6 +52,7 @@ function Widget:Ctor(parentWindow)
     self.bgSprite = Sprite.New()
     local imgData = ResourceLib.GetSpriteData(EmptyImgPath)
     self.bgSprite:SetData(imgData)
+    self.bgSpriteDataPath = EmptyImgPath
     self.lastBgSprite = nil
 
     self.checkRect = Rect.New()
@@ -213,6 +214,28 @@ function Widget:SetBgSprite(sprite)
     self.bgSprite = sprite
 
     self.bgSprite:SetAttri("position", self.xPos, self.yPos)
+end
+
+---@param path string
+function Widget:SetBgSpriteDataPath(path)
+    if self.bgSpriteDataPath == path then
+        return
+    end
+
+    self.bgSpriteDataPath = path
+    ---@type Lib.RESOURCE.SpriteData
+    local spriteData = nil
+    if self.bgSpriteDataPath == "" then
+        spriteData = ResourceLib.GetSpriteData(EmptyImgPath)
+    else
+        spriteData = ResourceLib.GetSpriteData(path)
+    end
+    self.bgSprite:SetData(spriteData)
+
+    local spriteWidth, spriteHeight = self.bgSprite:GetImageDimensions()
+    local spriteXScale = self.width / spriteWidth
+    local spriteYScale = self.height / spriteHeight
+    self.bgSprite:SetAttri("scale", spriteXScale, spriteYScale)
 end
 
 ---@param r int

@@ -13,10 +13,9 @@ local _MATH = require("lib.math")
 local WindowManager = require("UI.WindowManager")
 local Widget = require("UI.Widget")
 local IconTextLabel = require("UI.IconTextLabel")
-local SkillDockViewItem = require("UI.SkillDockViewItem")
 local Window = require("UI.Window")
 local RoleEquTableWidget = require("UI.role_info.role_equipment_table_widget")
-local ArticleTableWidget = require("UI.role_info.article_table_widget")
+local PlayerArticleTableWidget = require("UI.role_info.PlayerArticleTableWidget")
 local Common = require("UI.ui_common")
 local UiModel = require("UI.ui_model")
 
@@ -78,7 +77,7 @@ function RoleInfoWidget:Ctor(parentWindow, model)
     self.moveSpeedLabel:SetText("移速：124")
     self.moveSpeedLabel:SetSize(300, 30)
 
-    self.articleTableWidget = ArticleTableWidget.New(parentWindow, self.model)
+    self.articleTableWidget = PlayerArticleTableWidget.New(parentWindow, self.model)
 end
 
 function RoleInfoWidget:Update(dt)

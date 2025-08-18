@@ -23,6 +23,7 @@ local MasteredSkillsSrv = require("actor.service.MasteredSkillsSrv")
 local LifeSrv = require("actor.service.LifeSrv")
 local StateSrv = require("actor.service.state")
 local BuffSrv = require("actor.service.buff")
+local NpcSrv = require("actor.service.NpcSrv")
 
 local ResLib = require("lib.resource")
 local SoundLib = require("lib.sound")
@@ -102,6 +103,8 @@ function UiModel:Ctor(director)
     _DUELIST.AddListener("appeared", _, function()
         self:Signal_EnemyAppeared()
     end)
+
+    NpcSrv.AddListenerToNpcClickedCaller(self, self.Slot_NpcClicked)
 
     --- post init
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
@@ -1323,6 +1326,26 @@ function UiModel:Signal_MapLoaded(scopeRect)
     end
 end
 
+---@param info NpcInfo
+function UiModel:Signal_NpcClicked(info)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_NpcClicked]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_NpcClicked
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, info)
+
+        ::continue::
+    end
+end
+
 --- slots
 
 ---@param player Actor.Entity
@@ -1429,6 +1452,15 @@ function UiModel:Slot_MasteredSkillOfPlayerChanged(info)
     self:SavePlayerData()
 
     self:Signal_PlayerMasteredSkillChanged(info)
+end
+
+---@param entity Actor.Entity
+function UiModel:Slot_NpcClicked(entity)
+    local info = Common.NewNpcInfo()
+    info.Name = entity.identity.name
+    info.Intro = entity.Npc.Intro
+
+    self:Signal_NpcClicked(info)
 end
 
 --========== private function ============

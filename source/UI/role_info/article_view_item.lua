@@ -19,7 +19,7 @@ function ArticleViewItem:Ctor(parentWindow)
     assert(parentWindow, "must assign parent window")
     -- 父类构造函数
     Widget.Ctor(self, parentWindow)
-    self:SetBgSpriteColor(0, 0, 0, 0)
+    self:SetBgSpriteColor(0, 120, 255, 120)
 
     self.iconLabel = Label.New(parentWindow)
     self.coolDownShadowSprite = _Sprite.New()
@@ -58,6 +58,8 @@ function ArticleViewItem:Update(dt)
 end
 
 function ArticleViewItem:Draw()
+    Widget.Draw(self)
+
     self.iconLabel:Draw()
 
     if self.isVisible then
@@ -65,8 +67,6 @@ function ArticleViewItem:Draw()
     end
 
     self.leftBottomCountLabel:Draw()
-
-    Widget.Draw(self)
 end
 
 function ArticleViewItem:SetPosition(x, y)

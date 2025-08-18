@@ -1,15 +1,13 @@
 --[[
-	desc: SkillDockViewFrame class. 技能托盘显示框架
+	desc: ArticleTableWidget class. 物品表格控件
 	author: keke <243768648@qq.com>
-	since: 2023-4-15
-	alter: 2023-4-15
 ]] --
 
 local _CONFIG = require("config")
 local _Mouse = require("lib.mouse")
 local Timer = require("util.gear.timer")
 local _MATH = require("lib.math")
-local _Graphics = require("lib.graphics")
+local TableLib = require("lib.table")
 local SysLib = require("lib.system")
 local TouchLib = require("lib.touch")
 
@@ -23,55 +21,39 @@ local UiModel = require("UI.ui_model")
 
 local Util = require("util.Util")
 
-
---- item background
-local DockedItemBgImgPath = "ui/article_view_item/article_view_item_bg"
-local ItemBgImgPath = "ui/WindowFrame/CenterBg"
-
-local ItemWidth = Common.ArticleItemWidth
-ItemWidth = _MATH.Round(ItemWidth)
 local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
-local ColCount = Common.ArticleTableColCount
-local RowCount = Common.ArticleTableRowCount
-
----@class ArticleTableWidget
+---@class ArticleTableWidget : Widget
 local ArticleTableWidget = require("core.class")(Widget)
 
 ---@param parentWindow Window
 ---@param model UiModel
-function ArticleTableWidget:Ctor(parentWindow, model)
-    assert(parentWindow, "must assign parent window")
-    ItemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
-    ItemWidth = math.floor(ItemWidth)
+function ArticleTableWidget.Create(parentWindow, model)
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return ArticleTableWidget.New(parentWindow, model)
+end
 
-    -- 父类构造函数
-    self.baseWidget = Widget.New(parentWindow)
+---@param parentWindow Window
+---@param model UiModel
+function ArticleTableWidget:Ctor(parentWindow, model)
+    Widget.Ctor(self, parentWindow)
+
+    self.itemWidth = Common.ArticleItemWidth * Util.GetWindowSizeScale()
+    self.itemWidth = math.floor(self.itemWidth)
+
+    self.colCount = Common.ArticleTableColCount
+    self.rowCount = Common.ArticleTableRowCount
 
     self.model = model
 
-    self.baseWidget.width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
-    self.baseWidget.height = ItemWidth * ColCount + ItemSpace * (RowCount - 1)
-
-    ---@type table<number, Label>
-    self.viewItemBgList = {}
     --- item
     ---@type table<number, ArticleViewItem>
     self.viewItemList = {}
-    for i = 1, ColCount * RowCount do
-        local bgImgPath = ItemBgImgPath
-        if i <= Common.ArticleDockColCount then
-            bgImgPath = DockedItemBgImgPath
-        end
-        local bgLabel = Label.New(parentWindow)
-        bgLabel:SetIconSpriteDataPath(bgImgPath)
-        self.viewItemBgList[i] = bgLabel
 
-        local item = ArticleViewItem.New(parentWindow)
-        item:SetIconSpriteDataPath("")
-        self.viewItemList[i] = item
-    end
+    ---@type table<int, ArticleInfo>
+    self.articleInfoList = {}
 
     -- 上一帧时是否被按压
     self.lastIsPressed = false
@@ -100,16 +82,13 @@ function ArticleTableWidget:Ctor(parentWindow, model)
     -- touch
     self.touchedId = -1
     self.timeMsToLastPressed = 0
-
-    -- connect
-    self.model:MocConnectSignal(self.model.Signal_PlayerChanged, self)
     
     --- post init
     self:updateData()
 end
 
 function ArticleTableWidget:Update(dt)
-    if not self.baseWidget.isVisible then
+    if not self:IsVisible() then
         return
     end
     if not SysLib.IsMobile() then
@@ -118,7 +97,7 @@ function ArticleTableWidget:Update(dt)
         self:TouchEvent()
     end
 
-    if (self.baseWidget:IsSizeChanged()
+    if (self:IsSizeChanged()
         ) then
         self:updateData()
     end
@@ -152,30 +131,24 @@ function ArticleTableWidget:Update(dt)
         self.timeMsToLastPressed = self.timeMsToLastPressed + dt
     end
 
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Update(dt)
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Update(dt)
     end
 
     self.hoveringItemFrameLabel:Update(dt)
 
     --- 更新上次和当前的所有状态
-    self.baseWidget:Update(dt)
+    Widget.Update(self, dt)
     self.lastHoveringItemIndex = self.hoveringItemIndex
     self.lastIsShowHoveringItemTip = self.isShowHoveringItemTip
 end
 
 function ArticleTableWidget:Draw()
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Draw()
+    if not self:IsVisible() then
+        return
+    end
 
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Draw()
     end
 
@@ -186,12 +159,12 @@ function ArticleTableWidget:MouseEvent()
     -- 判断鼠标
     while true do
         -- 检查是否有上层窗口遮挡
-        local windowLayerIndex = self.baseWidget.parentWindow:GetWindowLayerIndex()
+        local parentWindow = self:GetParentWindow()
+        local windowLayerIndex = parentWindow:GetWindowLayerIndex()
         if WindowManager.IsMouseCapturedAboveLayer(windowLayerIndex)
-            or self.baseWidget.parentWindow:IsInMoving() then
-            self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
-            self.hoveringItemInfo = nil
+            or parentWindow:IsInMoving() then
+            self:setHoveringItemIndex(-1)
+            -- self.hoveringItemInfo = nil
             self.itemHoveringTimer:Exit()
             break
         end
@@ -199,8 +172,8 @@ function ArticleTableWidget:MouseEvent()
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
         -- 寻找鼠标悬停处的显示项标签
         local hoveringItemIndex = -1
-        for i, label in pairs(self.viewItemBgList) do
-            if label:CheckPoint(mousePosX, mousePosY) then
+        for i, item in pairs(self.viewItemList) do
+            if item:CheckPoint(mousePosX, mousePosY) then
                 hoveringItemIndex = i
                 break
             end
@@ -209,7 +182,7 @@ function ArticleTableWidget:MouseEvent()
         -- 是否点击了鼠标右键
         if _Mouse.IsPressed(2) then
             if (hoveringItemIndex ~= -1) then
-                self.model:OnRightKeyClickedArticleTableItem(hoveringItemIndex)
+                self:rightKeyClickedItem(hoveringItemIndex)
             end
         end
 
@@ -218,14 +191,10 @@ function ArticleTableWidget:MouseEvent()
         end
 
         if -1 == hoveringItemIndex then
-            self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
-            self.hoveringItemInfo = nil
+            self:setHoveringItemIndex(-1)
             self.itemHoveringTimer:Exit()
         else
-            self.hoveringItemIndex = hoveringItemIndex
-            self.model:SetArticleTableHoveringItemIndex(hoveringItemIndex)
-            self.hoveringItemInfo = self.model:GetArticleInfoList()[hoveringItemIndex]
+            self:setHoveringItemIndex(hoveringItemIndex)
 
             -- 开启计时鼠标悬浮时间
             self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
@@ -237,13 +206,13 @@ function ArticleTableWidget:MouseEvent()
     self:judgeAndExecRequestDragItem()
 end
 
----@param label Label
+---@param item ArticleViewItem
 ---@param idList table<number, string>
 ---@return string id
-local function getLabelTouchedId(label, idList)
+local function getItemTouchedId(item, idList)
     for _, id in pairs(idList) do
         local point = TouchLib.GetPoint(id)
-        if (label:CheckPoint(point.x, point.y)) then
+        if (item:CheckPoint(point.x, point.y)) then
             return id
         end
     end
@@ -255,13 +224,12 @@ function ArticleTableWidget:TouchEvent()
     -- 判断鼠标
     while true do
         -- 检查是否点击了其他窗口
-        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(self.baseWidget.parentWindow)
+        local parentWindow = self:GetParentWindow()
+        local capturedTouchIdList = WindowManager.GetWindowCapturedTouchIdList(parentWindow)
         if #capturedTouchIdList == 0 and
             TouchLib.WhetherExistHoldPoint()
         then
-            self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
-            self.hoveringItemInfo = nil
+            self:setHoveringItemIndex(-1)
             self.itemHoveringTimer:Exit()
             break
         end
@@ -272,8 +240,8 @@ function ArticleTableWidget:TouchEvent()
         -- 判断点击的显示项标签
         local hoveringItemIndex = -1
         local touchedId = ""
-        for i, label in pairs(self.viewItemBgList) do
-            touchedId = getLabelTouchedId(label, capturedTouchIdList)
+        for i, item in pairs(self.viewItemList) do
+            touchedId = getItemTouchedId(item, capturedTouchIdList)
             if touchedId ~= "" then
                 hoveringItemIndex = i
                 break
@@ -281,9 +249,7 @@ function ArticleTableWidget:TouchEvent()
         end
 
         if hoveringItemIndex == -1 then
-            self.hoveringItemIndex = -1
-            self.model:SetArticleTableHoveringItemIndex(-1)
-            self.hoveringItemInfo = nil
+            self:setHoveringItemIndex(-1)
             self.itemHoveringTimer:Exit()
             break
         end
@@ -294,7 +260,7 @@ function ArticleTableWidget:TouchEvent()
             and TouchLib.WhetherPointIsPressed(point)
         then
             -- 使用物品（模拟右键点击）
-            self.model:OnRightKeyClickedArticleTableItem(hoveringItemIndex)
+            self:rightKeyClickedItem(hoveringItemIndex)
         end
 
         if TouchLib.WhetherPointIsPressed(point) then
@@ -306,9 +272,7 @@ function ArticleTableWidget:TouchEvent()
         end
 
         self.touchedId = touchedId
-        self.hoveringItemIndex = hoveringItemIndex
-        self.model:SetArticleTableHoveringItemIndex(hoveringItemIndex)
-        self.hoveringItemInfo = self.model:GetArticleInfoList()[hoveringItemIndex]
+        self:setHoveringItemIndex(hoveringItemIndex)
 
         -- 开启计时鼠标悬浮时间
         self.itemHoveringTimer:Enter(TimeOfWaitToShowItemTip)
@@ -319,30 +283,55 @@ function ArticleTableWidget:TouchEvent()
 end
 
 function ArticleTableWidget:SetPosition(x, y)
-    self.baseWidget:SetPosition(x, y)
+    Widget.SetPosition(self, x, y)
 
-    for i, label in pairs(self.viewItemBgList) do
-        local col = math.fmod(i - 1, ColCount) 
-        local itemXPos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
-        local row = math.floor((i - 1) / ColCount)
-        local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
+    for i, item in pairs(self.viewItemList) do
+        local col = math.fmod(i - 1, self.colCount) 
+        local itemXPos = x + (self.itemWidth + ItemSpace) * col
+        local row = math.floor((i - 1) / self.colCount)
+        local itemYPos = y + (self.itemWidth + ItemSpace) * row
 
-        -- item background
-        label:SetPosition(itemXPos, itemYPos)
-
-        -- item
-        local item = self.viewItemList[i]
         item:SetPosition(itemXPos, itemYPos)
     end
 end
 
 ---@return number, number w, h
 function ArticleTableWidget:GetSize()
-    return self.baseWidget:GetSize()
+    return Widget.GetSize(self)
 end
 
 function ArticleTableWidget:SetEnable(enable)
-    self.baseWidget:SetEnable(enable)
+    Widget.SetEnable(self, enable)
+end
+
+---@param rowCount int
+---@param colCount int
+function ArticleTableWidget:SetRowColCount(rowCount, colCount)
+    self.rowCount = rowCount
+    self.colCount = colCount
+
+    self.viewItemList = {}
+    self.articleInfoList = {}
+    local parentWindow = self:GetParentWindow()
+    for i = 1, colCount * rowCount do
+        local item = ArticleViewItem.New(parentWindow)
+        item:SetIconSpriteDataPath("")
+        self.viewItemList[i] = item
+
+        local info = Common.NewArticleInfo()
+        self.articleInfoList[i] = info
+    end
+
+    -- update size
+    local width = self.itemWidth * colCount + ItemSpace * (colCount - 1)
+    local height = self.itemWidth * colCount + ItemSpace * (rowCount - 1)
+    self:SetSize(width, height)
+
+    self:updateData()
+end
+
+function ArticleTableWidget:GetItemList()
+    return self.viewItemList
 end
 
 --- 设置某一显示项的信息
@@ -359,34 +348,57 @@ function ArticleTableWidget:SetIndexItemInfo(index, itemInfo)
     end
     item:SetIconSpriteDataPath(iconPath)
     item:SetCount(count)
+
+    -- info
+    self.articleInfoList[index] = TableLib.DeepClone(itemInfo)
 end
 
---- 当玩家改变后
----@param sender Object
-function ArticleTableWidget:Slot_PlayerChanged(sender)
-    self:initArticleData()
-end
+--- protect func
 
-function ArticleTableWidget:initArticleData()
-    for i, info in pairs(self.model:GetArticleInfoList()) do
-        self:SetIndexItemInfo(i, info)
+--- can override
+---@param index int
+function ArticleTableWidget:setHoveringItemIndex(index)
+    self.hoveringItemIndex = index
+    if index < 1 then
+        self.hoveringItemInfo = nil
+    else
+        self.hoveringItemInfo = self.articleInfoList[index]
     end
 end
 
+--- can override
+---@param index int
+function ArticleTableWidget:rightKeyClickedItem(index)
+end
+
+--- can override
+function ArticleTableWidget:dropItem()
+end
+
+--- can override
+--- 设置拖拽中的物品索引
+---@param index int
+function ArticleTableWidget:dragItem(index)
+end
+
+--- can override
+---@param xPos int
+---@param yPos int
+function ArticleTableWidget:moveDraggingItem(xPos, yPos)
+end
+
+--- private func
+
 function ArticleTableWidget:updateData()
-    for i, label in pairs(self.viewItemBgList) do
-        local col = math.fmod(i - 1, ColCount) 
-        local itemXPos = self.baseWidget.xPos + (ItemWidth + ItemSpace) * col
-        local row = math.floor((i - 1) / ColCount)
-        local itemYPos = self.baseWidget.yPos + (ItemWidth + ItemSpace) * row
+    local xPos, yPos = self:GetPosition()
+    for i, item in pairs(self.viewItemList) do
+        local col = math.fmod(i - 1, self.colCount) 
+        local itemXPos = xPos + (self.itemWidth + ItemSpace) * col
+        local row = math.floor((i - 1) / self.colCount)
+        local itemYPos = yPos + (self.itemWidth + ItemSpace) * row
 
-        -- item background
-        label:SetSize(ItemWidth, ItemWidth)
-        label:SetIconSize(ItemWidth, ItemWidth)
-
-        -- item
-        local item = self.viewItemList[i]
-        item:SetSize(ItemWidth, ItemWidth)
+        item:SetPosition(itemXPos, itemYPos)
+        item:SetSize(self.itemWidth, self.itemWidth)
     end
 
     -- 技能显示项改变,则悬浮框也需要随之改变
@@ -395,16 +407,16 @@ end
 
 function ArticleTableWidget:updateHoveringItemFrameData()
     -- hovering item frame label
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         self.hoveringItemFrameLabel:SetVisible(false)
         return
     end
 
-    local x, y = skillItemBgLabel:GetPosition()
+    local x, y = item:GetPosition()
     self.hoveringItemFrameLabel:SetPosition(x, y)
 
-    local w, h = skillItemBgLabel:GetSize()
+    local w, h = item:GetSize()
     self.hoveringItemFrameLabel:SetSize(w, h)
     self.hoveringItemFrameLabel:SetIconSize(w, h)
 
@@ -414,16 +426,16 @@ end
 function ArticleTableWidget:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringArticleItemTipWindowVisibility(self.isShowHoveringItemTip)
 
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         return
     end
 
     -- 设置悬浮框位置
     local tipWindowXPos = 0
     local tipWindowYPos = 0
-    local bgX, bgY = skillItemBgLabel:GetPosition()
-    local bgW, bgH = skillItemBgLabel:GetSize()
+    local bgX, bgY = item:GetPosition()
+    local bgW, bgH = item:GetSize()
     tipWindowXPos = bgX + bgW / 2
     tipWindowYPos = bgY + bgH / 2
 
@@ -438,9 +450,8 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
         -- 是否处于按压中
         if false == _Mouse.IsHold(1) then -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
             if self.isReqDragItem == true then
-                self.model:DropArticleItem()
-                self.hoveringItemIndex = -1
-                self.model:SetArticleTableHoveringItemIndex(-1)
+                self:dropItem()
+                self:setHoveringItemIndex(-1)
             end
             
             self.isReqDragItem = false
@@ -467,11 +478,11 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
         self.isReqDragItem = true
         self.originMouseXPosWhenDragItem = currentMouseXPos
         self.originMouseYPosWhenDragItem = currentMouseYPos
-        self.originXPosWhenDragItem = currentMouseXPos - ItemWidth / 2
-        self.originYPosWhenDragItem = currentMouseYPos - ItemWidth / 2
+        self.originXPosWhenDragItem = currentMouseXPos - self.itemWidth / 2
+        self.originYPosWhenDragItem = currentMouseYPos - self.itemWidth / 2
 
         -- 设置拖拽中的物品索引
-        self.model:DragArticleItem(self.hoveringItemIndex)
+        self:dragItem(self.hoveringItemIndex)
         break
     end
 
@@ -484,7 +495,7 @@ function ArticleTableWidget:judgeAndExecRequestDragItem()
     if self.isReqDragItem then
         local destXPos = self.originXPosWhenDragItem + currentMouseXPos - self.originMouseXPosWhenDragItem
         local destYPos = self.originYPosWhenDragItem + currentMouseYPos - self.originMouseYPosWhenDragItem
-        self.model:OnRequestMoveDraggingArticleItem(destXPos, destYPos)
+        self:moveDraggingItem(destXPos, destYPos)
     end
 end
 
@@ -502,10 +513,9 @@ function ArticleTableWidget:judgeAndExecRequestDragItemUnderTouch()
         -- 是否处于按压中
         if false == TouchLib.WhetherPointIsHold(touchedPoint) then
             if self.isReqDragItem == true then
-                self.model:DropArticleItem()
-                self.hoveringItemIndex = -1
+                self:dropItem()
+                self:setHoveringItemIndex(-1)
                 self.touchedId = -1
-                self.model:SetArticleTableHoveringItemIndex(-1)
             end
             
             self.isReqDragItem = false
@@ -526,18 +536,18 @@ function ArticleTableWidget:judgeAndExecRequestDragItemUnderTouch()
         self.isReqDragItem = true
         self.originMouseXPosWhenDragItem = touchedPoint.x
         self.originMouseYPosWhenDragItem = touchedPoint.y
-        self.originXPosWhenDragItem = touchedPoint.x - ItemWidth / 2
-        self.originYPosWhenDragItem = touchedPoint.y - ItemWidth / 2
+        self.originXPosWhenDragItem = touchedPoint.x - self.itemWidth / 2
+        self.originYPosWhenDragItem = touchedPoint.y - self.itemWidth / 2
 
         -- 设置拖拽中的物品索引
-        self.model:DragArticleItem(self.hoveringItemIndex)
+        self:dragItem(self.hoveringItemIndex)
         break
     end
 
     if self.isReqDragItem then
         local destXPos = self.originXPosWhenDragItem + touchedPoint.x - self.originMouseXPosWhenDragItem
         local destYPos = self.originYPosWhenDragItem + touchedPoint.y - self.originMouseYPosWhenDragItem
-        self.model:OnRequestMoveDraggingArticleItem(destXPos, destYPos)
+        self:moveDraggingItem(destXPos, destYPos)
     end
 end
 

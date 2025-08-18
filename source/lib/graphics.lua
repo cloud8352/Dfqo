@@ -281,4 +281,12 @@ function _GRAPHICS.NewVideo(filePath)
     return love.graphics.newVideo(filePath)
 end
 
+---@param screenX int
+---@param screenY int
+---@return int, int
+function _GRAPHICS.ScreenPosToTransformedPos(screenX, screenY)
+    local globalX, globalY = love.graphics.inverseTransformPoint(screenX, screenY)
+    return globalX, globalY
+end
+
 return _GRAPHICS

@@ -184,14 +184,13 @@ function _SolidRect:Collide(solidRect)
     -- 判断x y轴平面碰撞盒是否存在相交
     local xy = self.rectGroup.xy:CheckRect(solidRect.rectGroup.xy)
 
-    local judgingRectY = solidRect:Get("y")
-    ---@type Graphics.Drawunit.SolidRect
-    local sameYPosSolidRect = Table.DeepClone(self)
-    sameYPosSolidRect:Set(nil, judgingRectY)
+    local judgingRectY = solidRect.rectGroup.xz:Get("y")
+    ---@type Graphics.Drawunit.Rect
+    local sameYPosRect = Table.DeepClone(self.rectGroup.xz)
+    sameYPosRect:Set(nil, judgingRectY, nil, nil, nil, nil, nil)
 
     -- 判断x z轴平面碰撞盒是否存在相交
-    local xz, x, z = sameYPosSolidRect.rectGroup.xz:CheckRect(solidRect.rectGroup.xz)
-    sameYPosSolidRect = nil
+    local xz, x, z = sameYPosRect:CheckRect(solidRect.rectGroup.xz)
 
     if (xy and xz) then
         return true, x, self._y, z - self._y
@@ -202,6 +201,10 @@ end
 
 function _SolidRect:CheckPoint(x, y, z)
     return self.rectGroup.xy:CheckPoint(x, y)
+end
+
+function _SolidRect:XzCheckPoint(x, y, z)
+    return self.rectGroup.xz:CheckPoint(x, y)
 end
 
 ---@param rect Graphics.Drawunit.Rect

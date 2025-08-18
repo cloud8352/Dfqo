@@ -16,6 +16,7 @@ local _Mouse = require("lib.mouse")
 local WindowManager = require("UI.WindowManager")
 local PushButton = require("UI.PushButton")
 local Widget = require("UI.Widget")
+local Label = require("UI.Label")
 
 ---@class TitleBar : Widget
 local TitleBar = require("core.class")(Widget)
@@ -66,6 +67,10 @@ function TitleBar:Ctor(parentWindow)
     self.iconRightMargin = 5 * windowSizeScale
     self.iconBottomMargin = 5 * windowSizeScale
 
+    -- 标题
+    self.titleLabel = Label.Create(parentWindow)
+    self.titleLabel:SetAlignments({ Label.AlignmentFlag.AlignVCenter, Label.AlignmentFlag.AlignLeft })
+
     -- 关闭按钮
     self.closeBtn = PushButton.New(self.parentWindow)
     self.closeBtn:SetNormalSpriteDataPath("ui/CloseButton/normal")
@@ -98,6 +103,7 @@ function TitleBar:Update(dt)
         self:PaintEvent()
     end
 
+    self.titleLabel:Update(dt)
     self.closeBtn:Update(dt)
 
     Widget.Update(self, dt)
@@ -112,6 +118,7 @@ function TitleBar:Draw()
         self.frameSprite:Draw()
     end
     self.iconSprite:Draw()
+    self.titleLabel:Draw()
     self.closeBtn:Draw()
 end
 
@@ -153,13 +160,16 @@ function TitleBar:SetPosition(x, y)
     self.frameSprite:SetAttri("position", self.xPos + self.leftMargin, self.yPos + self.topMargin)
     self.iconSprite:SetAttri("position", self.xPos + self.leftMargin + self.iconLeftMargin,
         self.yPos + self.topMargin + self.iconTopMargin)
+
+    self.titleLabel:SetPosition(x + 10 + self.height, y)
 end
 
 function TitleBar:SetSize(width, height)
+    Widget.SetSize(self, width, height)
+
+    self.titleLabel:SetSize(width - self.height - 10 - self.closeBtnWidth, self.height)
     -- 关闭按钮
     self.closeBtn:SetSize(self.closeBtnWidth, self.closeBtnWidth)
-
-    Widget.SetSize(self, width, height)
 end
 
 function TitleBar:GetSize()
@@ -193,6 +203,34 @@ end
 function TitleBar:SetIsBackgroundVisible(isVisible)
     self.isBackgroundVisible = isVisible
 end
+
+---@param path string
+function TitleBar:SetIconSpriteDataPath(path)
+    local spriteData = _RESOURCE.GetSpriteData(path)
+    self.iconSprite:SetData(spriteData)
+
+    self:adjustScaleByMargin()
+end
+
+function TitleBar:SetReceiverOfRequestCloseWindow(receiver)
+    self.receiverOfRequestCloseWindow = receiver
+end
+
+---@param title string
+function TitleBar:SetTitle(title)
+    self.titleLabel:SetText(title)
+end
+
+--- slots
+
+---@param sender PushButton
+function TitleBar:Slot_BtnClicked(sender)
+    if sender == self.closeBtn then
+        self:judgeAndExecRequestCloseWindow()
+    end
+end
+
+--- parivate fun
 
 function TitleBar:adjustScaleByMargin()
     -- 调整间距
@@ -299,25 +337,6 @@ function TitleBar:judgeAndExecRequestMoveWindow()
         local destYPos = self.originYPosWhenReqMvWindow + currentMouseYPos - self.originMouseYPosWhenReqMvWindow
         self.receiverOfRequestMoveWindow:OnRequestMoveWindow(destXPos, destYPos)
     end
-end
-
----@param path string
-function TitleBar:SetIconSpriteDataPath(path)
-    local spriteData = _RESOURCE.GetSpriteData(path)
-    self.iconSprite:SetData(spriteData)
-
-    self:adjustScaleByMargin()
-end
-
----@param sender PushButton
-function TitleBar:Slot_BtnClicked(sender)
-    if sender == self.closeBtn then
-        self:judgeAndExecRequestCloseWindow()
-    end
-end
-
-function TitleBar:SetReceiverOfRequestCloseWindow(receiver)
-    self.receiverOfRequestCloseWindow = receiver
 end
 
 function TitleBar:judgeAndExecRequestCloseWindow()

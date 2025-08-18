@@ -58,18 +58,14 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
 
     --- item background
     local itemBgImgPath = "ui/article_view_item/article_view_item_bg"
-    ---@type talble<number, Label>
-    self.viewItemBgList = {}
     --- item
     local itemImgPath = ""
     ---@type talble<number, ArticleViewItem>
     self.viewItemList = {}
     for i = 1, ColCount * RowCount do
-        local bgLabel = Label.New(parentWindow)
-        bgLabel:SetIconSpriteDataPath(itemBgImgPath)
-        self.viewItemBgList[i] = bgLabel
-
         local item = ArticleViewItem.New(parentWindow)
+        item:SetBgSpriteDataPath(itemBgImgPath)
+        item:SetBgSpriteColor(255, 255, 255, 255)
         item:SetIconSpriteDataPath(itemImgPath)
         self.viewItemList[i] = item
     end
@@ -146,12 +142,7 @@ function RoleEquTableWidget:Update(dt)
     self.nameLabel:Update(dt)
     self.portraitBgLabel:Update(dt)
 
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Update(dt)
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Update(dt)
     end
 
@@ -173,12 +164,7 @@ function RoleEquTableWidget:Draw()
     self.nameLabel:Draw()
     self.portraitBgLabel:Draw()
 
-    for i, label in pairs(self.viewItemBgList) do
-        -- item background
-        label:Draw()
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:Draw()
     end
 
@@ -200,8 +186,8 @@ function RoleEquTableWidget:MouseEvent()
         local mousePosX, mousePosY = _Mouse.GetPosition(1, 1)
         -- 寻找鼠标悬停处的显示项标签
         local hoveringItemIndex = -1
-        for i, label in pairs(self.viewItemBgList) do
-            if label:CheckPoint(mousePosX, mousePosY) then
+        for i, item in pairs(self.viewItemList) do
+            if item:CheckPoint(mousePosX, mousePosY) then
                 hoveringItemIndex = i
                 break
             end
@@ -234,13 +220,13 @@ function RoleEquTableWidget:MouseEvent()
     end
 end
 
----@param label Label
+---@param item ArticleViewItem
 ---@param idList table<number, string>
 ---@return string id
-local function getLabelTouchedId(label, idList)
+local function getItemTouchedId(item, idList)
     for _, id in pairs(idList) do
         local point = TouchLib.GetPoint(id)
-        if (label:CheckPoint(point.x, point.y)) then
+        if (item:CheckPoint(point.x, point.y)) then
             return id
         end
     end
@@ -268,8 +254,8 @@ function RoleEquTableWidget:TouchEvent()
         -- 判断点击的显示项标签
         local hoveringItemIndex = -1
         local touchedId = ""
-        for i, label in pairs(self.viewItemBgList) do
-            touchedId = getLabelTouchedId(label, capturedTouchIdList)
+        for i, item in pairs(self.viewItemList) do
+            touchedId = getItemTouchedId(item, capturedTouchIdList)
             if touchedId ~= "" then
                 hoveringItemIndex = i
                 break
@@ -319,84 +305,64 @@ function RoleEquTableWidget:SetPosition(x, y)
     local portraitBgLabelXPos = x + (self.width - portraitBgLabelWidth) / 2
     self.portraitBgLabel:SetPosition(portraitBgLabelXPos, y + 0 * Util.GetWindowSizeScale())
 
-    local capItemBgLabel = self.viewItemBgList[Common.EquType.Cap]
     local capItem = self.viewItemList[Common.EquType.Cap]
-    local capItemBgLabelWidth, _ = capItemBgLabel:GetSize()
-    local capItemXPos = x + (self.width - capItemBgLabelWidth) / 2 - 41 * Util.GetWindowSizeScale()
+    local capItemWidth, _ = capItem:GetSize()
+    local capItemXPos = x + (self.width - capItemWidth) / 2 - 41 * Util.GetWindowSizeScale()
     local capItemYPos = y + 45 * Util.GetWindowSizeScale()
-    capItemBgLabel:SetPosition(capItemXPos, capItemYPos)
     capItem:SetPosition(capItemXPos, capItemYPos)
 
-    local hairItemBgLabel = self.viewItemBgList[Common.EquType.Hair]
     local hairItem = self.viewItemList[Common.EquType.Hair]
-    local hairItemBgLabelWidth, _ = hairItemBgLabel:GetSize()
-    local hairItemXPos = x + (self.width - hairItemBgLabelWidth) / 2 + 7 * Util.GetWindowSizeScale()
+    local hairItemWidth, _ = hairItem:GetSize()
+    local hairItemXPos = x + (self.width - hairItemWidth) / 2 + 7 * Util.GetWindowSizeScale()
     local hairItemYPos = y + 37 * Util.GetWindowSizeScale()
-    hairItemBgLabel:SetPosition(hairItemXPos, hairItemYPos)
     hairItem:SetPosition(hairItemXPos, hairItemYPos)
 
-    local faceItemBgLabel = self.viewItemBgList[Common.EquType.Face]
     local faceItem = self.viewItemList[Common.EquType.Face]
-    local faceItemBgLabelWidth, _ = faceItemBgLabel:GetSize()
-    local faceItemXPos = x + (self.width - faceItemBgLabelWidth) / 2 + 55 * Util.GetWindowSizeScale()
+    local faceItemWidth, _ = faceItem:GetSize()
+    local faceItemXPos = x + (self.width - faceItemWidth) / 2 + 55 * Util.GetWindowSizeScale()
     local faceItemYPos = y + 45 * Util.GetWindowSizeScale()
-    faceItemBgLabel:SetPosition(faceItemXPos, faceItemYPos)
     faceItem:SetPosition(faceItemXPos, faceItemYPos)
 
-    local neckItemBgLabel = self.viewItemBgList[Common.EquType.Neck]
     local neckItem = self.viewItemList[Common.EquType.Neck]
-    local neckItemBgLabelWidth, _ = neckItemBgLabel:GetSize()
-    local neckItemXPos = x + (self.width - neckItemBgLabelWidth) / 2 + 7 * Util.GetWindowSizeScale()
+    local neckItemWidth, _ = neckItem:GetSize()
+    local neckItemXPos = x + (self.width - neckItemWidth) / 2 + 7 * Util.GetWindowSizeScale()
     local neckItemYPos = y + 83 * Util.GetWindowSizeScale()
-    neckItemBgLabel:SetPosition(neckItemXPos, neckItemYPos)
     neckItem:SetPosition(neckItemXPos, neckItemYPos)
 
-    local coatItemBgLabel = self.viewItemBgList[Common.EquType.Coat]
     local coatItem = self.viewItemList[Common.EquType.Coat]
-    local coatItemBgLabelWidth, _ = coatItemBgLabel:GetSize()
-    local coatItemXPos = x + (self.width - coatItemBgLabelWidth) / 2 + 7 * Util.GetWindowSizeScale()
+    local coatItemWidth, _ = coatItem:GetSize()
+    local coatItemXPos = x + (self.width - coatItemWidth) / 2 + 7 * Util.GetWindowSizeScale()
     local coatItemYPos = y + 130 * Util.GetWindowSizeScale()
-    coatItemBgLabel:SetPosition(coatItemXPos, coatItemYPos)
     coatItem:SetPosition(coatItemXPos, coatItemYPos)
 
-    local skinItemBgLabel = self.viewItemBgList[Common.EquType.Skin]
     local skinItem = self.viewItemList[Common.EquType.Skin]
-    local skinItemBgLabelWidth, _ = skinItemBgLabel:GetSize()
-    local skinItemXPos = x + (self.width - skinItemBgLabelWidth) / 2 + 55 * Util.GetWindowSizeScale()
+    local skinItemWidth, _ = skinItem:GetSize()
+    local skinItemXPos = x + (self.width - skinItemWidth) / 2 + 55 * Util.GetWindowSizeScale()
     local skinItemYPos = y + 130 * Util.GetWindowSizeScale()
-    skinItemBgLabel:SetPosition(skinItemXPos, skinItemYPos)
     skinItem:SetPosition(skinItemXPos, skinItemYPos)
 
-    local beltItemBgLabel = self.viewItemBgList[Common.EquType.Belt]
     local beltItem = self.viewItemList[Common.EquType.Belt]
-    local beltItemBgLabelWidth, _ = beltItemBgLabel:GetSize()
-    local beltItemXPos = x + (self.width - beltItemBgLabelWidth) / 2 + 7 * Util.GetWindowSizeScale()
+    local beltItemWidth, _ = beltItem:GetSize()
+    local beltItemXPos = x + (self.width - beltItemWidth) / 2 + 7 * Util.GetWindowSizeScale()
     local beltItemYPos = y + 178 * Util.GetWindowSizeScale()
-    beltItemBgLabel:SetPosition(beltItemXPos, beltItemYPos)
     beltItem:SetPosition(beltItemXPos, beltItemYPos)
 
-    local weaponItemBgLabel = self.viewItemBgList[Common.EquType.Weapon]
     local weaponItem = self.viewItemList[Common.EquType.Weapon]
-    local weaponItemBgLabelWidth, _ = weaponItemBgLabel:GetSize()
-    local weaponItemXPos = x + (self.width - weaponItemBgLabelWidth) / 2 - 69 * Util.GetWindowSizeScale()
+    local weaponItemWidth, _ = weaponItem:GetSize()
+    local weaponItemXPos = x + (self.width - weaponItemWidth) / 2 - 69 * Util.GetWindowSizeScale()
     local weaponItemYPos = y + 250 * Util.GetWindowSizeScale()
-    weaponItemBgLabel:SetPosition(weaponItemXPos, weaponItemYPos)
     weaponItem:SetPosition(weaponItemXPos, weaponItemYPos)
 
-    local pantsItemBgLabel = self.viewItemBgList[Common.EquType.Pants]
     local pantsItem = self.viewItemList[Common.EquType.Pants]
-    local pantsItemBgLabelWidth, _ = pantsItemBgLabel:GetSize()
-    local pantsItemXPos = x + (self.width - pantsItemBgLabelWidth) / 2 + 41 * Util.GetWindowSizeScale()
+    local pantsItemWidth, _ = pantsItem:GetSize()
+    local pantsItemXPos = x + (self.width - pantsItemWidth) / 2 + 41 * Util.GetWindowSizeScale()
     local pantsItemYPos = y + 250 * Util.GetWindowSizeScale()
-    pantsItemBgLabel:SetPosition(pantsItemXPos, pantsItemYPos)
     pantsItem:SetPosition(pantsItemXPos, pantsItemYPos)
 
-    local shoesItemBgLabel = self.viewItemBgList[Common.EquType.Shoes]
     local shoesItem = self.viewItemList[Common.EquType.Shoes]
-    local shoesItemBgLabelWidth, _ = shoesItemBgLabel:GetSize()
-    local shoesItemXPos = x + (self.width - shoesItemBgLabelWidth) / 2 + 51 * Util.GetWindowSizeScale()
+    local shoesItemWidth, _ = shoesItem:GetSize()
+    local shoesItemXPos = x + (self.width - shoesItemWidth) / 2 + 51 * Util.GetWindowSizeScale()
     local shoesItemYPos = y + 420 * Util.GetWindowSizeScale()
-    shoesItemBgLabel:SetPosition(shoesItemXPos, shoesItemYPos)
     shoesItem:SetPosition(shoesItemXPos, shoesItemYPos)
 end
 
@@ -445,18 +411,7 @@ function RoleEquTableWidget:initArticleData()
 end
 
 function RoleEquTableWidget:updateData()
-    for i, label in pairs(self.viewItemBgList) do
-        local col = math.fmod(i - 1, ColCount) 
-        local itemXPos = self.xPos + (ItemWidth + ItemSpace) * col
-        local row = math.floor((i - 1) / ColCount)
-        local itemYPos = self.yPos + (ItemWidth + ItemSpace) * row
-
-        -- item background
-        label:SetSize(ItemWidth, ItemWidth)
-        label:SetIconSize(ItemWidth, ItemWidth)
-
-        -- item
-        local item = self.viewItemList[i]
+    for i, item in pairs(self.viewItemList) do
         item:SetSize(ItemWidth, ItemWidth)
     end
 
@@ -466,16 +421,16 @@ end
 
 function RoleEquTableWidget:updateHoveringItemFrameData()
     -- hovering item frame label
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         self.hoveringItemFrameLabel:SetVisible(false)
         return
     end
 
-    local x, y = skillItemBgLabel:GetPosition()
+    local x, y = item:GetPosition()
     self.hoveringItemFrameLabel:SetPosition(x, y)
 
-    local w, h = skillItemBgLabel:GetSize()
+    local w, h = item:GetSize()
     self.hoveringItemFrameLabel:SetSize(w, h)
     self.hoveringItemFrameLabel:SetIconSize(w, h)
 
@@ -485,16 +440,16 @@ end
 function RoleEquTableWidget:updateHoveringItemTipWindowData()
     self.model:RequestSetHoveringArticleItemTipWindowVisibility(self.isShowHoveringItemTip)
 
-    local skillItemBgLabel = self.viewItemBgList[self.hoveringItemIndex]
-    if nil == skillItemBgLabel then
+    local item = self.viewItemList[self.hoveringItemIndex]
+    if nil == item then
         return
     end
 
     -- 设置悬浮框位置
     local tipWindowXPos = 0
     local tipWindowYPos = 0
-    local bgX, bgY = skillItemBgLabel:GetPosition()
-    local bgW, bgH = skillItemBgLabel:GetSize()
+    local bgX, bgY = item:GetPosition()
+    local bgW, bgH = item:GetSize()
     tipWindowXPos = bgX + bgW / 2
     tipWindowYPos = bgY + bgH / 2
 

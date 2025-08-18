@@ -378,6 +378,11 @@ function Window:SetIsNormalWidget(is)
     WindowManager.SortWindowList()
 end
 
+---@param title string
+function Window:SetTitle(title)
+    self.titleBar:SetTitle(title)
+end
+
 --- slots
 
 ---@param x int

@@ -29,6 +29,7 @@ local ArticleDockFrame = require("UI.ArticleDockFrame")
 local PlayerRebornDlg = require("UI.Dlg.PlayerRebornDlg")
 local AboutDlg = require("UI.Dlg.AboutDlg")
 local MiniMapWidget = require("UI.MiniMapWidget")
+local NpcDlg = require("UI.Dlg.NpcDlg")
 
 local Map = require("map.init")
 
@@ -308,6 +309,12 @@ function UI.Init(director)
     UI.aboutDlg:SetVisible(false)
     UI.appendWindowWidget(UI.aboutDlg, UI.aboutDlg)
 
+    -- Npc
+    UI.npcDlg = NpcDlg.Create(UI.model)
+    UI.npcDlg:SetSize(390 * windowSizeScale, 523 * windowSizeScale)
+    UI.npcDlg:SetVisible(false)
+    UI.appendWindowWidget(UI.npcDlg, UI.npcDlg)
+
     ---- connect
     -- StartGameWindow
     UI.startGameWindow:MocConnectSignal(StartGameWindow.Signal_GameStarted, UI)
@@ -345,6 +352,8 @@ function UI.Init(director)
     
     UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
+    -- Npc
+    UI.model:MocConnectSignal(UI.model.Signal_NpcClicked, UI)
 
     --- post init
     UI.updateWindowVisibilityByGameState()
@@ -689,6 +698,24 @@ function UI.Slot_ReqShowAboutDlg(my, sender)
     UI.aboutDlg:SetVisible(true)
 end
 
+---@param my Obj
+---@param sender Obj
+---@param info NpcInfo
+function UI.Slot_NpcClicked(my, sender, info)
+    if WindowManager.IsMouseCapturedAboveLayer(UI.bottomWindow:GetWindowLayerIndex()) then
+        return
+    end
+
+    local windowSizeScale = Util.GetWindowSizeScale()
+    local dlgW, dlgH = UI.npcDlg:GetSize()
+    UI.npcDlg:SetPosition(Util.GetWindowWidth() / 2 - dlgW / 2 - 120 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - dlgH / 2)
+
+    UI.npcDlg:SetInfo(info)
+    UI.npcDlg:setIsTrading(false)
+    UI.npcDlg:SetVisible(true)
+end
+
 --- private function
 
 ---
@@ -736,6 +763,7 @@ function UI.keyboardEvent()
         UI.settingsWindow:SetVisible(false)
         UI.hoveringArticleItemTipWindow:SetVisible(false)
         UI.hoveringSkillItemTipWindow:SetVisible(false)
+        UI.npcDlg:SetVisible(false)
     end
 
     local model = UI.model

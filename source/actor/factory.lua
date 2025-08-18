@@ -85,7 +85,7 @@ function _FACTORY.New(data, param)
     ---@field public article_pathgate Actor.Component.Article.Pathgate
     ---@field public article_ArticleWithBuff Actor.Component.Article.ArticleWithBuff
     ---@field public topic Actor.Component.Topic
-    ---@field public npc Actor.Component.Npc
+    ---@field public Npc Actor.Component.Npc
     ---@field public summon Actor.Component.Summon
     ---@field public transport Actor.Component.Transport
     ---@field public sound Actor.Component.Sound

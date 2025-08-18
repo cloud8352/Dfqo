@@ -35,4 +35,9 @@ function _Equipments:OnEnter(entity)
     _ASPECT.AdjustAvatar(entity.aspect, entity.states)
 end
 
+---@param entity Actor.Entity
+function _Equipments:OnExit(entity)
+    entity.equipments.caller:ClearListener()
+end
+
 return _Equipments

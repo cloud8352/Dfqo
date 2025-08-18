@@ -139,6 +139,46 @@ function _DIRECTOR.StartGame(actorSimplePath)
     _MAP.Load("WestCoast")
     -- 刷新boss房间方向
     _MAP.RefreshBossRoomDirection()
+
+
+    -- test
+    local a = _FACTORY.NewWithNoDataPool("duelist/Danjin", {
+        x = 200,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
+
+    local a = _FACTORY.NewWithNoDataPool("duelist/Kiri", {
+        x = 500,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
+
+
+    local a = _FACTORY.NewWithNoDataPool("duelist/Linus", {
+        x = 800,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
+
+
+    local a = _FACTORY.NewWithNoDataPool("duelist/Roger", {
+        x = 1100,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
+
+
+    local a = _FACTORY.NewWithNoDataPool("duelist/Rothon", {
+        x = 1400,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
 end
 
 ---@param w number

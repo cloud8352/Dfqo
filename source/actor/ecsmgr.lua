@@ -59,6 +59,9 @@ function _ECSMGR.DelComponent(entity, key)
     table.insert(_delComponentCmds, {entity = entity, key = key})
 end
 
+---@param passMap table<string, boolean>
+---@param OnAdd function
+---@param OnDel function
 ---@return Core.QuickList
 function _ECSMGR.NewComboList(passMap, OnAdd, OnDel)
     local combo = _Combo.New(passMap, OnAdd, OnDel)

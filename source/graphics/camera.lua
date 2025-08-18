@@ -3,12 +3,12 @@
 	author: Musoucrow
 	since: 2018-6-4
 	alter: 2019-8-8
-]]
-   --
+]]--
 
 local _GRAPHICS = require("lib.graphics")
 local _SYSTEM = require("lib.system")
 local _MATH = require("lib.math")
+local MouseLib = require("lib.mouse")
 
 local _Rect = require("graphics.drawunit.rect")
 local _Point = require("graphics.drawunit.point")
@@ -65,6 +65,9 @@ function _Camera:Ctor()
     self._world = _Rect.New(0, 0, 0, 0)
     self._canScale = false
     self._canRotate = false
+
+    self.mousePosXInWorld = 0
+    self.mousePosYInWorld = 0
 
     self:Adjust()
 end
@@ -145,6 +148,10 @@ function _Camera:Apply()
 
     local px, py = self._position:Get()
     _GRAPHICS.Translate(-px, -py)
+
+    --- update mouse pos in world
+    local mouseX, mouseY = MouseLib.GetPosition(1, 1)
+    self.mousePosXInWorld, self.mousePosYInWorld = _GRAPHICS.ScreenPosToTransformedPos(mouseX, mouseY)
 end
 
 function _Camera:Reset()
@@ -203,6 +210,11 @@ function _Camera:GetVisibleArea()
     local w, h = _GetVisibleArea(self, sx, sy, 1, 1)
     
     return w, h
+end
+
+---@return int, int
+function _Camera:GetMousePosInWorld()
+    return self.mousePosXInWorld, self.mousePosYInWorld
 end
 
 return _Camera
