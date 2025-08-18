@@ -82,6 +82,7 @@ local JobEnum = {
     Fighter = 2,
     InventoryItem = 3,
     Kyo = 4,
+    Tsunade = 5,
 }
 UiCommon.JobEnum = JobEnum
 
@@ -92,6 +93,7 @@ mapOfJobToTxt[JobEnum.SwordMan] = "鬼剑士"
 mapOfJobToTxt[JobEnum.Fighter] = "格斗家"
 mapOfJobToTxt[JobEnum.InventoryItem] = "物品"
 mapOfJobToTxt[JobEnum.Kyo] = "草薙京"
+mapOfJobToTxt[JobEnum.Tsunade] = "纲手"
 UiCommon.MapOfJobToTxt = mapOfJobToTxt
 
 ---@type table<int, string>
@@ -101,6 +103,7 @@ mapOfJobToPath[JobEnum.SwordMan] = "duelist/swordman"
 mapOfJobToPath[JobEnum.Fighter] = "duelist/Fighter"
 mapOfJobToPath[JobEnum.InventoryItem] = "----"
 mapOfJobToPath[JobEnum.Kyo] = "duelist/Kyo"
+mapOfJobToPath[JobEnum.Tsunade] = "duelist/Tsunade"
 UiCommon.MapOfJobToPath = mapOfJobToPath
 
 ---@type table<int, string>
@@ -110,6 +113,7 @@ mapOfJobToIntroVideoPath[JobEnum.SwordMan] = "asset/Video/MaleSwormanSkillIntro.
 mapOfJobToIntroVideoPath[JobEnum.Fighter] = "asset/Video/FemaleFighterSkillIntro.ogv"
 mapOfJobToIntroVideoPath[JobEnum.InventoryItem] = ""
 mapOfJobToIntroVideoPath[JobEnum.Kyo] = ""
+mapOfJobToIntroVideoPath[JobEnum.Tsunade] = ""
 UiCommon.MapOfJobToIntroVideoPath = mapOfJobToIntroVideoPath
 
 ---@type table<int, string>
@@ -119,6 +123,7 @@ mapOfJobToIntroStr[JobEnum.SwordMan] = "鬼剑士，能够使用鬼神的力量�
 mapOfJobToIntroStr[JobEnum.Fighter] = "格斗家，擅长使用拳法和腿法进行快速连击"
 mapOfJobToIntroStr[JobEnum.InventoryItem] = "物品"
 mapOfJobToIntroStr[JobEnum.Kyo] = "草薙京，草薙流古武术的继承者，拥有操控赤炎的能力"
+mapOfJobToIntroStr[JobEnum.Tsunade] = "《天外魔境真传-东方伊甸园》 - 纲手"
 UiCommon.MapOfJobToIntroStr = mapOfJobToIntroStr
 
 ---@type table<int, string>

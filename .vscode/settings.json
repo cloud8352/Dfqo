@@ -25,7 +25,8 @@
         "Rougelike",
         "Suplex",
         "Shoryuken",
-        "Orochinagi"
+        "Orochinagi",
+        "Tsunade"
     ],
     "files.exclude": {
         "**/love2d": true,

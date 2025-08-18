@@ -47,7 +47,7 @@ end
 
 function Orochinagi:NormalUpdate(dt, rate)
     self.easeMoveX:Update(rate)
-    self._attack:Update()
+    self._attack:Update(dt)
 
     local main = _ASPECT.GetPart(self._entity.aspect) ---@type Graphics.Drawable.Frameani
     local tick = main:GetTick()
