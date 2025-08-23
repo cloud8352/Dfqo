@@ -184,13 +184,19 @@ function _SolidRect:Collide(solidRect)
     -- 判断x y轴平面碰撞盒是否存在相交
     local xy = self.rectGroup.xy:CheckRect(solidRect.rectGroup.xy)
 
-    local judgingRectY = solidRect.rectGroup.xz:Get("y")
-    ---@type Graphics.Drawunit.Rect
-    local sameYPosRect = Table.DeepClone(self.rectGroup.xz)
-    sameYPosRect:Set(nil, judgingRectY, nil, nil, nil, nil, nil)
-
     -- 判断x z轴平面碰撞盒是否存在相交
-    local xz, x, z = sameYPosRect:CheckRect(solidRect.rectGroup.xz)
+    local judgingSolidRectStructZ = solidRect:GetStruct("z")
+    local judgingSolidRectStructH = solidRect:GetStruct("h")
+    local judgingSolidRectZ = solidRect:Get("z")
+    local judgingSolidRectSy = solidRect:Get("sy")
+    ---@type Graphics.Drawunit.Rect
+    local judgingRect = Table.DeepClone(solidRect.rectGroup.xz)
+    local judgingRectY = self._y + judgingSolidRectZ + 
+        (-judgingSolidRectStructZ - judgingSolidRectStructH) * math.abs(judgingSolidRectSy)
+    judgingRect:Set(nil, judgingRectY, nil, nil, nil, nil, nil)
+    
+    local xz, x, z = self.rectGroup.xz:CheckRect(judgingRect)
+    -- end - 判断x z轴平面碰撞盒是否存在相交
 
     if (xy and xz) then
         return true, x, self._y, z - self._y
