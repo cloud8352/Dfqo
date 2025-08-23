@@ -144,7 +144,8 @@ function _NormalAttack:EnterAttack()
     else
         soundData = self._soundDataSet.HitByAxe
     end
-    self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundData
+    self._attack.soundDataSet = {}
+    table.insert(self._attack.soundDataSet, soundData)
 end
 
 ---@return boolean

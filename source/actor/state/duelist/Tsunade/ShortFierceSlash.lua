@@ -49,6 +49,7 @@ function ShortFierceSlash:NormalUpdate(dt, rate)
 
     if (tick == 2) then
         self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
+        self._attack.soundDataSet = {}
         table.insert(self._attack.soundDataSet, self._soundDataSet.hitting)
 
         self._attack.hitstop = HitStop[1]

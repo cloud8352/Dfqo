@@ -146,6 +146,7 @@ function _NormalAttack:EnterAttack()
     self._attack.shake.time = hitStop[1]
 
     local soundData = self._soundDataSet.hitting
+    self._attack.soundDataSet = {}
     self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundData
 end
 

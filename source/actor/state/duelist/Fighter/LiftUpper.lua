@@ -53,6 +53,12 @@ function LiftUpper:NormalUpdate(dt, rate)
     local tick = main:GetTick()
     if (tick == 2) then
         self._attack:Enter(self._attackDataSet[1], self._skill.attackValues[1])
+        self._attack.soundDataSet = {}
+        table.insert(self._attack.soundDataSet, self._soundDataSet.hitting)
+
+        self._attack.hitstop = HitStop[1]
+        self._attack.selfstop = HitStop[2]
+        self._attack.shake.time = HitStop[1]
 
         -- move
         local direction = self._entity.transform.direction
@@ -73,12 +79,7 @@ function LiftUpper:Enter(laterState, skill)
 
         self._easemove:Exit()
         self._skill = skill
-
-        table.insert(self._attack.soundDataSet, self._soundDataSet.hitting)
-
-        self._attack.hitstop = HitStop[1]
-        self._attack.selfstop = HitStop[2]
-        self._attack.shake.time = HitStop[1]
+        self._attack:Exit()
 
         Util.PlaySoundByGender(self._soundDataSet, 1, self._entity.identity.gender)
         _SOUND.Play(self._soundDataSet.swing)

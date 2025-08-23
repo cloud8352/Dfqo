@@ -38,7 +38,7 @@ local SkillKeyPressCheckIntervalMs = 150
 ---@field protected _easemoveParams table
 ---@field protected _frames table
 ---@field protected _ticks table
----@field protected _hitstopMap table
+---@field protected _hitstop table
 ---@field protected _coolDown table
 local _NormalAttack = require("core.class")(_Base)
 
@@ -48,7 +48,7 @@ function _NormalAttack:Ctor(data, ...)
     self._easemoveParams = data.easemove
     self._frames = data.frames
     self._ticks = data.ticks
-    self._hitstopMap = data.hitstop
+    self._hitstop = data.hitstop
     self._coolDown = data.coolDown
 
     self.skillKeyPressCheckTimer = Timer.New()
@@ -62,7 +62,7 @@ function _NormalAttack:Init(entity)
     self._judgeAis = {}
     self._aiFrame = 0
 
-    for n=1, #self._colliderDataSet do
+    for n = 1, #self._colliderDataSet do
         self._judgeAis[n] = _BattleJudge.New(self._entity, self._colliderDataSet[n])
     end
 
@@ -175,26 +175,24 @@ function _NormalAttack:SetProcess(process)
 
     Util.RandomPlaySoundByGender(self._soundDataSet, self._entity.identity.gender)
 
-    local kind = _EQUIPMENT.GetSubKind(self._entity.equipments, "weapon")
-    local soundDatas = self._soundDataSet.swing[kind]
-    local n = math.random(1, _TABLE.Len(soundDatas))
-    _SOUND.Play(soundDatas[n])
+    local soundDataList = self._soundDataSet.swing
+    local n = math.random(1, _TABLE.Len(soundDataList))
+    _SOUND.Play(soundDataList[n])
 
     _ASPECT.Play(self._entity.aspect, self._frameaniDataSets[process])
 end
 
 function _NormalAttack:EnterAttack()
     self._attack:Enter(self._attackDataSet[self._process], self._skill.attackValues[1], self._OnHit)
-
-    local kind = _EQUIPMENT.GetSubKind(self._entity.equipments, "weapon")
     
-    local hitstop = self._hitstopMap[kind]
+    local hitstop = self._hitstop
     self._attack.hitstop = hitstop[1]
     self._attack.selfstop = hitstop[2]
     self._attack.shake.time = hitstop[1]
 
-    local soundDatas = self._soundDataSet.hitting[kind]
-    self._attack.soundDataSet[#self._attack.soundDataSet + 1] = soundDatas
+    local soundData = self._soundDataSet.hitting
+    self._attack.soundDataSet = {}
+    table.insert(self._attack.soundDataSet, soundData)
 end
 
 ---@return boolean

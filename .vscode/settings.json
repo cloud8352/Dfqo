@@ -26,7 +26,8 @@
         "Suplex",
         "Shoryuken",
         "Orochinagi",
-        "Tsunade"
+        "Tsunade",
+        "hitstop"
     ],
     "files.exclude": {
         "**/love2d": true,
