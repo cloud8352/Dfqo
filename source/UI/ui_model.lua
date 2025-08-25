@@ -1674,6 +1674,7 @@ function UiModel:loadJobActorList()
         "duelist/Fighter",
         "duelist/Kyo",
         "duelist/Tsunade",
+        "duelist/Iori",
     }
     assert(#actorSimplePathList < Common.JobActorPageTotalCount, "Exceeding the max job count")
     for _, actorSimplePath in pairs(actorSimplePathList) do

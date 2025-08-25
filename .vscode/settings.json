@@ -27,7 +27,8 @@
         "Shoryuken",
         "Orochinagi",
         "Tsunade",
-        "hitstop"
+        "hitstop",
+        "Iori"
     ],
     "files.exclude": {
         "**/love2d": true,
