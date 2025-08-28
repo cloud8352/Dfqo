@@ -493,11 +493,9 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
         appendDrawingAvatar(Skin, {spriteTag});
     }
     if (instanceInfo.AspectInfo.Type == "frameani") {
-        QString frameAniTag;
-        if (!instanceInfo.AspectInfo.Avatar.isEmpty()) {
-            frameAniTag = "actor/" + instanceInfo.AspectInfo.Avatar + "/stay";
-        } else {
-            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/stay";
+        QString frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/stay";
+        if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
+            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/Stay";
         }
         const FrameAniInfoList &frameAniInfoList =
             m_mapOfTagToFrameAniInfoList.value(frameAniTag);
@@ -558,8 +556,14 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
         appendDrawingAvatar(Skin, {spriteTag});
     }
     if (instanceInfo.AspectInfo.LayerInfo.Type == "frameani") {
-
-        QString frameAniTag = "actor/" + instanceInfo.AspectInfo.LayerInfo.Path;
+        const AspectLayerInfoStruct &layerInfo = instanceInfo.AspectInfo.LayerInfo;
+        QString frameAniTag = "actor/" + layerInfo.Path;
+        if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
+            frameAniTag = "actor/" + layerInfo.Path + "/stay";
+        }
+        if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
+            frameAniTag = "actor/" + layerInfo.Path + "/Stay";
+        }
         const FrameAniInfoList &frameAniInfoList =
             m_mapOfTagToFrameAniInfoList.value(frameAniTag);
         if (frameAniInfoList.isEmpty()) {
@@ -578,6 +582,12 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
                 spriteTag = "actor/" + layerInfo.Path;
             } else if (layerInfo.Type == "frameani") {
                 QString frameAniTag = "actor/" + layerInfo.Path;
+                if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
+                    frameAniTag = "actor/" + layerInfo.Path + "/stay";
+                }
+                if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
+                    frameAniTag = "actor/" + layerInfo.Path + "/Stay";
+                }
                 const FrameAniInfoList &frameAniInfoList =
                     m_mapOfTagToFrameAniInfoList.value(frameAniTag);
                 if (frameAniInfoList.isEmpty()) {

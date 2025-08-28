@@ -270,9 +270,18 @@ function UI.Init(director)
 
     -- DirPadWidget
     UI.dirPadWidget = DirPadWidget.New(bottomWindow, UI.model)
-    UI.dirPadWidget:SetPosition(150 * windowSizeScale,
+    UI.dirPadWidget:SetPosition(120 * windowSizeScale,
         Util.GetWindowHeight() - UI.dirPadWidget.height - 50 * windowSizeScale)
     UI.appendWindowWidget(bottomWindow, UI.dirPadWidget)
+
+    UI.npcInteractBtn = PushButton.Create(bottomWindow)
+    UI.npcInteractBtn:SetDisabledSpriteDataPath("ui/PushButton/Rectangle/Disabled")
+    UI.npcInteractBtn:SetHoveringSpriteDataPath("ui/Interact")
+    UI.npcInteractBtn:SetNormalSpriteDataPath("ui/Interact")
+    UI.npcInteractBtn:SetPressingSpriteDataPath("ui/PushButton/Rectangle/Pressing")
+    UI.npcInteractBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
+    UI.npcInteractBtn:SetPosition(30 * windowSizeScale, Util.GetWindowHeight() / 2)
+    UI.appendWindowWidget(bottomWindow, UI.npcInteractBtn)
 
     -- itemKeyGroup
     UI.itemKeyGroup = ItemKeyGroup.New(bottomWindow, UI.model)
@@ -353,7 +362,9 @@ function UI.Init(director)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerDestroyed, UI)
     UI.model:MocConnectSignal(UI.model.Signal_PlayerReborn, UI)
     -- Npc
-    UI.model:MocConnectSignal(UI.model.Signal_NpcClicked, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_ReqShowNpcDlg, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_ReqSetVisibilityNpcInteractBtn, UI)
+    UI.npcInteractBtn:MocConnectSignal(UI.npcInteractBtn.Signal_BtnClicked, UI)
 
     --- post init
     UI.updateWindowVisibilityByGameState()
@@ -451,6 +462,9 @@ function UI.Slot_BtnClicked(my, sender)
         local isVisible = UI.settingsWindow:IsVisible()
         UI.settingsWindow:SetVisible(not isVisible)
         WindowManager.SetWindowToTopLayer(UI.settingsWindow)
+    end
+    if UI.npcInteractBtn == sender then
+        UI.showNpcDlg()
     end
 end
 
@@ -700,20 +714,15 @@ end
 
 ---@param my Obj
 ---@param sender Obj
----@param info NpcInfo
-function UI.Slot_NpcClicked(my, sender, info)
-    if WindowManager.IsMouseCapturedAboveLayer(UI.bottomWindow:GetWindowLayerIndex()) then
-        return
-    end
+function UI.Slot_ReqShowNpcDlg(my, sender)
+    UI.showNpcDlg()
+end
 
-    local windowSizeScale = Util.GetWindowSizeScale()
-    local dlgW, dlgH = UI.npcDlg:GetSize()
-    UI.npcDlg:SetPosition(Util.GetWindowWidth() / 2 - dlgW / 2 - 120 * windowSizeScale,
-        Util.GetWindowHeight() / 2 - dlgH / 2)
-
-    UI.npcDlg:SetInfo(info)
-    UI.npcDlg:setIsTrading(false)
-    UI.npcDlg:SetVisible(true)
+---@param my Obj
+---@param sender Obj
+---@param isVisible boolean
+function UI.Slot_ReqSetVisibilityNpcInteractBtn(my, sender, isVisible)
+    UI.npcInteractBtn:SetVisible(isVisible)
 end
 
 --- private function
@@ -808,6 +817,7 @@ function UI.updateWindowVisibilityByGameState()
     UI.skillDockViewFrame:SetVisible(false)
     UI.articleDockFrame:SetVisible(false)
     UI.dirPadWidget:SetVisible(false)
+    UI.npcInteractBtn:SetVisible(false)
     UI.itemKeyGroup:SetVisible(false)
     UI.playerRebornDlg:SetVisible(false)
     UI.aboutDlg:SetVisible(false)
@@ -897,6 +907,21 @@ function UI.reloadPartnerHpRectBarList()
 
         UI.partnerHpRectBarList[i] = hpRectBar
     end
+end
+
+function UI.showNpcDlg()
+    if WindowManager.IsMouseCapturedAboveLayer(UI.bottomWindow:GetWindowLayerIndex()) then
+        return
+    end
+
+    local windowSizeScale = Util.GetWindowSizeScale()
+    local dlgW, dlgH = UI.npcDlg:GetSize()
+    UI.npcDlg:SetPosition(Util.GetWindowWidth() / 2 - dlgW / 2 - 120 * windowSizeScale,
+        Util.GetWindowHeight() / 2 - dlgH / 2)
+
+    UI.npcDlg:SetInfo(UI.model:GetInteractingNpcInfo())
+    UI.npcDlg:setIsTrading(false)
+    UI.npcDlg:SetVisible(true)
 end
 
 return UI

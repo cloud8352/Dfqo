@@ -289,6 +289,9 @@ InstanceInfoStruct getInstanceInfoFromFile(const QString &tag, const QString &pa
         layerInfo.Path = jsonObj.value("path").toString();
         layerInfo.Path = layerInfo.Path.replace("$0", tagParentPath);
         layerInfo.Path = layerInfo.Path.replace("$A", tag);
+        if (layerInfo.Path.isEmpty()) {
+            layerInfo.Path = tag;
+        }
 
         return layerInfo;
     };

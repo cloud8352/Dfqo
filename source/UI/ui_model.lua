@@ -91,6 +91,9 @@ function UiModel:Ctor(director)
     self.mapLoadProcess = _MAP.GetLoadProcess()
     self.lastMapLoadProcess = self.mapLoadProcess
 
+    --- Npc
+    self.interactingNpcInfo = Common.NewNpcInfo()
+
     -- connect signals
     _CONFIG.user.setPlayerCaller:AddListener(self, function(sender, lastPlayer, player) 
         self:Slot_PlayerChanged(player)
@@ -104,7 +107,8 @@ function UiModel:Ctor(director)
         self:Signal_EnemyAppeared()
     end)
 
-    NpcSrv.AddListenerToNpcClickedCaller(self, self.Slot_NpcClicked)
+    NpcSrv.AddListenerToCallerNpcClicked(self, self.Slot_NpcClicked)
+    NpcSrv.AddListenerToCallerNpcCanInteractChanged(self, self.Slot_NpcCanInteractChanged)
 
     --- post init
     for i = 1, Common.ArticleTableColCount * Common.ArticleTableRowCount do
@@ -858,6 +862,10 @@ function UiModel:ExitGame()
     SystemLib.Exit()
 end
 
+function UiModel:GetInteractingNpcInfo()
+    return self.interactingNpcInfo
+end
+
 --- signals
 
 --- 请求去设置物品栏某一显示项的信息
@@ -1326,21 +1334,40 @@ function UiModel:Signal_MapLoaded(scopeRect)
     end
 end
 
----@param info NpcInfo
-function UiModel:Signal_NpcClicked(info)
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_NpcClicked]
+function UiModel:Signal_ReqShowNpcDlg()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_ReqShowNpcDlg]
     if receiverList == nil then
         return
     end
 
     for _, receiver in pairs(receiverList) do
         ---@type function
-        local func = receiver.Slot_NpcClicked
+        local func = receiver.Slot_ReqShowNpcDlg
         if func == nil then
             goto continue
         end
 
-        func(receiver, self, info)
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+---@param isVisible boolean
+function UiModel:Signal_ReqSetVisibilityNpcInteractBtn(isVisible)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_ReqSetVisibilityNpcInteractBtn]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_ReqSetVisibilityNpcInteractBtn
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, isVisible)
 
         ::continue::
     end
@@ -1456,12 +1483,24 @@ end
 
 ---@param entity Actor.Entity
 function UiModel:Slot_NpcClicked(entity)
-    local info = Common.NewNpcInfo()
-    info.Name = entity.identity.name
-    info.Intro = entity.Npc.Intro
+    self.interactingNpcInfo.Name = entity.identity.name
+    self.interactingNpcInfo.Intro = entity.Npc.Intro
 
-    self:Signal_NpcClicked(info)
+    self:Signal_ReqShowNpcDlg()
 end
+
+---@param entity Actor.Entity
+function UiModel:Slot_NpcCanInteractChanged(entity)
+    if nil == entity then
+        self:Signal_ReqSetVisibilityNpcInteractBtn(false)
+        return
+    end
+
+    self.interactingNpcInfo.Name = entity.identity.name
+    self.interactingNpcInfo.Intro = entity.Npc.Intro
+    self:Signal_ReqSetVisibilityNpcInteractBtn(true)
+end
+
 
 --========== private function ============
 

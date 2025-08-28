@@ -5,6 +5,8 @@
 
 local ResMgr = require("actor.resmgr")
 
+local Collider = require("actor.collider")
+
 ---@class Actor.Component.Npc
 ---@field public VoiceDataList table<int, SoundData>
 ---@field public TalkingSource Source
@@ -31,6 +33,19 @@ function Npc:Ctor(data)
     self.TalkingSource = nil
     ---@type int
     self.TalkingWaitTimeMs = 0
+
+    -- 交互 检测 碰撞盒
+    local colliderData = {
+        {
+            x = -50,
+            y1 = -20,
+            z = 0,
+            y2 = 30,
+            w = 100,
+            h = 150
+        }
+    }
+    self.InteractingCollider = Collider.Create(colliderData)
 end
 
 return Npc
