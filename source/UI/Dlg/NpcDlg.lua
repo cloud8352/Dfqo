@@ -56,7 +56,7 @@ function NpcDlg:Ctor(model)
 
     label = Label.Create(self)
     label:SetAlignments({ Label.AlignmentFlag.AlignLeft, Label.AlignmentFlag.AlignTop })
-    label:SetText("点击此窗口中物品进行购买，将物品拖入到此窗口中进行出售")
+    label:SetText("点击此窗口中物品进行购买，将物品拖入到此窗口中进行出售。（暂未开发）")
     self.articleTableTipLabel = label
 
     -- articleTableWidget
@@ -177,6 +177,12 @@ end
 --- 设置是否可见
 ---@param visible boolean
 function NpcDlg:SetVisible(visible)
+    if visible then
+        self.model:PlayNpcWelcomeVoice()
+    else
+        self.model:PlayNpcLeaveVoice()
+    end
+
     Window.SetVisible(self, visible)
 end
 

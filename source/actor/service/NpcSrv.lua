@@ -5,6 +5,8 @@
 
 local Caller = require("core.caller")
 
+local SoundLib = require("lib.sound")
+
 local CallerNpcClicked = Caller.New()
 local CallerNpcCanInteractChanged = Caller.New()
 
@@ -43,6 +45,36 @@ end
 ---@param entity Actor.Entity
 function NpcSrv.CallerNpcCanInteractChangedCall(entity)
     CallerNpcCanInteractChanged:Call(entity)
+end
+
+---@param npc Actor.Component.Npc
+function NpcSrv.PlayWelcomeVoice(npc)
+    if #npc.WelcomeVoiceDataList < 1 then
+        return
+    end
+
+    if npc.TalkingSource then
+        SoundLib.StopSource(npc.TalkingSource)
+    end
+
+    local index = math.random(1, #npc.WelcomeVoiceDataList)
+    local soundData = npc.WelcomeVoiceDataList[index]
+    npc.TalkingSource = SoundLib.Play(soundData)
+end
+
+---@param npc Actor.Component.Npc
+function NpcSrv.PlayLeaveVoice(npc)
+    if #npc.LeaveVoiceDataList < 1 then
+        return
+    end
+
+    if npc.TalkingSource then
+        SoundLib.StopSource(npc.TalkingSource)
+    end
+
+    local index = math.random(1, #npc.LeaveVoiceDataList)
+    local soundData = npc.LeaveVoiceDataList[index]
+    npc.TalkingSource = SoundLib.Play(soundData)
 end
 
 return NpcSrv

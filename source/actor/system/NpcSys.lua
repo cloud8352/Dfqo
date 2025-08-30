@@ -59,16 +59,18 @@ function NpcSys:Update(dt, rate)
             and math.abs(e.transform.position.z - player.transform.position.z) < 100
             and e.Npc.TalkingSource == nil
             and e.Npc.TalkingWaitTimeMs == 0
+            and #e.Npc.NormalVoiceDataList > 0
         then
-            local index = math.random(1, #e.Npc.VoiceDataList)
-            local soundData = e.Npc.VoiceDataList[index]
+            local index = math.random(1, #e.Npc.NormalVoiceDataList)
+            local soundData = e.Npc.NormalVoiceDataList[index]
             e.Npc.TalkingSource = SoundLib.Play(soundData)
 
             goto continue
         end
 
-        if e.Npc.TalkingSource 
-            and e.Npc.TalkingSource:isPlaying() == false
+        if e.Npc.TalkingSource
+            and SoundLib.IsSourceInQueue(e.Npc.TalkingSource) == false
+            and SoundLib.IsSourcePlaying(e.Npc.TalkingSource) == false
         then
             e.Npc.TalkingSource = nil
             e.Npc.TalkingWaitTimeMs = 10000

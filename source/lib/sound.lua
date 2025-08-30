@@ -132,4 +132,28 @@ function _SOUND.LateUpdate()
     end
 end
 
+---@param source Source
+---@return boolean
+function _SOUND.IsSourcePlaying(source)
+    return source:isPlaying()
+end
+
+---@param source Source
+function _SOUND.StopSource(source)
+    source:stop()
+end
+
+---@param source Source
+function _SOUND.IsSourceInQueue(source)
+    for k, v in pairs(_queueMap) do
+        for n = 1, #v do
+            if v[n] == source then
+                return true
+            end
+        end
+    end
+
+    return false
+end
+
 return _SOUND

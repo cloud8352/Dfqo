@@ -866,6 +866,22 @@ function UiModel:GetInteractingNpcInfo()
     return self.interactingNpcInfo
 end
 
+function UiModel:PlayNpcWelcomeVoice()
+    if self.interactingNpcInfo.Entity == nil then
+        return
+    end
+
+    NpcSrv.PlayWelcomeVoice(self.interactingNpcInfo.Entity.Npc)
+end
+
+function UiModel:PlayNpcLeaveVoice()
+    if self.interactingNpcInfo.Entity == nil then
+        return
+    end
+
+    NpcSrv.PlayLeaveVoice(self.interactingNpcInfo.Entity.Npc)
+end
+
 --- signals
 
 --- 请求去设置物品栏某一显示项的信息
@@ -1485,12 +1501,17 @@ end
 function UiModel:Slot_NpcClicked(entity)
     self.interactingNpcInfo.Name = entity.identity.name
     self.interactingNpcInfo.Intro = entity.Npc.Intro
+    self.interactingNpcInfo.Entity = entity
 
     self:Signal_ReqShowNpcDlg()
 end
 
 ---@param entity Actor.Entity
 function UiModel:Slot_NpcCanInteractChanged(entity)
+    if SystemLib.IsMobile() == false then
+        return
+    end
+
     if nil == entity then
         self:Signal_ReqSetVisibilityNpcInteractBtn(false)
         return
@@ -1498,6 +1519,7 @@ function UiModel:Slot_NpcCanInteractChanged(entity)
 
     self.interactingNpcInfo.Name = entity.identity.name
     self.interactingNpcInfo.Intro = entity.Npc.Intro
+    self.interactingNpcInfo.Entity = entity
     self:Signal_ReqSetVisibilityNpcInteractBtn(true)
 end
 

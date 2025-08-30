@@ -21,12 +21,28 @@ function Npc:Ctor(data)
     self.Intro = data.Intro or ""
 
     ---@type table<int, SoundData>
-    self.VoiceDataList = {}
+    self.NormalVoiceDataList = {}
     
-    local voicePathList = data.VoicePathList or {}
+    local voicePathList = data.NormalVoicePathList or {}
     for _, v in pairs(voicePathList) do
         local s = ResMgr.GetSoundData(v)
-        table.insert(self.VoiceDataList, s)
+        table.insert(self.NormalVoiceDataList, s)
+    end
+
+    ---@type table<int, SoundData>
+    self.WelcomeVoiceDataList = {}
+    voicePathList = data.WelcomeVoicePathList or {}
+    for _, v in pairs(voicePathList) do
+        local s = ResMgr.GetSoundData(v)
+        table.insert(self.WelcomeVoiceDataList, s)
+    end
+
+    ---@type table<int, SoundData>
+    self.LeaveVoiceDataList = {}
+    voicePathList = data.LeaveVoicePathList or {}
+    for _, v in pairs(voicePathList) do
+        local s = ResMgr.GetSoundData(v)
+        table.insert(self.LeaveVoiceDataList, s)
     end
 
     ---@type Source

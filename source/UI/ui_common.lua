@@ -615,7 +615,9 @@ UiCommon.JobActorPageTotalCount = UiCommon.JobActorPageColCount * UiCommon.JobAc
 ---@class NpcInfo
 local NpcInfo = {
     Name = "",
-    Intro = ""
+    Intro = "",
+    ---@type Actor.Entity
+    Entity = nil
 }
 
 function UiCommon.NewNpcInfo()
