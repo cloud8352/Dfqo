@@ -47,8 +47,8 @@ function ItemKeyGroup:Ctor(parentWindow, model)
     assert(parentWindow, "must assign parent window")
 
     SmallBtnWidth = 50 * Util.GetWindowSizeScale()
-    NormalBtnWidth = 100 * Util.GetWindowSizeScale()
-    LargeBtnWidth = 200 * Util.GetWindowSizeScale()
+    NormalBtnWidth = 90 * Util.GetWindowSizeScale()
+    LargeBtnWidth = 180 * Util.GetWindowSizeScale()
 
     self.isVisible = true
 
@@ -424,57 +424,58 @@ function ItemKeyGroup:updatePosition()
     local windowHeight = Util.GetWindowHeight()
     local scale = Util.GetWindowSizeScale()
 
+    local space = 20 * scale
+
     -- normal attack
-    self.normalAttackBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth)
+    self.normalAttackBtn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth,
+        windowHeight - 60 * scale - LargeBtnWidth)
 
-
-    self.getItemBtn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 15 * scale,
-        windowHeight - 20 * scale - SmallBtnWidth + 15 * scale)
+    self.getItemBtn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - 10 * scale,
+        windowHeight - SmallBtnWidth)
 
     -- jump
-    self.jumpBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
+    self.jumpBtn:SetPosition(windowWidth - 60 * scale - space - NormalBtnWidth,
+        windowHeight - 60 * scale - LargeBtnWidth - space - NormalBtnWidth)
 
     -- counter Attack
-    self.counterAttackBtn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth)
+    self.counterAttackBtn:SetPosition(windowWidth - 60 * scale - space - NormalBtnWidth - space - NormalBtnWidth,
+        windowHeight - 60 * scale - LargeBtnWidth - space - NormalBtnWidth)
 
     -- skill1
-    self.skill1Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
+    self.skill1Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth)
 
     -- skill2
-    self.skill2Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    self.skill2Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth - space - NormalBtnWidth)
 
     -- skill3
-    self.skill3Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    self.skill3Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth - space - NormalBtnWidth - space - NormalBtnWidth)
 
     -- skill4
-    self.skill4Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
+    self.skill4Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth - space - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth)
 
     -- skill5
-    self.skill5Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    self.skill5Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth - space - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth - space - NormalBtnWidth)
 
     -- skill6
-    self.skill6Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    self.skill6Btn:SetPosition(windowWidth - 60 * scale - space - NormalBtnWidth - space - NormalBtnWidth,
+        windowHeight - 60 * scale - LargeBtnWidth - space - NormalBtnWidth - space - NormalBtnWidth)
 
     -- skill7
-    self.skill7Btn:SetPosition(windowWidth - 20 * scale - NormalBtnWidth,
-        windowHeight - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth - 20 * scale - NormalBtnWidth)
+    self.skill7Btn:SetPosition(windowWidth - 60 * scale - space - NormalBtnWidth,
+        windowHeight - 60 * scale - LargeBtnWidth - space - NormalBtnWidth - space - NormalBtnWidth)
 
     -- dock item
-    self.dockItem2Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth
-        - 20 * scale - NormalBtnWidth - 80 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
-    self.dockItem1Btn:SetPosition(windowWidth - 40 * scale - LargeBtnWidth - 20 * scale - NormalBtnWidth
-        - 20 * scale - NormalBtnWidth - 80 * scale - NormalBtnWidth - 40 * scale - NormalBtnWidth,
-        windowHeight - 20 * scale - NormalBtnWidth)
+    self.dockItem2Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth
+        - space - NormalBtnWidth - 80 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth)
+    self.dockItem1Btn:SetPosition(windowWidth - 100 * scale - LargeBtnWidth - space - NormalBtnWidth
+        - space - NormalBtnWidth - 80 * scale - NormalBtnWidth - 40 * scale - NormalBtnWidth,
+        windowHeight - 40 * scale - NormalBtnWidth)
 end
 
 --- 更新使用逻辑

@@ -270,8 +270,8 @@ function UI.Init(director)
 
     -- DirPadWidget
     UI.dirPadWidget = DirPadWidget.New(bottomWindow, UI.model)
-    UI.dirPadWidget:SetPosition(120 * windowSizeScale,
-        Util.GetWindowHeight() - UI.dirPadWidget.height - 50 * windowSizeScale)
+    UI.dirPadWidget:SetPosition(220 * windowSizeScale,
+        Util.GetWindowHeight() - UI.dirPadWidget.height - 80 * windowSizeScale)
     UI.appendWindowWidget(bottomWindow, UI.dirPadWidget)
 
     UI.npcInteractBtn = PushButton.Create(bottomWindow)
@@ -280,7 +280,7 @@ function UI.Init(director)
     UI.npcInteractBtn:SetNormalSpriteDataPath("ui/Interact")
     UI.npcInteractBtn:SetPressingSpriteDataPath("ui/PushButton/Rectangle/Pressing")
     UI.npcInteractBtn:SetSize(60 * windowSizeScale, 60 * windowSizeScale)
-    UI.npcInteractBtn:SetPosition(30 * windowSizeScale, Util.GetWindowHeight() / 2)
+    UI.npcInteractBtn:SetPosition(50 * windowSizeScale, Util.GetWindowHeight() / 2)
     UI.appendWindowWidget(bottomWindow, UI.npcInteractBtn)
 
     -- itemKeyGroup

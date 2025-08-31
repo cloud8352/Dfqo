@@ -53,11 +53,11 @@ function Npc:Ctor(data)
     -- 交互 检测 碰撞盒
     local colliderData = {
         {
-            x = -50,
-            y1 = -20,
+            x = -70,
+            y1 = -35,
             z = 0,
-            y2 = 30,
-            w = 100,
+            y2 = 50,
+            w = 140,
             h = 150
         }
     }
