@@ -118,7 +118,7 @@ function UiModel:Ctor(director)
     end
 
     -- equ
-    for i = 1, Common.EquTableColCount * Common.EquTableRowCount do
+    for i = 1, Common.EquTypeCount do
         local articleInfo = Common.NewArticleInfo()
         self.mountedEquInfoList[i] = articleInfo
     end
@@ -259,6 +259,13 @@ function UiModel:SetPlayer(player)
         if itemDataFromContainer then
             resMgrEquData = itemDataFromContainer:GetData()
             articleInfo = self.mountedEquInfoList[Common.EquType.Weapon]
+            Common.UpdateArticleInfoFromData(articleInfo, resMgrEquData)
+        end
+
+        itemDataFromContainer = self.player.equipments.container:Get("Suit")
+        if itemDataFromContainer then
+            resMgrEquData = itemDataFromContainer:GetData()
+            articleInfo = self.mountedEquInfoList[Common.EquType.Suit]
             Common.UpdateArticleInfoFromData(articleInfo, resMgrEquData)
         end
     end

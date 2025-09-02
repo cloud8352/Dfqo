@@ -366,10 +366,12 @@ function HoveringArticleItemTipWidget:SetArticleInfo(info)
         equTypeStr = "装备类型：" .. "Shoes"
     elseif equType == Common.EquType.Skin then
         equTypeStr = "装备类型：" .. "Skin"
-    elseif equType == Common.EquType.Title then
-        equTypeStr = "装备类型：" .. "Title"
     elseif equType == Common.EquType.Weapon then
         equTypeStr = "装备类型：" .. "Weapon"
+    elseif equType == Common.EquType.Title then
+        equTypeStr = "装备类型：" .. "Title"
+    elseif equType == Common.EquType.Suit then
+        equTypeStr = "装备类型：" .. "Suit"
     end
     label = self.mapOfEquPropTypeToLabel[Common.EquPropType.Type]
     label:SetText(equTypeStr)

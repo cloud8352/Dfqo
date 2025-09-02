@@ -604,11 +604,26 @@ function _RESMGR.GetFrameaniData(path, keys, avatar)
     path = _HeaderHandle(path)
 
     if (avatar) then
+        ---@type Actor.Drawable.Frameani.Avatar
+        local avatarTmp = TableLib.DeepClone(avatar)
+        -- 优先显示套装
+        if avatarTmp.config.Suit then
+            avatarTmp.config = {}
+            avatarTmp.config.Suit = avatar.config.Suit
+            avatarTmp.config.skin = avatar.config.skin
+            avatarTmp.config.weapon = avatar.config.weapon
+            avatarTmp.config.weapon_b = avatar.config.weapon_b
+            avatarTmp.config.weapon_b1 = avatar.config.weapon_b1
+            avatarTmp.config.weapon_b2 = avatar.config.weapon_b2
+            avatarTmp.config.weapon_c1 = avatar.config.weapon_c1
+            avatarTmp.config.weapon_c2 = avatar.config.weapon_c2
+        end
+
         local avatarPath = type(path) == "table" and path.path or path
-        local tag = _RESOURCE.GetTag(avatar.key .. "|" .. avatarPath, keys)
+        local tag = _RESOURCE.GetTag(avatarTmp.key .. "|" .. avatarPath, keys)
 
         return _RESOURCE.GetResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, tag, keys,
-            _RESMGR.GetSpriteData, _, avatar)
+            _RESMGR.GetSpriteData, _, avatarTmp)
     else
         return _RESOURCE.GetConfigResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, keys,
             _RESMGR.GetSpriteData)

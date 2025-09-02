@@ -46,7 +46,9 @@ UiCommon.EquType = {
     Skin = 9,
     Weapon = 10,
     Title = 11,
+    Suit = 12,
 }
+UiCommon.EquTypeCount = 12
 
 ---@enum WeaponSubType
 UiCommon.WeaponSubType = {
@@ -144,6 +146,7 @@ mapOfEquTypeToTag[UiCommon.EquType.Shoes] = "shoes"
 mapOfEquTypeToTag[UiCommon.EquType.Skin] = "skin"
 mapOfEquTypeToTag[UiCommon.EquType.Weapon] = "weapon"
 mapOfEquTypeToTag[UiCommon.EquType.Title] = "title"
+mapOfEquTypeToTag[UiCommon.EquType.Suit] = "Suit"
 --- 装备类型到标签的映射表
 UiCommon.MapOfEquTypeToTag = mapOfEquTypeToTag
 
@@ -388,9 +391,6 @@ UiCommon.ArticleTableTotalCount = UiCommon.ArticleTableColCount * UiCommon.Artic
 
 -- 物品托盘表格列数
 UiCommon.ArticleDockColCount = 6
-
-UiCommon.EquTableColCount = 5
-UiCommon.EquTableRowCount = 2
 
 --== 技能相关
 --- 技能属性类型

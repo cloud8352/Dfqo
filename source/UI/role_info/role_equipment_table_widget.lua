@@ -32,9 +32,6 @@ local ItemWidth = 0
 local ItemSpace = 1
 local TimeOfWaitToShowItemTip = 1000 * 0.5 -- 显示技能提示信息需要等待的时间，单位：ms
 
-local ColCount = Common.EquTableColCount
-local RowCount = Common.EquTableRowCount
-
 ---@param parentWindow Window
 ---@param model UiModel
 function RoleEquTableWidget:Ctor(parentWindow, model)
@@ -47,8 +44,8 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
 
     self.model = model
 
-    self.width = ItemWidth * ColCount + ItemSpace * (ColCount - 1)
-    self.height = ItemWidth * ColCount + ItemSpace * (RowCount - 1)
+    self.width = 100
+    self.height = 100
 
     self.nameLabel = Label.New(parentWindow)
     self.nameLabel:SetText("剑士")
@@ -62,7 +59,7 @@ function RoleEquTableWidget:Ctor(parentWindow, model)
     local itemImgPath = ""
     ---@type talble<number, ArticleViewItem>
     self.viewItemList = {}
-    for i = 1, ColCount * RowCount do
+    for i = 1, Common.EquTypeCount do
         local item = ArticleViewItem.New(parentWindow)
         item:SetBgSpriteDataPath(itemBgImgPath)
         item:SetBgSpriteColor(255, 255, 255, 255)
@@ -304,6 +301,18 @@ function RoleEquTableWidget:SetPosition(x, y)
     local portraitBgLabelWidth, _ = self.portraitBgLabel:GetSize()
     local portraitBgLabelXPos = x + (self.width - portraitBgLabelWidth) / 2
     self.portraitBgLabel:SetPosition(portraitBgLabelXPos, y + 0 * Util.GetWindowSizeScale())
+
+    local suitItem = self.viewItemList[Common.EquType.Suit]
+    local suitItemWidth, _ = suitItem:GetSize()
+    local suitItemXPos = x + 30 * Util.GetWindowSizeScale()
+    local suitItemYPos = y + 45 * Util.GetWindowSizeScale()
+    suitItem:SetPosition(suitItemXPos, suitItemYPos)
+
+    local titleItem = self.viewItemList[Common.EquType.Title]
+    local titleItemWidth, _ = titleItem:GetSize()
+    local titleItemXPos = suitItemXPos
+    local titleItemYPos = suitItemYPos + suitItemWidth + 20 * Util.GetWindowSizeScale()
+    titleItem:SetPosition(titleItemXPos, titleItemYPos)
 
     local capItem = self.viewItemList[Common.EquType.Cap]
     local capItemWidth, _ = capItem:GetSize()

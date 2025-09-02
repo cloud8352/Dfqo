@@ -73,7 +73,7 @@ function NpcSys:Update(dt, rate)
             and SoundLib.IsSourcePlaying(e.Npc.TalkingSource) == false
         then
             e.Npc.TalkingSource = nil
-            e.Npc.TalkingWaitTimeMs = 10000
+            e.Npc.TalkingWaitTimeMs = 20000
         end
         if e.Npc.TalkingWaitTimeMs > 0 then
             e.Npc.TalkingWaitTimeMs = e.Npc.TalkingWaitTimeMs - dt
