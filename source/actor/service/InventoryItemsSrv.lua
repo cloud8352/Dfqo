@@ -175,4 +175,39 @@ function InventoryItemsSrv.RandomDropItemFromEntity(entity)
     InventoryItemsSrv.DropItemFromEntity(entity, articleInfo.Index, articleInfo.count)
 end
 
+---@param entity Actor.Entity
+---@param type int ArticleType
+---@param count int
+---@param inventoryItemConfigPath string
+function InventoryItemsSrv.WhetherEntityCanAddItem(entity, type, count, inventoryItemConfigPath)
+    local inventoryItems = entity.InventoryItems
+    if inventoryItems == nil then
+        return
+    end
+
+    if inventoryItems:WhetherHaveUsableIndex() then
+        return true
+    end
+
+    if type == Common.ArticleType.Equipment then
+        return false
+    end
+
+    ---@type ArticleInfo
+    local sameArticleInfo = nil
+    for i, info in pairs(inventoryItems:GetList()) do
+        if info.type ~= Common.ArticleType.Equipment and
+            info.path == inventoryItemConfigPath
+        then
+            sameArticleInfo = info
+            break
+        end
+    end
+    if sameArticleInfo then
+        return true
+    end
+
+    return false
+end
+
 return InventoryItemsSrv

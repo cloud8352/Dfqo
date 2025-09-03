@@ -92,15 +92,17 @@ function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
         return
     end
 
+    local articleInfo = eInventoryItems:GetFirstNotEmptyItem()
     if InputSrv.IsPressed(player.input, Common.InputKeyValueStruct.GetItem) then
         StateSrv.Play(player.states, "sit")
-        if false == player.InventoryItems:WhetherHaveUsableIndex() then
+        if false == InventoryItemsSrv.WhetherEntityCanAddItem(player, articleInfo.type, 
+                articleInfo.count, articleInfo.path)
+        then
             print("InventoryItemsSys:checkAndExecGetItemByPlayer(e)", "has no empty space!")
             SoundLib.Play(self.invalidSoundData)
             return
         end
 
-        local articleInfo = eInventoryItems:GetFirstNotEmptyItem()
         InventoryItemsSrv.AddItemToEntity(Config.user.player,
             articleInfo.count, articleInfo.path)
 

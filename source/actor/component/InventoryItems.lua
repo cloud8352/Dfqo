@@ -75,6 +75,8 @@ function InventoryItems:InsertItem(index, count, inventoryItemConfigPath)
     articleInfo.count = count
     if inventoryItemConfigPath == nil or inventoryItemConfigPath == "" then
         self.list[index] = articleInfo
+        -- 计算非空物品总数
+        self:computeNotEmptyItemCount()
         self.itemInsertedCaller:Call(articleInfo)
         return
     end
@@ -120,7 +122,7 @@ function InventoryItems:GetNotEmptyItemCount()
 end
 
 function InventoryItems:WhetherHaveUsableIndex()
-    return self.notEmptyItemCount <= UiCommon.ArticleTableTotalCount
+    return self.notEmptyItemCount < UiCommon.ArticleTableTotalCount
 end
 
 ---@param n int

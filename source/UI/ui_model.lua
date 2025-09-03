@@ -1640,6 +1640,14 @@ end
 ---@param itemInfo ArticleInfo
 function UiModel:unloadEquipment(equTableIndex, itemInfo)
     print("UiModel:unloadEquipment(index, itemInfo)", equTableIndex, itemInfo.name)
+    if false == InventoryItemsSrv.WhetherEntityCanAddItem(self.player, itemInfo.type, 
+            itemInfo.count, itemInfo.path)
+    then
+        print("UiModel:unloadEquipment(index, itemInfo)", "has no empty space!")
+        SoundLib.Play(NotFitAlertSoundData)
+        return
+    end
+
     -- 在ui上卸载到物品栏的空位置
     InventoryItemsSrv.AddItemToEntity(self.player,
         itemInfo.count, itemInfo.path)
