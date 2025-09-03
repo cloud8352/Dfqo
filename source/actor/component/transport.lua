@@ -22,13 +22,18 @@ function _Transport.HandleData(data)
 end
 
 function _Transport:Ctor(data, param)
+    local myParam = param.Transport
+    if nil == myParam then
+        myParam = {}
+    end
+
     self.enable = true
-    self.type = param.type or data.type
+    self.type = myParam.Type or data.type
     self.direction = data.direction
-    self.map = param.map or data.map
+    self.map = myParam.Map or data.map
     self.collider = _Collider.New(data.collider)
 
-    self.ToPos = param.ToPos or data.ToPos or { X = 0, Y = 0 }
+    self.ToPos = myParam.ToPos or data.ToPos or { X = 0, Y = 0 }
 end
 
 return _Transport

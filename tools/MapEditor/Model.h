@@ -261,6 +261,12 @@ struct DulistInfoStruct {
     bool IsEnemy = true;
 };
 
+struct TransportInfoStruct {
+    QString Type = "";
+    QString Map = "";
+    PosStruct ToPos;
+};
+
 struct MapActorInfoStruct
 {
     int X = 0;
@@ -276,6 +282,7 @@ struct MapActorInfoStruct
     int Direction = 1;
     int Camp = 2; // 1=we, 2=enemy
     DulistInfoStruct DulistInfo;
+    TransportInfoStruct TransportInfo;
 
     MapActorInfoStruct() {}
 };

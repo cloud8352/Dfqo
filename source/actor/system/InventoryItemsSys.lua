@@ -27,6 +27,7 @@ function InventoryItemsSys:Ctor(upperEvent)
 
     -- itemGotSoundData
     self.itemGotSoundData = ResLib.GetSoundData("ui/InventoryItemGot")
+    self.invalidSoundData = ResLib.GetSoundData("ui/Alert1")
 
     self.hasFocusedItem = false
 end
@@ -95,6 +96,7 @@ function InventoryItemsSys:checkAndExecGetItemByPlayer(e)
         StateSrv.Play(player.states, "sit")
         if false == player.InventoryItems:WhetherHaveUsableIndex() then
             print("InventoryItemsSys:checkAndExecGetItemByPlayer(e)", "has no empty space!")
+            SoundLib.Play(self.invalidSoundData)
             return
         end
 

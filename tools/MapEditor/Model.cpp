@@ -775,6 +775,15 @@ void Model::saveMapInfoToFile(const QString &filePath)
         dulistJsonObj.insert("isEnemy", info.DulistInfo.IsEnemy);
         actorInfoJsonObj.insert("dulist", dulistJsonObj);
 
+        // transport params
+        QJsonObject transportJsonObj;
+        transportJsonObj.insert("Type", info.TransportInfo.Type);
+        transportJsonObj.insert("Map", info.TransportInfo.Map);
+        QJsonObject toPosJsonObj;
+        toPosJsonObj.insert("X", info.TransportInfo.ToPos.X);
+        toPosJsonObj.insert("Y", info.TransportInfo.ToPos.Y);
+        transportJsonObj.insert("ToPos", toPosJsonObj);
+
         actorInfoListJsonArray.append(actorInfoJsonObj);
     }
     jsonObj.insert("actor", actorInfoListJsonArray);
@@ -1004,6 +1013,18 @@ void Model::LoadMap(const QString &mapFilePath)
         if (actorInfoJsonObj.keys().contains("dulist")) {
             const QJsonObject &dulistJsonObj = actorInfoJsonObj.value("dulist").toObject();
             actorInfo.DulistInfo.IsEnemy = dulistJsonObj.value("isEnemy").toBool();
+        }
+        // transport params
+        if (actorInfoJsonObj.keys().contains("Transport")) {
+            const QJsonObject &transportInfoJsonObj = actorInfoJsonObj.value("Transport").toObject();
+            TransportInfoStruct transportInfo;
+            transportInfo.Type = transportInfoJsonObj.value("Type").toString();
+            transportInfo.Map = transportInfoJsonObj.value("Map").toString();
+            const QJsonObject &toPosJsonObj = transportInfoJsonObj.value("ToPos").toObject();
+            transportInfo.ToPos.X = toPosJsonObj.value("X").toInt();
+            transportInfo.ToPos.Y = toPosJsonObj.value("Y").toInt();
+
+            actorInfo.TransportInfo = transportInfo;
         }
 
         actorInfoList.append(actorInfo);
