@@ -603,9 +603,42 @@ UiCommon.MapOfWindowSizeEnumToPercentage = MapOfWindowSizeEnumToPercentage
 
 ----- 开始界面相关参数
 
+UiCommon.UserActorCfgDirPath = "config/UserActors"
 UiCommon.UserActorPageColCount = 7
 UiCommon.UserActorPageRowCount = 2
 UiCommon.UserActorPageTotalCount = UiCommon.UserActorPageColCount * UiCommon.UserActorPageRowCount
+
+---@class UserActorDataStruct
+---@field OriCfgSimplePath string
+---@field Content table
+local UserActorDataStruct = {
+    OriCfgSimplePath = "",
+    Content = {}
+}
+
+function UiCommon.NewUserActorData()
+    ---@type UserActorDataStruct
+    local o = _TABLE.DeepClone(UserActorDataStruct)
+    return o
+end
+
+---@class UserActorInfoStruct
+---@field Id int
+---@field Data Actor.RESMGR.InstanceData
+---@field Entity Actor.Entity
+---@field OriCfgSimplePath string
+local UserActorInfoStruct = {
+    Id = 0,
+    Data = {},
+    Entity = nil,
+    OriCfgSimplePath = ""
+}
+
+---@return UserActorInfoStruct
+function UiCommon.NewUserActorInfo()
+    local o = _TABLE.DeepClone(UserActorInfoStruct)
+    return o
+end
 
 UiCommon.JobActorPageColCount = 3
 UiCommon.JobActorPageRowCount = 3

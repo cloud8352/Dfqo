@@ -104,9 +104,9 @@ function _DIRECTOR.IsTweening()
     return _speedTweener.isRunning
 end
 
----@param actorSimplePath string
-function _DIRECTOR.StartGame(actorSimplePath)
-    local player = _FACTORY.NewWithNoDataPool(actorSimplePath, {
+---@param instanceData Actor.RESMGR.InstanceData
+function _DIRECTOR.StartGame(instanceData)
+    local player = _FACTORY.New(instanceData, {
         x = 700,
         y = 500,
         direction = 1,

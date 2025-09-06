@@ -43,14 +43,16 @@ local PageEnum = {
 }
 
 ---@class StartGameWindow.ActorWidgetStruct
----@field ActorPath string
+---@field ActorId int
 ---@field Job int JobEnum
+---@field JobActorPath string
 ---@field AspectCmpt ctor.Component.Aspect
 ---@field Btn PushButton
 ---@field NameLabel Label
 local ActorWidgetStruct = {
-    ActorPath = "",
+    ActorId = 0,
     Job = Common.JobEnum.Other,
+    JobActorPath = "",
     ---@type Actor.Component.Aspect
     AspectCmpt = nil,
     ---@type PushButton
@@ -86,7 +88,7 @@ function StartGameWindow:Ctor(model)
     self.model = model
     self.pageType = PageEnum.Start
 
-    self.selectedUserActorPath = ""
+    self.selectedUserActorId = 0
     self.selectedUserActorName = ""
     self.selectedJobActorPath = ""
 
@@ -589,9 +591,9 @@ function StartGameWindow:Slot_BtnClicked(sender)
     end
 
     if self.startGameBtn == sender then
-        if self.selectedUserActorPath ~= "" then
+        if self.selectedUserActorId ~= 0 then
             self:setPage(PageEnum.Start)
-            self.model:StartGame(self.selectedUserActorPath)
+            self.model:StartGame(self.selectedUserActorId)
             self:Signal_GameStarted()
         end
     end
@@ -603,7 +605,7 @@ function StartGameWindow:Slot_BtnClicked(sender)
         end
 
         widget.Btn:SetForcePressed(true)
-        self.selectedUserActorPath = widget.ActorPath
+        self.selectedUserActorId = widget.ActorId
         self.selectedUserActorName = widget.NameLabel:GetText()
         self.actorDeleteBtn:SetEnable(true)
         self.startGameBtn:SetEnable(true)
@@ -616,7 +618,7 @@ function StartGameWindow:Slot_BtnClicked(sender)
         end
 
         widget.Btn:SetForcePressed(true)
-        self.selectedJobActorPath = widget.ActorPath
+        self.selectedJobActorPath = widget.JobActorPath
 
         -- video
         local video = self.model:GetJobIntroVideo(widget.Job)
@@ -641,7 +643,7 @@ end
 ---@param sender Obj
 function StartGameWindow:Slot_Yes(sender)
     if sender == self.actorDeleteConfirmDlg then
-        self.model:DeleteUserActor(self.selectedUserActorPath)
+        self.model:DeleteUserActor(self.selectedUserActorId)
         self:loadActorWidgetList()
     end
 end
@@ -723,14 +725,15 @@ function StartGameWindow:loadActorWidgetList()
     local windowSizeScale = Util.GetWindowSizeScale()
     local colCount = Common.UserActorPageColCount
 
-    local userActorList = self.model:GetUserActorList()
+    local userActorInfoList = self.model:GetUserActorInfoList()
 
     local widgetW = 150 * windowSizeScale
     local widgetH = 200 * windowSizeScale
-    for i, actor in pairs(userActorList) do
+    for i, info in pairs(userActorInfoList) do
+        local entity = info.Entity
         local actorWidget = newActorWidget()
-        actorWidget.ActorPath = actor.Data.path
-        actorWidget.Job = actor.identity.Job
+        actorWidget.ActorId = info.Id
+        actorWidget.Job = entity.identity.Job
 
         local actorBtn = PushButton.Create(self)
         initBtnImgPaths(actorBtn)
@@ -744,16 +747,16 @@ function StartGameWindow:loadActorWidgetList()
 
         local actorBtnW, actorBtnH = actorBtn:GetSize()
         local actorBtnX, actorBtnY = actorBtn:GetPosition()
-        actor.transform.position:Set(actorBtnX + actorBtnW / 2, 
+        entity.transform.position:Set(actorBtnX + actorBtnW / 2, 
             actorBtnY + actorBtnH - 40 * windowSizeScale, 0)
-        actor.transform.positionTick = true
-        actor.transform.scale:Set(windowSizeScale, windowSizeScale)
-        actor.transform.scaleTick = true
-        actorWidget.AspectCmpt = actor.aspect
+        entity.transform.positionTick = true
+        entity.transform.scale:Set(windowSizeScale, windowSizeScale)
+        entity.transform.scaleTick = true
+        actorWidget.AspectCmpt = entity.aspect
 
         local nameLabel = Label.Create(self)
         actorWidget.NameLabel = nameLabel
-        nameLabel:SetText(actor.identity.name)
+        nameLabel:SetText(entity.identity.name)
         nameLabel:SetSize(widgetW, 35 * windowSizeScale)
         nameLabel:SetPosition(actorBtnX, actorBtnY + actorBtnH - 35 * windowSizeScale)
         table.insert(self.actorWidgetList, actorWidget)
@@ -790,7 +793,7 @@ function StartGameWindow:loadJobActorWidgetList()
     local widgetH = 200 * windowSizeScale
     for i, actor in pairs(jobActorList) do
         local actorWidget = newActorWidget()
-        actorWidget.ActorPath = actor.Data.path
+        actorWidget.JobActorPath = actor.Data.path
         actorWidget.Job = actor.identity.Job
 
         local actorBtn = PushButton.Create(self)

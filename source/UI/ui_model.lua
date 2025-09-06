@@ -128,9 +128,10 @@ function UiModel:Ctor(director)
     -- 复活音效
     self.playerRebornSoundSource = _RESOURCE.NewSource("asset/sound/actor/reborn.wav")
 
-    ---@type table<int, Actor.Entity>
-    self.userActorList = {}
-    self:loadUserActorList()
+    ---@type table<int, UserActorInfoStruct>
+    self.userActorInfoList = {}
+    self.currentUserActorId = 0
+    self:loadUserActorInfoList()
 
     ---@type table<int, Actor.Entity>
     self.jobActorList = {}
@@ -432,12 +433,16 @@ function UiModel:DropArticleDockItem()
     self:RequestSetDraggingItemVisibility(false)
 end
 
----@param actorSimplePath string
-function UiModel:StartGame(actorSimplePath)
-    if actorSimplePath == "" then
+---@param userActorId int
+function UiModel:StartGame(userActorId)
+    local actorInfo = self:findUserActorInfoById(userActorId)
+    if actorInfo == nil then
         return
     end
-    self.director.StartGame(actorSimplePath)
+    self.currentUserActorId = userActorId
+    ---@type Actor.RESMGR.InstanceData
+    local dataTmp = Table.DeepClone(actorInfo.Data)
+    self.director.StartGame(dataTmp)
 
     self.partnerList = _CONFIG.user:GetPartnerList()
 
@@ -589,42 +594,57 @@ function UiModel:GetPlayerRebornCoinCount()
 end
 
 function UiModel:SavePlayerData()
-    -- 1. 读取原始实例配置
-    local playerInstanceCfgSimplePath = self.player.Data.path
-    local data, path = _RESOURCE.ReadConfig(playerInstanceCfgSimplePath, "config/actor/instance/%s.cfg", nil)
-    if data == nil then
+    -- 1. 获取原始实例配置
+    local actorInfo = self:findUserActorInfoById(self.currentUserActorId)
+    if nil == actorInfo then
+        print("UiModel:SavePlayerData()", "can not find User Actor Info By Id!", self.currentUserActorId)
+        return
+    end
+    
+    local oriInstanceData = actorInfo.Data
+    if oriInstanceData == nil then
         print("UiModel:SavePlayerData()", "origin instance cfg read failed!")
         return
     end
-    if data.skills == nil then
+    if oriInstanceData.skills == nil then
         print("UiModel:SavePlayerData()", "origin instance cfg data have nor skills data")
         return
     end
-    if data.equipments == nil then
+    if oriInstanceData.equipments == nil then
         print("UiModel:SavePlayerData()", "origin instance cfg data have nor equipments data")
         return
     end
 
-    -- 2. 更新技能配置
-    data.skills = {}
+    local data = Common.NewUserActorData()
+    data.OriCfgSimplePath = actorInfo.OriCfgSimplePath
+    local content = data.Content
+
+    -- 2.1 identity
+    content.Identity = oriInstanceData.identity
+    content.Identity.name = self.player.identity.name
+
+    -- 2.2 更新技能配置
+    local skills = {}
     local mapOfTagToActorSkillObj = SkillSrv.GetMap(self.player.skills)
     for tag, obj in pairs(mapOfTagToActorSkillObj) do
         if obj then
-            data.skills[tag] = obj:GetData().path
+            skills[tag] = obj:GetData().path
         end
     end
+    content.Skills = skills
 
     -- 3. 更新装备
-    data.equipments = {}
+    local equipments = {}
     local mapOfTagToActorEquObj = EquSrv.GetMap(self.player.equipments)
     for tag, obj in pairs(mapOfTagToActorEquObj) do
         if obj then
-            data.equipments[tag] = obj:GetData().path
+            equipments[tag] = obj:GetData().path
         end
     end
+    content.Equipments = equipments
 
     -- 4. 装载物品项数据
-    data.InventoryItems = { List = {} }
+    local inventoryItems = { List = {} }
     local articleInfoList = self.player.InventoryItems:GetList()
     for _, info in pairs(articleInfoList) do
         if info ~= nil and info.type ~= Common.ArticleType.Empty then
@@ -633,25 +653,27 @@ function UiModel:SavePlayerData()
                 Count = info.count,
                 Path = info.path
             }
-            table.insert(data.InventoryItems.List, item)
+            table.insert(inventoryItems.List, item)
         end
     end
+    content.InventoryItems = inventoryItems
 
     -- 5. 装载已掌握技能列表数据
-    data.MasteredSkills = { List = {} }
+    local masteredSkills = { List = {} }
     local masteredSkillInfoList = self.player.MasteredSkills:GetList()
     for _, info in pairs(masteredSkillInfoList) do
         local skillData = { Path = "", Exp = 0 };
         skillData.Path = info.resDataPath
         skillData.Exp = info.Exp
-        table.insert(data.MasteredSkills.List, skillData)
+        table.insert(masteredSkills.List, skillData)
     end
+    content.MasteredSkills = masteredSkills
 
     -- 6. 序列化数据
     local dataStr = Table.Deserialize(data)
 
     -- 7. 保存数据
-    local filePath = "config/actor/instance/" .. playerInstanceCfgSimplePath .. PlayerCfgSavedFileSuffix
+    local filePath = Common.UserActorCfgDirPath .. "/Actor" .. tostring(actorInfo.Id) .. PlayerCfgSavedFileSuffix
     local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
         print("UiModel:SavePlayerData()", errMsg, filePath, "file write failed！")
@@ -709,15 +731,15 @@ function UiModel:SaveConfig()
     end
 end
 
-function UiModel:GetUserActorList()
-    return self.userActorList
+function UiModel:GetUserActorInfoList()
+    return self.userActorInfoList
 end
 
 function UiModel:NewAUserActorConfigNoSuffixFileName()
     for i = 1, Common.UserActorPageTotalCount do
         local noSuffixFileName = "Actor" .. tostring(i)
-        local playerCfgFilePath = "config/actor/instance/duelist/" .. noSuffixFileName .. ".cfg"
-        if false == File.Exists(playerCfgFilePath) then
+        local userActorCfgFilePath = Common.UserActorCfgDirPath .. "/" .. noSuffixFileName .. PlayerCfgSavedFileSuffix
+        if false == File.Exists(userActorCfgFilePath) then
             return noSuffixFileName
         end
     end
@@ -742,22 +764,25 @@ end
 ---@param name string
 function UiModel:CreateUserActor(jobActorSimplePath, name)
     -- 1. 读取职业实例配置
-    local playerInstanceCfgSimplePath = jobActorSimplePath
-    local data, path = _RESOURCE.ReadConfig(playerInstanceCfgSimplePath, "config/actor/instance/%s.cfg", nil)
-    if data == nil then
+    local instanceData, path = _RESOURCE.ReadConfig(jobActorSimplePath, "config/actor/instance/%s.cfg", nil)
+    if instanceData == nil then
         print("UiModel:CreateUserActor()", "job actor instance cfg read failed!")
         return
     end
 
-    data.identity.name = name
+    local data = Common.NewUserActorData()
+    data.OriCfgSimplePath = jobActorSimplePath
+
+    local identityData = Table.DeepClone(instanceData.identity)
+    identityData.name = name
+    data.Content.Identity = identityData
 
     -- 2. 序列化数据
     local dataStr = Table.Deserialize(data)
 
     -- 3. 保存数据
-    local dirPath = "config/actor/instance/duelist/"
     local fileName = self:NewAUserActorConfigNoSuffixFileName() .. PlayerCfgSavedFileSuffix
-    local filePath = dirPath .. fileName
+    local filePath = Common.UserActorCfgDirPath .. "/" .. fileName
     local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
         print("UiModel:CreateUserActor()", errMsg, dirPath .. fileName, "file write failed！")
@@ -765,20 +790,20 @@ function UiModel:CreateUserActor(jobActorSimplePath, name)
     end
 
     -- 重新加载用户角色列表
-    self:loadUserActorList()
+    self:loadUserActorInfoList()
 end
 
----@param userActorSimplePath string
-function UiModel:DeleteUserActor(userActorSimplePath)
-    local playerCfgFilePath = "config/actor/instance/" .. userActorSimplePath .. ".cfg"
+---@param userActorId int
+function UiModel:DeleteUserActor(userActorId)
+    local playerCfgFilePath = Common.UserActorCfgDirPath .. "/Actor" .. tostring(userActorId) .. PlayerCfgSavedFileSuffix
     local succeed, errMsg = File.Delete(playerCfgFilePath)
     if not succeed then
-        print("UiModel:DeleteUserActor(userActorSimplePath)", errMsg)
+        print("UiModel:DeleteUserActor(userActorId)", errMsg)
         return
     end
 
     -- 重新加载用户角色列表
-    self:loadUserActorList()
+    self:loadUserActorInfoList()
 end
 
 ---@param timeMs int
@@ -792,7 +817,7 @@ function UiModel:GoToGameStartPage()
     _MAP.Load("NoMap", true)
     LifeSrv.KillAllEntity()
 
-    self:loadUserActorList()
+    self:loadUserActorInfoList()
     self:loadJobActorList()
     self:Signal_RequestSetUiGameState(Common.GameState.ActorSelect)
 end
@@ -1727,16 +1752,45 @@ function UiModel:unloadPlayerSkill(skillInfo)
     end
 end
 
-function UiModel:loadUserActorList()
-    self.userActorList = {}
+function UiModel:loadUserActorInfoList()
+    self.userActorInfoList = {}
 
     for i = 1, Common.UserActorPageTotalCount do
-        local simplePath = "duelist/Actor" .. tostring(i)
-        local playerCfgFilePath = "config/actor/instance/" .. simplePath .. ".cfg"
-        if File.Exists(playerCfgFilePath) then
-            local e = Factory.NewWithNoDataPool(simplePath, {})
+        local fileName = "Actor" .. tostring(i) .. PlayerCfgSavedFileSuffix
+        local userActorCfgFilePath = Common.UserActorCfgDirPath .. "/" .. fileName
+        if File.Exists(userActorCfgFilePath) then
+            local actorInfo = Common.NewUserActorInfo()
+            actorInfo.Id = i
+
+            ---@type UserActorDataStruct
+            local userActorData = ResLib.ReadConfig(userActorCfgFilePath, "%s")
+            actorInfo.OriCfgSimplePath = userActorData.OriCfgSimplePath
+            
+            local instanceData, _ = _RESOURCE.ReadConfig(userActorData.OriCfgSimplePath, "config/actor/instance/%s.cfg", nil)
+            instanceData.identity = userActorData.Content.Identity or instanceData.identity
+            instanceData.skills = userActorData.Content.Skills or instanceData.skills
+            instanceData.equipments = userActorData.Content.Equipments or instanceData.equipments
+            instanceData.InventoryItems = userActorData.Content.InventoryItems or instanceData.InventoryItems
+            instanceData.MasteredSkills = userActorData.Content.MasteredSkills or instanceData.MasteredSkills
+            
+            -- 序列化数据
+            local dataStr = Table.Deserialize(instanceData)
+            -- 保存临时数据
+            local instanceCfgSimplePathTmp = "duelist/UserActorTmp"
+            local filePath = "config/actor/instance/" .. instanceCfgSimplePathTmp .. PlayerCfgSavedFileSuffix
+            local ok, errMsg = File.WriteFile(filePath, dataStr)
+            if not ok then
+                print("UiModel:loadUserActorInfoList()", errMsg, filePath, "file write failed！")
+                return
+            end
+            -- 使用资源管理器读取临时实例数据
+            local resMgrInstanceData = ResMgr.GetInstanceDataWithNoPool(instanceCfgSimplePathTmp)
+            actorInfo.Data = resMgrInstanceData
+            
+            local e = Factory.New(resMgrInstanceData, {})
             e.ais.enable = false
-            table.insert(self.userActorList, e)
+            actorInfo.Entity = e
+            table.insert(self.userActorInfoList, actorInfo)
         end
     end
 end
@@ -1775,6 +1829,16 @@ function UiModel:loadMapSimplePathList()
         local fileNameWithoutSuffix = String.RmExtSuffix(fileName)
         table.insert(self.mapSimplePathList, fileNameWithoutSuffix)
     end
+end
+
+function UiModel:findUserActorInfoById(id)
+    for i, info in pairs(self.userActorInfoList) do
+        if id == info.Id then
+            return info
+        end
+    end
+
+    return nil
 end
 
 return UiModel
