@@ -41,6 +41,7 @@ end
 
 local _colliderMap = _FILE.ReadScript("config/actor/colliderMap.cfg")
 local _emptyMap = {}
+local EmptyImg = _RESOURCE.GetImage("empty")
 
 local function _HeaderHandle(path)
     if (type(path) ~= "string") then
@@ -109,11 +110,37 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
     local spriteDatas = {}
     local sortingMap = {}
     passMap = passMap or _emptyMap
+    
+    ---@type table<string, boolean> 装扮部位是否隐藏表格
+    local hideMap = {}
+    for avatarTag, avatarPath in pairs(avatar.config) do
+        hideMap[avatarTag] = false
+    end
+    if avatar.config["Suit"] then
+        for avatarTag, avatarPath in pairs(avatar.config) do
+            hideMap[avatarTag] = true
+        end
+
+        hideMap["Suit"] = false
+        if false == avatar.HideWeaponWhenHaveSuit then
+            hideMap["weapon"] = false
+            hideMap["weapon_b"] = false
+            hideMap["weapon_b1"] = false
+            hideMap["weapon_b2"] = false
+            hideMap["weapon_c1"] = false
+            hideMap["weapon_c2"] = false
+        end
+    end
 
     for k, v in pairs(avatar.config) do
         if (not passMap[k] and not avatar.passMap[k]) then
             local spritePath = avatar.data.path .. "/" .. v .. "/" .. path
             local spriteData = _RESMGR.GetSpriteData(spritePath)
+
+            if hideMap[k] then
+                spriteData = TableLib.LightClone(spriteData)
+                spriteData.image = EmptyImg
+            end
 
             -- 异常数据检查
             if (spriteData.ox and spriteData.oy) then
@@ -604,26 +631,11 @@ function _RESMGR.GetFrameaniData(path, keys, avatar)
     path = _HeaderHandle(path)
 
     if (avatar) then
-        ---@type Actor.Drawable.Frameani.Avatar
-        local avatarTmp = TableLib.DeepClone(avatar)
-        -- 优先显示套装
-        if avatarTmp.config.Suit then
-            avatarTmp.config = {}
-            avatarTmp.config.Suit = avatar.config.Suit
-            avatarTmp.config.skin = avatar.config.skin
-            avatarTmp.config.weapon = avatar.config.weapon
-            avatarTmp.config.weapon_b = avatar.config.weapon_b
-            avatarTmp.config.weapon_b1 = avatar.config.weapon_b1
-            avatarTmp.config.weapon_b2 = avatar.config.weapon_b2
-            avatarTmp.config.weapon_c1 = avatar.config.weapon_c1
-            avatarTmp.config.weapon_c2 = avatar.config.weapon_c2
-        end
-
         local avatarPath = type(path) == "table" and path.path or path
-        local tag = _RESOURCE.GetTag(avatarTmp.key .. "|" .. avatarPath, keys)
+        local tag = _RESOURCE.GetTag(avatar.key .. "|" .. avatarPath, keys)
 
         return _RESOURCE.GetResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, tag, keys,
-            _RESMGR.GetSpriteData, _, avatarTmp)
+            _RESMGR.GetSpriteData, _, avatar)
     else
         return _RESOURCE.GetConfigResource(_poolGroup.frameani, _RESOURCE.NewFrameaniData, path, keys,
             _RESMGR.GetSpriteData)

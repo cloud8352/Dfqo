@@ -154,8 +154,20 @@ double Calculator::Calculate(QString expression)
         expression.insert(0, "0");
     }
 
+    // 调整 双符号，如：1+-2
+    QString adjustOptCharString;
+    QChar lastChar = '0';
+    for (const QChar &c : expression) {
+        if (!lastChar.isDigit() && !c.isDigit()) {
+            adjustOptCharString.remove(adjustOptCharString.size() - 1, 1);
+        }
+
+        adjustOptCharString.append(c);
+        lastChar = c;
+    }
+
     QString mask_buffer[100] = {"0"}, repolishArray[100]={"0"};
-    int length = maskData(expression, mask_buffer);
+    int length = maskData(adjustOptCharString, mask_buffer);
     length = repolish(mask_buffer, repolishArray, length);
     double result = repolishCalculat(repolishArray, length);
     return result;

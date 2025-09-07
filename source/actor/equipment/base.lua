@@ -99,6 +99,13 @@ function _Equipment:LoadFromData()
             _ASPECT.SetPartAvatar(entity.aspect, k, v)
         end
     end
+
+    -- HideWeaponWhenHaveSuit
+    if data.HideWeaponWhenHaveSuit then
+        ---@type Actor.Drawable.Frameani
+        local bodyDrawable = _ASPECT.GetPart(entity.aspect)
+        bodyDrawable.avatar.HideWeaponWhenHaveSuit = true
+    end
 end
 
 return _Equipment
