@@ -22,7 +22,19 @@ You can learn more in [my blog](https://musoucrow.github.io).
 
 ## 开发环境
 
-推荐使用 Visual Studio Code 进行代码阅读和编写，步骤如下：
+1、将资源文件同步到项目目录，步骤如下：
+
+进入到项目目录，执行：
+
+```
+git clone https://gitee.com/ct243768648/DfqoAsset.git
+
+cd DfqoAsset
+
+./SyncToParent.sh
+```
+
+2、使用 Visual Studio Code 进行代码阅读和编写，步骤如下：
 
 - 安装 Visual Studio Code，安装方法可自行在网上搜索
 - 在 Visual Studio Code 插件商店中安装 EmmyLua（版本：v0.6.18）、EmmyLuaCodeStyle、Local Lua Debugger 插件
@@ -32,9 +44,9 @@ You can learn more in [my blog](https://musoucrow.github.io).
 
 ## 启动
 
-linux平台，双击 start.sh 启动；
+linux平台，双击 Start.sh 启动；
 
-windows平台，双击 start.bat 启动
+windows平台，双击 Start.bat 启动
 
 
 
