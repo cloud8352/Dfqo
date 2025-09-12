@@ -5,7 +5,7 @@
 
 local BaseSkill = require("actor.skill.base")
 
----@class Actor.Skill.SkySkill : Actor.Skill
+---@class Actor.Skill.Sky : Actor.Skill
 local SkySkill = require("core.class")(BaseSkill)
 
 ---@return boolean

@@ -20,7 +20,7 @@ end
 function CounterAttackSkill:Update(dt)
     BeatenSkill.Update(self, dt)
 
-    if (self:CanUse() and InputSrv.IsPressed(self._entity.input, "counterAttack")) then
+    if (self:CanUse() and InputSrv.IsPressed(self._entity.input, "jump")) then
         self:Use()
     end
 end
