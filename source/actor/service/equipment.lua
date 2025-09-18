@@ -7,6 +7,8 @@
 
 local _RESMGR = require("actor.resmgr")
 
+local AspectSrv = require("actor.service.aspect")
+
 ---@class Actor.Service.EQUIPMENT
 local _EQUIPMENT = {}
 
@@ -46,6 +48,18 @@ function _EQUIPMENT.Set(entity, key, data)
             if weaponEqu then
                 weaponEqu:LoadFromData()
             end
+        end
+    end
+
+    -- 设置是否隐藏武器
+    ---@type Actor.Drawable.Frameani
+    local bodyDrawable = AspectSrv.GetPart(entity.aspect)
+    bodyDrawable.avatar.WhetherHideWeapon = false
+    for _, t in container:Pairs() do
+        ---@type Actor.Equipment
+        local equTmp = t
+        if equTmp.WhetherHideWeapon then
+            bodyDrawable.avatar.WhetherHideWeapon = true
         end
     end
 

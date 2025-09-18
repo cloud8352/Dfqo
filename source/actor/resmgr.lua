@@ -122,14 +122,21 @@ local function _NewAvatarSpriteData(path, avatar, passMap)
         end
 
         hideMap["Suit"] = false
-        if false == avatar.HideWeaponWhenHaveSuit then
-            hideMap["weapon"] = false
-            hideMap["weapon_b"] = false
-            hideMap["weapon_b1"] = false
-            hideMap["weapon_b2"] = false
-            hideMap["weapon_c1"] = false
-            hideMap["weapon_c2"] = false
-        end
+        hideMap["weapon"] = false
+        hideMap["weapon_b"] = false
+        hideMap["weapon_b1"] = false
+        hideMap["weapon_b2"] = false
+        hideMap["weapon_c1"] = false
+        hideMap["weapon_c2"] = false
+    end
+
+    if avatar.WhetherHideWeapon then
+        hideMap["weapon"] = true
+        hideMap["weapon_b"] = true
+        hideMap["weapon_b1"] = true
+        hideMap["weapon_b2"] = true
+        hideMap["weapon_c1"] = true
+        hideMap["weapon_c2"] = true
     end
 
     for k, v in pairs(avatar.config) do

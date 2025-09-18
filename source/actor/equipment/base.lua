@@ -20,11 +20,14 @@ local _Equipment = require("core.class")()
 ---@param entity Actor.Entity
 ---@param key string
 ---@param data Actor.RESMGR.EquipmentData
+---@param WhetherHideWeapon boolean
 function _Equipment:Ctor(entity, key, data)
     self._entity = entity
     self._key = key
     self._attributeMarks = {}
     self._data = data
+
+    self.WhetherHideWeapon = data.WhetherHideWeapon or false
 
     self:LoadFromData()
 end
@@ -98,13 +101,6 @@ function _Equipment:LoadFromData()
         for k, v in pairs(data.avatar) do
             _ASPECT.SetPartAvatar(entity.aspect, k, v)
         end
-    end
-
-    -- HideWeaponWhenHaveSuit
-    if data.HideWeaponWhenHaveSuit then
-        ---@type Actor.Drawable.Frameani
-        local bodyDrawable = _ASPECT.GetPart(entity.aspect)
-        bodyDrawable.avatar.HideWeaponWhenHaveSuit = true
     end
 end
 

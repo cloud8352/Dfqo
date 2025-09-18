@@ -71,12 +71,12 @@ function _Frameani:Ctor(upperEvent, frameaniData, hasShadow, order, avatarData, 
         ---@field public config table<string, string>
         ---@field public key string
         ---@field public passMap table<string, boolean>
-        ---@field public HideWeaponWhenHaveSuit boolean
+        ---@field public WhetherHideWeapon boolean
         self.avatar = {
             data = avatarData,
             config = _TABLE.Clone(avatarConfig),
             passMap = {},
-            HideWeaponWhenHaveSuit = false
+            WhetherHideWeapon = false
         }
 
         self:AdjustAvatarKey()
