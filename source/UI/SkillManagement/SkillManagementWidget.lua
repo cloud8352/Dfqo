@@ -4,9 +4,6 @@
 ]] --
 
 local _CONFIG = require("config")
-local _Mouse = require("lib.mouse")
-local Timer = require("util.gear.timer")
-local _MATH = require("lib.math")
 
 local WindowManager = require("UI.WindowManager")
 local Common = require("UI.ui_common")
@@ -21,6 +18,12 @@ local Label = require("UI.Label")
 local PushButton = require("UI.PushButton")
 local ScrollArea = require("UI.ScrollArea")
 local SkillMountContentWidget = require("UI.SkillManagement.SkillMountContentWidget")
+
+local Timer = require("util.gear.timer")
+
+local _Mouse = require("lib.mouse")
+local _MATH = require("lib.math")
+local StringLib = require("lib.string")
 
 ---@class SkillManagementWidget
 local SkillManagementWidget = require("core.class")(Widget)
@@ -209,7 +212,7 @@ function SkillManagementWidget:updateSelectedSkillContentScrollAreaContentWidget
     self.selectedSkillTitleLabel:SetText(info.name)
 
     local skillInfoContentStr = 
-        "冷却时间：" .. tostring(info.cdTime) .. "s" .. "\n" ..
+        "冷却时间：" .. StringLib.NumToString(info.cdTime / 1000, 1) .. "s" .. "\n" ..
         "消耗mp：" .. tostring(info.mp) .. "\n" ..
         "物理伤害增幅：" .. tostring(info.physicalDamageEnhanceRate * 100) .. "%" .. "\n" ..
         "魔法伤害增幅：" .. tostring(info.magicDamageEnhanceRate * 100) .. "%" .. "\n" ..
@@ -239,6 +242,10 @@ function SkillManagementWidget:updateItemByInfo(item, info)
     item:SetLevel(info.Level)
     item:SetProgress(info.ExpOfCurrentLevel, info.MaxExpOfCurrentLevel)
     item:SetValue(ItemDataKey, info)
+    
+    if item == self.selectedSkillItem then
+        self:updateSelectedSkillContentScrollAreaContentWidget()
+    end
 end
 
 return SkillManagementWidget

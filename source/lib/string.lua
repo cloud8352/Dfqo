@@ -436,4 +436,15 @@ function _STRING.Size(text)
     return #text
 end
 
+--- 将小数转换成字符串，保留指定精度
+---@param num number
+---@param precision int
+function _STRING.NumToString(num, precision)
+    if precision == nil then
+        precision = 3
+    end
+    local numTmp = math.floor(num * 10 ^ precision + 0.5) * 0.1 ^ precision
+    return tostring(numTmp)
+end
+
 return _STRING

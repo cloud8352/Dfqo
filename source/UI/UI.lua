@@ -30,6 +30,7 @@ local PlayerRebornDlg = require("UI.Dlg.PlayerRebornDlg")
 local AboutDlg = require("UI.Dlg.AboutDlg")
 local MiniMapWidget = require("UI.MiniMapWidget")
 local NpcDlg = require("UI.Dlg.NpcDlg")
+local SkillEnhanceShopWidget = require("UI.Shop.SkillEnhanceShopWidget")
 
 local Map = require("map.init")
 
@@ -324,6 +325,38 @@ function UI.Init(director)
     UI.npcDlg:SetVisible(false)
     UI.appendWindowWidget(UI.npcDlg, UI.npcDlg)
 
+    -- moba
+    UI.mobaBtn = PushButton.Create(bottomWindow)
+    UI.mobaBtn:SetSize(30 * windowSizeScale, 30 * windowSizeScale)
+    UI.mobaBtn:SetPosition(Util.GetWindowWidth() - 50 * windowSizeScale, 90 * windowSizeScale)
+    UI.appendWindowWidget(bottomWindow, UI.mobaBtn)
+
+    -- moba tai su count
+    UI.taiSuCountLabel = Label.Create(bottomWindow)
+    UI.taiSuCountLabel:SetSize(120 * windowSizeScale, 20 * windowSizeScale)
+    UI.taiSuCountLabel:SetPosition(310 * windowSizeScale, 0)
+    UI.taiSuCountLabel:SetText("太素：0")
+    UI.taiSuCountLabel:SetBgSpriteColor(0, 0, 0, 80)
+    UI.appendWindowWidget(bottomWindow, UI.taiSuCountLabel)
+
+    -- shop
+    UI.shopBtn = PushButton.Create(bottomWindow)
+    UI.shopBtn:SetSize(40 * windowSizeScale, 20 * windowSizeScale)
+    UI.shopBtn:SetPosition(310 * windowSizeScale, 20 * windowSizeScale)
+    UI.appendWindowWidget(bottomWindow, UI.shopBtn)
+
+    -- shop window
+    UI.shopWindow = Window.Create()
+    UI.shopWindow:SetSize(977 * windowSizeScale, 622 * windowSizeScale)
+    UI.shopWindow:SetPosition(characterInfoWindowOriginXPos + 10, characterInfoWindowOriginYPos + 10)
+    UI.shopWindow:SetVisible(false)
+
+    -- skillEnhanceShopWidget
+    local skillEnhanceShopWidget = SkillEnhanceShopWidget.Create(UI.shopWindow, UI.model)
+    UI.shopWindow:SetContentWidget(skillEnhanceShopWidget)
+    -- 将组件添加到窗口组件列表
+    UI.appendWindowWidget(UI.shopWindow, UI.shopWindow)
+
     ---- connect
     -- StartGameWindow
     UI.startGameWindow:MocConnectSignal(StartGameWindow.Signal_GameStarted, UI)
@@ -365,6 +398,13 @@ function UI.Init(director)
     UI.model:MocConnectSignal(UI.model.Signal_ReqShowNpcDlg, UI)
     UI.model:MocConnectSignal(UI.model.Signal_ReqSetVisibilityNpcInteractBtn, UI)
     UI.npcInteractBtn:MocConnectSignal(UI.npcInteractBtn.Signal_BtnClicked, UI)
+    -- moba
+    UI.mobaBtn:MocConnectSignal(UI.mobaBtn.Signal_BtnClicked, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_LoadMobaMapFinished, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_OnceGameTaiSuCountChanged, UI)
+    UI.model:MocConnectSignal(UI.model.Signal_TaiSuCountChanged, UI)
+    -- shop
+    UI.shopBtn:MocConnectSignal(UI.shopBtn.Signal_BtnClicked, UI)
 
     --- post init
     UI.updateWindowVisibilityByGameState()
@@ -465,6 +505,13 @@ function UI.Slot_BtnClicked(my, sender)
     end
     if UI.npcInteractBtn == sender then
         UI.showNpcDlg()
+    end
+    if UI.mobaBtn == sender then
+        UI.model:LoadMobaMap()
+    end
+    if UI.shopBtn == sender then
+        local isVisible = UI.shopWindow:IsVisible()
+        UI.shopWindow:SetVisible(not isVisible)
     end
 end
 
@@ -725,6 +772,27 @@ function UI.Slot_ReqSetVisibilityNpcInteractBtn(my, sender, isVisible)
     UI.npcInteractBtn:SetVisible(isVisible)
 end
 
+---@param my Obj
+---@param sender Obj
+function UI.Slot_LoadMobaMapFinished(my, sender)
+    local taiSuCount = UI.model:GetOnceGameTaiSuCount()
+    UI.taiSuCountLabel:SetText("太素：" .. tostring(taiSuCount))
+end
+
+---@param my Obj
+---@param sender Obj
+---@param count int
+function UI.Slot_OnceGameTaiSuCountChanged(my, sender, count)
+    UI.taiSuCountLabel:SetText("太素：" .. tostring(count))
+end
+
+---@param my Obj
+---@param sender Obj
+---@param count int
+function UI.Slot_TaiSuCountChanged(my, sender, count)
+    UI.taiSuCountLabel:SetText("太素：" .. tostring(count))
+end
+
 --- private function
 
 ---
@@ -773,6 +841,7 @@ function UI.keyboardEvent()
         UI.hoveringArticleItemTipWindow:SetVisible(false)
         UI.hoveringSkillItemTipWindow:SetVisible(false)
         UI.npcDlg:SetVisible(false)
+        UI.shopWindow:SetVisible(false)
     end
 
     local model = UI.model
@@ -822,6 +891,7 @@ function UI.updateWindowVisibilityByGameState()
     UI.playerRebornDlg:SetVisible(false)
     UI.aboutDlg:SetVisible(false)
     UI.notificationWindow:SetVisible(false)
+    UI.shopWindow:SetVisible(false)
 
     if UI.gameState == Common.GameState.ActorSelect then
         UI.startGameWindow:SetVisible(true)

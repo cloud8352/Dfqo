@@ -558,8 +558,7 @@ function SkillDockViewFrame:updateHoveringItemTipWindowData()
     local skill = self.model:GetPlayerActorSkillObj(self.hoveringItemTag)
     -- 更新技能信息
     if nil ~= skill then
-        local skillData = skill:GetData()
-        Common.UpdateSkillInfoFromData(skillInfo, skillData)
+        Common.UpdateSkillInfoFromSkillObj(skillInfo, skill)
     end
 
     self.model:RequestSetHoveringSkillItemTipWindowPosAndInfo(tipWindowXPos, tipWindowYPos, skillInfo)
@@ -569,11 +568,9 @@ function SkillDockViewFrame:reloadSkillsViewData()
     for tag, item in pairs(self.mapOfTagToSkillViewItem) do
         local actorSkillObj = self.model:GetPlayerActorSkillObj(tag)
         if actorSkillObj then
-            ---@type Actor.RESMGR.SkillData
-            local skillData = actorSkillObj:GetData()
             local iconPath = "icon/skill/NormalAttack"
-            if skillData.icon then
-                iconPath = "icon/skill/" .. skillData.icon
+            if actorSkillObj.icon then
+                iconPath = "icon/skill/" .. actorSkillObj.icon
             end
             item:SetIconSpriteDataPath(iconPath)
         else

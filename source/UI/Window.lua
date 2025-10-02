@@ -25,6 +25,12 @@ local Window = require("core.class")(Widget)
 local MarginSpace = 15
 local TitleBarHeight = 20
 
+function Window.Create()
+    -- 用于定义构造函数，解释使用，不做实际用途
+    -- 使用class模块后，实际会调用Ctor函数
+    return Window.New()
+end
+
 function Window:Ctor()
     Widget.Ctor(self, self)
 

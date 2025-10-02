@@ -450,7 +450,7 @@ function UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     skillInfo.desc = data.special
     skillInfo.resDataPath = data.path
     skillInfo.iconPath = "icon/skill/" .. data.icon
-    skillInfo.cdTime = data.time / 1000
+    skillInfo.cdTime = data.time
     skillInfo.mp = data.mp
     -- 此处解析错误
     if data.attackValues and data.attackValues.isPhysical then
@@ -467,6 +467,23 @@ function UiCommon.NewSkillInfoFromData(data)
     skillInfo.id = 1
     UiCommon.UpdateSkillInfoFromData(skillInfo, data)
     return skillInfo
+end
+
+---@param skillInfo SkillInfo
+---@param skillObj Actor.Skill
+function UiCommon.UpdateSkillInfoFromSkillObj(skillInfo, skillObj)
+    skillInfo.name = skillObj.Name
+    skillInfo.desc = skillObj.Desc
+    skillInfo.resDataPath = skillObj:GetData().path
+    skillInfo.iconPath = "icon/skill/" .. skillObj.icon
+    skillInfo.cdTime = skillObj.time
+    skillInfo.mp = skillObj.mp
+    -- 此处解析错误
+    if skillObj.attackValues and skillObj.attackValues.isPhysical then
+        skillInfo.physicalDamageEnhanceRate = 0 or skillObj.attackValues.damageRate
+    else
+        skillInfo.magicDamageEnhanceRate = 0 or skillObj.attackValues.damageRate
+    end
 end
 
 ---@param info SkillInfo
@@ -658,5 +675,7 @@ function UiCommon.NewNpcInfo()
     local o = _TABLE.DeepClone(NpcInfo)
     return o
 end
+
+UiCommon.MobaSkillCdScale = 3
 
 return UiCommon

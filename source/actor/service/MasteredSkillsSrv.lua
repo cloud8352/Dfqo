@@ -71,6 +71,21 @@ end
 
 ---@param masteredSkillsCmpt Actor.Component.MasteredSkills
 ---@param skillConfigPath string
+---@param cdTimePercent number @0.0-1.0之间小数
+function MasteredSkillsSrv.ReduceSkillCdTimePercent(masteredSkillsCmpt, skillConfigPath, cdTimePercent)
+    local info = MasteredSkillsSrv.GetSkillInfoFromMasteredSkillsCmptByPath(masteredSkillsCmpt,
+        skillConfigPath)
+    if info.resDataPath == "" then
+        return
+    end
+
+    info.cdTime = info.cdTime * (1 - cdTimePercent)
+    info.cdTime = math.floor(info.cdTime)
+    masteredSkillsCmpt.SkillChangedCaller:Call(info)
+end
+
+---@param masteredSkillsCmpt Actor.Component.MasteredSkills
+---@param skillConfigPath string
 ---@return SkillInfo
 function MasteredSkillsSrv.GetSkillInfoFromMasteredSkillsCmptByPath(masteredSkillsCmpt, skillConfigPath)
     local list = masteredSkillsCmpt:GetList()

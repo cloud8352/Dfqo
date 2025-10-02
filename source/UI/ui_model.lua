@@ -88,6 +88,8 @@ function UiModel:Ctor(director)
     self.hitEnemyOfPlayer = nil
 
     self.isInRougelikeMode = false
+    self.isInMobaMode = false
+
     self.mapLoadProcess = _MAP.GetLoadProcess()
     self.lastMapLoadProcess = self.mapLoadProcess
 
@@ -105,6 +107,9 @@ function UiModel:Ctor(director)
     end)
     _DUELIST.AddListener("appeared", _, function()
         self:Signal_EnemyAppeared()
+    end)
+    _DUELIST.AddListener("del", self, function(receiver, entity)
+        self:Slot_EnemyDeleted(entity)
     end)
 
     NpcSrv.AddListenerToCallerNpcClicked(self, self.Slot_NpcClicked)
@@ -177,6 +182,23 @@ end
 function UiModel:SetPlayer(player)
     if self.player == player then
         return
+    end
+    if self.player then
+        -- disconnection
+        local inventoryItemsComponent = self.player.InventoryItems
+        self.player.attacker.hitCaller:DelListener(self, self.Slot_onRecvSignalOfPlayerHitEnemy)
+        self.player.identity.destroyCaller:DelListener(self, self.Slot_onRecvSignalOfPlayerDestroyed)
+        if inventoryItemsComponent then
+            inventoryItemsComponent:DelListenerToItemInsertedCaller(self,
+                self.Slot_InventoryItemOfPlayerInserted)
+        end
+        local masteredSkills = self.player.MasteredSkills
+        if masteredSkills then
+            MasteredSkillsSrv.DelListenerFromSkillAddedCaller(masteredSkills,
+                self, self.Slot_MasteredSkillOfPlayerAdded)
+            MasteredSkillsSrv.DelListenerFromSkillChangedCaller(masteredSkills,
+                self, self.Slot_MasteredSkillOfPlayerChanged)
+        end
     end
     self.player = player
 
@@ -324,12 +346,17 @@ end
 ---@param tag string
 ---@param skillInfo SkillInfo
 function UiModel:MountPlayerSkill(tag, skillInfo)
-
     -- 如果已经装配了相同技能，则先卸载
-    self:unloadPlayerSkill(skillInfo)
+    -- self:unloadPlayerSkill(skillInfo)
 
     ---@type Actor.RESMGR.SkillData
     local skillResMgrData = ResMgr.GetSkillData(skillInfo.resDataPath)
+
+    -- adjuset cd time
+    skillResMgrData = Table.DeepClone(skillResMgrData)
+    skillResMgrData.time = skillInfo.cdTime
+    skillResMgrData.inCoolDown = true
+
     SkillSrv.Set(self.player, tag, skillResMgrData)
 
     self:SavePlayerData()
@@ -454,6 +481,79 @@ end
 function UiModel:SelectGameMap(mapId)
     local simplePath = self.mapSimplePathList[mapId]
     _MAP.Load(simplePath)
+end
+
+function UiModel:LoadMobaMap()
+    self.isInMobaMode = true
+
+    -- reset OnceGameTaiSuCount
+    _CONFIG.user.OnceGameTaiSuCount = 10000
+
+    self:loadUserActorInfoList()
+
+    local actorInfo = self:findUserActorInfoById(self.currentUserActorId)
+    if actorInfo == nil then
+        return
+    end
+    self.currentUserActorId = 2
+    ---@type Actor.RESMGR.InstanceData
+    local dataTmp = Table.DeepClone(actorInfo.Data)
+
+    -- clear inventoryItems
+    local classTmp = dataTmp.InventoryItems.class
+    dataTmp.InventoryItems = {}
+    dataTmp.InventoryItems.class = classTmp
+
+    -- reset skills
+    for k, v in pairs(dataTmp.skills) do
+        if (k ~= "class" and type(v) ~= "boolean") then
+            ---@type Actor.RESMGR.SkillData
+            local skillResDataTmp = Table.DeepClone(v)
+            skillResDataTmp.time = skillResDataTmp.time * Common.MobaSkillCdScale
+            dataTmp.skills[k] = skillResDataTmp
+        end
+    end
+
+    -- reset mastered skills
+    local actorEntity = actorInfo.Entity
+    ---@type table<int, MasteredSkillData>
+    local masteredSkillDataList = {}
+    dataTmp.MasteredSkills.List = masteredSkillDataList
+    for i, skillInfo in pairs(actorEntity.MasteredSkills.List) do
+        ---@type MasteredSkillData
+        local masteredSkillData = {}
+        masteredSkillData.Path = skillInfo.resDataPath
+        masteredSkillData.Exp = skillInfo.Exp
+        masteredSkillData.CdTime = skillInfo.cdTime * Common.MobaSkillCdScale
+        table.insert(masteredSkillDataList, masteredSkillData)
+    end
+
+    -- reset HpRecovery
+    dataTmp.attributes.maxHp = actorEntity.attributes.maxHp * 2
+    dataTmp.attributes.hp = actorEntity.attributes.maxHp
+    dataTmp.attributes.hpRecovery = 30
+
+    -- create player
+    local player = Factory.New(dataTmp, {
+        x = 700,
+        y = 500,
+        direction = 1,
+        camp = 1
+    })
+
+
+    self.director.firstUpdate() -- Flush player.
+
+    _CONFIG.user:ClearPartnerList()
+    _CONFIG.user:SetPlayer(player)
+
+    self.partnerList = _CONFIG.user:GetPartnerList()
+
+    -- load map
+    local simplePath = "Moba/Moba1"
+    _MAP.Load(simplePath)
+
+    self:Signal_LoadMobaMapFinished()
 end
 
 ---@param type ActorAttributeType
@@ -674,6 +774,9 @@ function UiModel:SavePlayerData()
 
     -- 7. 保存数据
     local filePath = Common.UserActorCfgDirPath .. "/Actor" .. tostring(actorInfo.Id) .. PlayerCfgSavedFileSuffix
+    if self.isInMobaMode then
+        filePath = Common.UserActorCfgDirPath .. "/MobaActor" .. PlayerCfgSavedFileSuffix
+    end
     local ok, errMsg = File.WriteFile(filePath, dataStr)
     if not ok then
         print("UiModel:SavePlayerData()", errMsg, filePath, "file write failed！")
@@ -880,6 +983,10 @@ function UiModel:IsInRougelikeMode()
     return self.isInRougelikeMode
 end
 
+function UiModel:IsInMobaMode()
+    return self.isInMobaMode
+end
+
 function UiModel:CreatePlaneMapSprite()
     local m = _MAP.GetMatrix("normal")
     local s = m:CreatePlaneMapSprite()
@@ -912,6 +1019,23 @@ function UiModel:PlayNpcLeaveVoice()
     end
 
     NpcSrv.PlayLeaveVoice(self.interactingNpcInfo.Entity.Npc)
+end
+
+function UiModel:GetOnceGameTaiSuCount()
+    return _CONFIG.user.OnceGameTaiSuCount
+end
+
+---@param skillConfigPath string
+function UiModel:PayForReduceCdTime(skillConfigPath)
+    if _CONFIG.user.OnceGameTaiSuCount < 100 then
+        print("UiModel:PayForReduceCdTime()", "TaiSu is not enough!")
+        SoundLib.Play(NotFitAlertSoundData)
+        return
+    end
+
+    SoundLib.Play(SkillConsumableUsedSoundData)
+    self:addTaiSuCount(-100)
+    MasteredSkillsSrv.ReduceSkillCdTimePercent(self.player.MasteredSkills, skillConfigPath, 0.05)
 end
 
 --- signals
@@ -1421,6 +1545,65 @@ function UiModel:Signal_ReqSetVisibilityNpcInteractBtn(isVisible)
     end
 end
 
+function UiModel:Signal_LoadMobaMapFinished()
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_LoadMobaMapFinished]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_LoadMobaMapFinished
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self)
+
+        ::continue::
+    end
+end
+
+---@param count int
+function UiModel:Signal_OnceGameTaiSuCountChanged(count)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_OnceGameTaiSuCountChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_OnceGameTaiSuCountChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, count)
+
+        ::continue::
+    end
+end
+
+---@param count int
+function UiModel:Signal_TaiSuCountChanged(count)
+    local receiverList = self.mapOfSignalToReceiverList[self.Signal_TaiSuCountChanged]
+    if receiverList == nil then
+        return
+    end
+
+    for _, receiver in pairs(receiverList) do
+        ---@type function
+        local func = receiver.Slot_TaiSuCountChanged
+        if func == nil then
+            goto continue
+        end
+
+        func(receiver, self, count)
+
+        ::continue::
+    end
+end
+
 --- slots
 
 ---@param player Actor.Entity
@@ -1527,6 +1710,18 @@ function UiModel:Slot_MasteredSkillOfPlayerChanged(info)
     self:SavePlayerData()
 
     self:Signal_PlayerMasteredSkillChanged(info)
+
+    -- 更新玩家角色装备的技能数据（cd）
+    local skillMap = SkillSrv.GetMap(self.player.skills)
+    for tag, skill in pairs(skillMap) do
+        if skill:GetData().path == info.resDataPath 
+            and skill.time ~= info.cdTime
+        then
+            skill.time = info.cdTime
+            self:Signal_PlayerMountedSkillsChanged()
+            break
+        end
+    end
 end
 
 ---@param entity Actor.Entity
@@ -1553,6 +1748,30 @@ function UiModel:Slot_NpcCanInteractChanged(entity)
     self.interactingNpcInfo.Intro = entity.Npc.Intro
     self.interactingNpcInfo.Entity = entity
     self:Signal_ReqSetVisibilityNpcInteractBtn(true)
+end
+
+---@param entity Actor.Entity
+function UiModel:Slot_EnemyDeleted(entity)
+
+    if entity.battle.beatenConfig.entity == nil then
+        return
+    end
+    if entity.battle.beatenConfig.entity ~= self.player and
+        entity.battle.beatenConfig.entity.identity.superior ~= self.player
+    then
+        return
+    end
+
+    local taiSuCountGot = 0
+    if entity.duelist.rank == 0 then
+        taiSuCountGot = 1
+    elseif entity.duelist.rank == 1 then
+        taiSuCountGot = 3
+    elseif entity.duelist.rank == 2 then
+        taiSuCountGot = 10
+    end
+
+    self:addTaiSuCount(taiSuCountGot)
 end
 
 
@@ -1839,6 +2058,17 @@ function UiModel:findUserActorInfoById(id)
     end
 
     return nil
+end
+
+---@param count int
+function UiModel:addTaiSuCount(count)
+    if self.isInMobaMode then
+        _CONFIG.user.OnceGameTaiSuCount = _CONFIG.user.OnceGameTaiSuCount + count
+        self:Signal_OnceGameTaiSuCountChanged(_CONFIG.user.OnceGameTaiSuCount)
+    else
+        _CONFIG.user.TaiSuCount = _CONFIG.user.TaiSuCount + count
+        self:Signal_TaiSuCountChanged(_CONFIG.user.TaiSuCount)
+    end
 end
 
 return UiModel

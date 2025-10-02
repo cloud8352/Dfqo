@@ -13,11 +13,17 @@ local _Caller = require("core.caller")
 ---@class User
 ---@field public player Actor.Entity
 ---@field public setPlayerCaller Core.Caller
+---@field public TaiSuCount int 太素个数
+---@field public MobaTaiSuCount int 一次性游戏中的太素个数
 ---@field private partnerList table<int, Actor.Entity>
 local _User = require("core.class")()
 
 function _User:Ctor()
     self.setPlayerCaller = _Caller.New()
+
+    self.TaiSuCount = 0
+    self.OnceGameTaiSuCount = 0
+
     self.partnerList = {}
 end
 
@@ -79,6 +85,13 @@ function _User:RemovePartner(partner)
 end
 
 function _User:ClearPartnerList()
+    for _, e in pairs(self.partnerList) do
+        e.identity.canCross = false
+        if e.identity.destroyProcess == 0 then
+            e.identity.destroyProcess = 1
+        end
+    end
+
     self.partnerList = {}
 end
 

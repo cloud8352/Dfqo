@@ -17,6 +17,12 @@ local _Container = require("core.container")
 ---@field public List table<int, SkillInfo>
 local MasteredSkills = require("core.class")()
 
+---@class MasteredSkillData
+---@field Path string
+---@field Exp int
+---@field CdTime int
+local masteredSkillData = {}
+
 function MasteredSkills.HandleData(data)
     for k, v in pairs(data) do
         if (k ~= "class" and type(v) ~= "boolean") then
@@ -33,10 +39,14 @@ function MasteredSkills:Ctor(data)
 
     ---@type table<int, SkillInfo>
     self.List = {}
+    ---@type table<int, MasteredSkillData>
     local masteredSkills = data.List or {}
     for i, skillData in pairs(masteredSkills) do
         local skillResMgrData = ResMgr.GetSkillData(skillData.Path)
         local info = Common.NewSkillInfoFromData(skillResMgrData)
+        if skillData.CdTime then
+            info.cdTime = skillData.CdTime
+        end
         Common.SetExpToSkillInfo(info, skillData.Exp)
 
         table.insert(self.List, info)

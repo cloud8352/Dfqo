@@ -9,6 +9,8 @@ local Widget = require("UI.Widget")
 local Label = require("UI.Label")
 local Common = require("UI.ui_common")
 
+local StringLib = require("lib.string")
+
 ---@class HoveringSkillItemTipWidget
 local HoveringSkillItemTipWidget = require("core.class")(Widget)
 
@@ -188,7 +190,7 @@ function HoveringSkillItemTipWidget:SetSkillInfo(info)
     local label = nil
     -- SetCdStr
     label = self.mapOfPropTypeToLabel[Common.SkillPropType.CdTime]
-    label:SetText("冷却时间：" .. tostring(info.cdTime) .. "s")
+    label:SetText("冷却时间：" .. StringLib.NumToString(info.cdTime / 1000, 1) .. "s")
     self.mapOfSkillPropTypeToValue[Common.SkillPropType.CdTime] = info.cdTime
     -- mp
     label = self.mapOfPropTypeToLabel[Common.SkillPropType.Mp]

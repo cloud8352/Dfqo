@@ -18,6 +18,8 @@ local _Timer = require("util.gear.timer")
 ---@field protected _judgeAi Actor.Ai.BattleJudge
 ---@field protected _data Actor.RESMGR.SkillData
 ---@field protected _key string
+---@field public Name string
+---@field public Desc string
 ---@field public mp int
 ---@field public time milli
 ---@field public state string
@@ -49,6 +51,8 @@ function _Skill:Ctor(entity, key, data)
     self._key = key
     self.state = data.state
     self.time = data.time or 0
+    self.Name = data.name
+    self.Desc = data.special
     self.mp = data.mp or 0
     self.order = data.order or 0
     self.attackValues = _TABLE.Clone(data.attackValues)
@@ -63,7 +67,7 @@ function _Skill:Ctor(entity, key, data)
     self.isUltimate = data.isUltimate
     self.icon = data.icon
     
-    if (data.nowTime) then
+    if (data.nowTime > 0) then
         self._timer:Enter(data.nowTime)
     elseif (data.inCoolDown) then
         self:CoolDown()

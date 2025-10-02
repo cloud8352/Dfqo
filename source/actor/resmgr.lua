@@ -553,7 +553,7 @@ local function _NewSkillData(path, keys)
     --[[if (data.stateData) then
         data.stateData = _RESMGR.GetStateData(data.stateData)
     end]]
-          --
+    --
     data.StateName = data.state or ""
     data.StateResMgrDataPath = data.stateData or ""
 
@@ -562,6 +562,29 @@ local function _NewSkillData(path, keys)
     end
     if data.mp == nil then
         data.mp = 0
+    end
+    if data.order == nil then
+        data.order = 0
+    end
+    if data.attackValues == nil then
+        ---@type table<int, Actor.Gear.Attack.AttackValue>
+        local a = {}
+        data.attackValues = a
+    end
+    if data.hpRate == nil then
+        data.hpRate = 1
+    end
+    if data.isUltimate == nil then
+        data.isUltimate = false
+    end
+    if data.nowTime == nil then
+        data.nowTime = 0
+    end
+    if data.inCoolDown == nil then
+        data.inCoolDown = false
+    end
+    if data.beatenTime == nil then
+        data.beatenTime = false
     end
 
     return data

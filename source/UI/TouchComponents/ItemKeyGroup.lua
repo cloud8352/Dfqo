@@ -391,11 +391,9 @@ function ItemKeyGroup:reloadSkillBtnsIcon()
     for k, v in pairs(self.mapOfTagToSkillBtn) do
         local actorSkillObj = self.model:GetPlayerActorSkillObj(k)
         if actorSkillObj then
-            ---@type Actor.RESMGR.SkillData
-            local skillData = actorSkillObj:GetData()
             local iconPath = "icon/skill/NormalAttack"
-            if skillData.icon then
-                iconPath = "icon/skill/" .. skillData.icon
+            if actorSkillObj.icon then
+                iconPath = "icon/skill/" .. actorSkillObj.icon
             end
             v:SetNormalSpriteDataPath(iconPath)
             v:SetHoveringSpriteDataPath(iconPath)
