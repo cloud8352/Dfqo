@@ -289,12 +289,4 @@ function _GRAPHICS.ScreenPosToTransformedPos(screenX, screenY)
     return globalX, globalY
 end
 
----@param x1 int
----@param y1 int
----@param x2 int
----@param y2 int
-function _GRAPHICS.DrawLineBetweenTwoPoint(x1, y1, x2, y2)
-    love.graphics.line(x1, y1, x2, y2)
-end
-
 return _GRAPHICS

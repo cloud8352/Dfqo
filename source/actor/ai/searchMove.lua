@@ -9,7 +9,6 @@ local _ECSMGR = require("actor.ecsmgr")
 local _BATTLE = require("actor.service.battle")
 local _INPUT = require("actor.service.input")
 local _STATE = require("actor.service.state")
-local Map = require("map.init")
 
 local _Timer = require("util.gear.timer")
 local _Point = require("graphics.drawunit.point")
@@ -77,15 +76,14 @@ function _SearchMove:Update(dt)
         self._hasTarget = hasTarget
         self._target:Set(x, y)
 
-        -- local directionX = math.random(1, 2) == 1 and 1 or -1
-        -- local directionY = math.random(1, 2) == 1 and 1 or -1
-        -- x = x + math.random(self.moveRange.xa, self.moveRange.xb) * directionX
-        -- y = y + math.random(self.moveRange.ya, self.moveRange.yb) * directionY
+        local directionX = math.random(1, 2) == 1 and 1 or -1
+        local directionY = math.random(1, 2) == 1 and 1 or -1
+        x = x + math.random(self.moveRange.xa, self.moveRange.xb) * directionX
+        y = y + math.random(self.moveRange.ya, self.moveRange.yb) * directionY
         
-        if false == hasTarget then
-            x = x + math.random(self.moveRange.xa, self.moveRange.xb) - (self.moveRange.xa + self.moveRange.xb) / 2
+        if hasTarget then
+            self._moveAi:Tick(x, y)
         end
-        self._moveAi:Tick(x, y)
 
         --return true
     end
@@ -114,59 +112,22 @@ end
 function _SearchMove:Select()
     local camp = self.camp or self._entity.battle.camp
     local x, y = self._entity.transform.position:Get()
-
-    ---@type Graphics.Drawunit.Point
-    local enemyPos = nil
+    
     if (self.campType ~= "") then
-        for n = _list:GetLength(), 1, -1 do
+        for n=_list:GetLength(), 1, -1 do
             local e = _list:Get(n) ---@type Actor.Entity
-
+    
             if (e.battle and self._entity ~= e and e.battle.banCountMap.hide == 0 and _BATTLE.CondCamp(camp, e.battle.camp, self.campType)) then
                 local pos = e.transform.position
-
+    
                 if (self.searchRange:Collide(x, y, pos.x, pos.y)) then
-                    enemyPos = pos
-                    break
+                    return true, pos:Get()
                 end
             end
         end
     end
-    if enemyPos == nil then
-        return false, x, y
-    end
 
-    local targetX = -1
-    local targetY = enemyPos.y + math.random(self.moveRange.ya, self.moveRange.yb) - (self.moveRange.ya + self.moveRange.yb) / 2
-    local dir = 1
-    if enemyPos.x < x then
-        dir = -1
-    end
-    local matrix = Map.GetMatrix()
-    if matrix:GetNode(enemyPos.x, enemyPos.y, false) then
-        local xTmp = enemyPos.x
-        while (1) do
-            xTmp = xTmp - 40 * dir
-            -- 超出搜索范围，则获取目标点失败
-            if false == self.searchRange:Collide(x, y, xTmp, enemyPos.y) then
-                break
-            end
-
-            if false == matrix:GetNode(xTmp, enemyPos.y) then
-                targetX = xTmp
-                break
-            end
-        end
-    else
-        targetX = enemyPos.x - 40 * dir
-    end
-    if targetX < 0 or targetY < 0 then
-        return false, x, y
-    end
-    if matrix:GetNode(targetX, targetY) then
-        return false, x, y
-    end
-
-    return true, targetX, targetY
+    return false, x, y
 end
 
 ---@param x int

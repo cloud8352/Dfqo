@@ -5,9 +5,9 @@
 	alter: 2019-9-2
 ]]--
 
-local Config = require("config")
 local _MAP = require("map.init")
 local _AI = require("actor.service.ai")
+
 local _Timer = require("util.gear.timer")
 local _Base = require("actor.system.base")
 
@@ -23,6 +23,8 @@ function _Ais:Ctor(upperEvent)
         ais = true,
         input = true
     }, "ais")
+
+    self._timer = _Timer.New(500)
 end
 
 ---@param entity Actor.Entity
@@ -48,18 +50,33 @@ function _Ais:Update(dt)
         return
     end
 
-    for n = 1, self._list:GetLength() do
+    self._timer:Update(dt)
+
+    if (self._timer.isRunning) then
+        return
+    end
+
+    for n=1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
         local ais = e.ais
+        local exit = false
 
         if (ais.enable) then
-            for m = 1, ais.container:GetLength() do
+            for m=1, ais.container:GetLength() do
                 local ai = ais.container:GetWithIndex(m) ---@type Actor.Ai
 
                 if (ai.login and ai.Update) then
-                    ai:Update(dt)
+                    if (ai:Update(dt)) then
+                        exit = true
+                        break
+                    end
                 end
             end
+        end
+
+        if (exit) then
+            self._timer:Enter()
+            break
         end
     end
 end

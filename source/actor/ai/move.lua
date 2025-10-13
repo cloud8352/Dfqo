@@ -11,7 +11,6 @@ local _INPUT = require("actor.service.input")
 local _Map = require("map.init")
 local _Point = require("graphics.drawunit.point")
 local _Base = require("actor.ai.base")
-local GraphicsLib = require("lib.graphics")
 
 ---@param self Actor.Ai.Move
 local function _NextTarget(self)
@@ -43,7 +42,6 @@ local function _NextTarget(self)
 end
 
 ---@class Actor.Ai.Move : Actor.Ai
----@field public Tick function
 ---@field protected _path table<int, Graphics.Drawunit.Point>
 ---@field protected _index int
 ---@field protected _later Graphics.Drawunit.Point

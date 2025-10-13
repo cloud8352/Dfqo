@@ -26,12 +26,14 @@ function _STATE.Play(states, name, isOnly, ...)
         return false
     end
 
-    -- if (nextState.Tick and nextState:Tick(lateState, ...)) then
-    --     return false
-    -- end
+    if (nextState.Tick and nextState:Tick(lateState, ...)) then
+        return false
+    end
 
     if (lateState) then
-        lateState:Exit(nextState)
+        if (lateState:Exit(nextState) == false) then
+            return false
+        end
     end
 
     states.later = lateState
