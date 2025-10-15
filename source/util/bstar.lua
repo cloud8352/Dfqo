@@ -105,6 +105,8 @@ function _Bstar:Ctor()
     self._rangeMat = {}
     self._closeMat = {}
     self._openList = {}
+    self._width = 0
+    self._height = 0
 end
 
 ---@param w int

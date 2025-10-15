@@ -1,8 +1,6 @@
 --[[
-	desc: SearchMove, a Ai of search and move.
-	author: Musoucrow
-	since: 2018-5-14
-	alter: 2019-8-15
+	desc: MultiStepMove, a Ai of move which have multi step.
+	author: keke
 ]]--
 
 local _ECSMGR = require("actor.ecsmgr")
@@ -22,7 +20,7 @@ local _list = _ECSMGR.NewComboList({
     transform = true
 })
 
----@class Actor.Ai.SearchMove : Actor.Ai
+---@class Actor.Ai.MultiStepMove : Actor.Ai
 ---@field public searchRange Graphics.Drawunit.Range
 ---@field public moveRange Graphics.Drawunit.Range
 ---@field public intervalSection Graphics.Drawunit.Point
@@ -34,60 +32,80 @@ local _list = _ECSMGR.NewComboList({
 ---@field protected _timer Util.Gear.Timer
 ---@field protected _moveAi Actor.Ai.Move
 ---@field protected _hasTarget boolean
-local _SearchMove = require("core.class")(_Base)
+local MultiStepMove = require("core.class")(_Base)
 
 ---@param entity Actor.Entity
-function _SearchMove.NewWithConfig(entity, data)
-    return _SearchMove.New(entity, data.searchRange, data.moveRange, data.lockOn, data.interval, data.campType, data.camp)
+---@param data table
+function MultiStepMove.NewWithConfig(entity, data)
+    return MultiStepMove.New(entity, data)
 end
 
 ---@param entity Actor.Entity
+---@param data table
 ---@param searchRange Graphics.Drawunit.Range
 ---@param moveRange Graphics.Drawunit.Range
 ---@param lockOn boolean
 ---@param intervalSection Graphics.Drawunit.Point
 ---@param campType string @all, same, enemy, else. default=enemy
-function _SearchMove:Ctor(entity, searchRange, moveRange, lockOn, intervalSection, campType, camp)
+function MultiStepMove:Ctor(entity, data)
     _Base.Ctor(self, entity)
 
+    local searchRange = data.searchRange
     self.searchRange = _Range.New(searchRange.xa, searchRange.xb, searchRange.ya, searchRange.yb)
+    local moveRange = data.moveRange
     self.moveRange = _Range.New(moveRange.xa, moveRange.xb, moveRange.ya, moveRange.yb)
+    local intervalSection = data.interval
     self.intervalSection = _Point.New(true, intervalSection.x, intervalSection.y)
     self._timer = _Timer.New()
     self._target = _Point.New(true)
     self._moveAi = _Move.New(entity)
-    self.lockOn = lockOn
-    self.campType = campType or "enemy"
-    self.camp = camp
+    self.lockOn = data.lockOn or false
+    self.campType = data.campType or "enemy"
+    self.camp = data.camp
     self._hasTarget = false
     self.navigating = false
+
+    ---@type table<int, Graphics.Drawunit.Point>
+    self.Steps = {
+    }
+    if data.Steps then
+        for _, v in pairs(data.Steps) do
+            local point = _Point.New(true, v[1], v[2])
+            table.insert(self.Steps, point)
+        end
+    end 
+    self.goingToNextStep = false
+    self.nextStepIndex = 1
 end
 
-function _SearchMove:Update(dt)
+function MultiStepMove:Update(dt)
     if (not self:CanRun()) then
         return
     end
-    
+
     self._timer:Update(dt)
 
     if (not self.navigating and not self._timer.isRunning) then
         self._timer:Enter(math.random(self.intervalSection.x, self.intervalSection.y))
 
         local hasTarget, x, y = self:Select()
-        self._hasTarget = hasTarget
-        self._target:Set(x, y)
+        if hasTarget then
+            local entityXPos, entityYPos = self._entity.transform.position:Get()
+            if math.abs(entityXPos - x) > 50 or math.abs(entityYPos - y) > 20 then
+                self.goingToNextStep = false
+                self._hasTarget = hasTarget
+                self._target:Set(x, y)
+                self._moveAi:Tick(x, y)
+            end
+        else
+            if self.nextStepIndex <= #self.Steps then
+                self.goingToNextStep = true
+                local point = self.Steps[self.nextStepIndex]
 
-        -- local directionX = math.random(1, 2) == 1 and 1 or -1
-        -- local directionY = math.random(1, 2) == 1 and 1 or -1
-        -- x = x + math.random(self.moveRange.xa, self.moveRange.xb) * directionX
-        -- y = y + math.random(self.moveRange.ya, self.moveRange.yb) * directionY
-        
-        if false == hasTarget then
-            x = x + math.random(self.moveRange.xa, self.moveRange.xb) - (self.moveRange.xa + self.moveRange.xb) / 2
+                y = point.y + math.random(self.moveRange.ya, self.moveRange.yb) - (self.moveRange.ya + self.moveRange.yb) / 2
+                self:MoveTo(point.x, y)
+            end
         end
-        self._moveAi:Tick(x, y)
-
-        --return true
     end
 
     self:LockOn()
@@ -96,9 +114,14 @@ function _SearchMove:Update(dt)
     if (self.navigating and not self._moveAi:IsRunning()) then
         self.navigating = false
     end
+
+    if self.goingToNextStep and not self._moveAi:IsRunning() then
+        self.nextStepIndex = self.nextStepIndex + 1
+        self.goingToNextStep = false
+    end
 end
 
-function _SearchMove:LockOn()
+function MultiStepMove:LockOn()
     if (not self:CanRun() or not self._hasTarget or not self.lockOn) then
         return
     end
@@ -111,7 +134,7 @@ function _SearchMove:LockOn()
     end
 end
 
-function _SearchMove:Select()
+function MultiStepMove:Select()
     local camp = self.camp or self._entity.battle.camp
     local x, y = self._entity.transform.position:Get()
 
@@ -173,7 +196,7 @@ end
 ---@param y int
 ---@param isOnly boolean
 ---@param lockOn boolean
-function _SearchMove:MoveTo(x, y, isOnly, lockOn)
+function MultiStepMove:MoveTo(x, y, isOnly, lockOn)
     self._target:Set(x, y)
     self._moveAi:Tick(x, y)
 
@@ -181,18 +204,18 @@ function _SearchMove:MoveTo(x, y, isOnly, lockOn)
         self._timer:Exit()
         self.navigating = true
     end
-    
+
     self._hasTarget = lockOn or false
 end
 
 ---@return boolean
-function _SearchMove:IsMoving()
+function MultiStepMove:IsMoving()
     return self._moveAi:IsRunning()
 end
 
 ---@param isReal boolean @moveAi's target
 ---@return int, int
-function _SearchMove:GetTarget(isReal)
+function MultiStepMove:GetTarget(isReal)
     if (isReal) then
         return self._moveAi:GetTarget()
     end
@@ -201,14 +224,14 @@ function _SearchMove:GetTarget(isReal)
 end
 
 ---@return boolean
-function _SearchMove:CanRun()
+function MultiStepMove:CanRun()
     local free = (self._entity.states and _STATE.HasTag(self._entity.states, "moveable")) or not self._entity.states
     return _Base.CanRun(self) and free
 end
 
-function _SearchMove:Reset()
+function MultiStepMove:Reset()
     self.navigating = false
     self._timer:Exit()
 end
 
-return _SearchMove
+return MultiStepMove
