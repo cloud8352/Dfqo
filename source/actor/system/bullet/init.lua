@@ -26,6 +26,11 @@ end
 ---@param attack Actor.Gear.Attack
 ---@param enemy Actor.Entity
 local function _OnHit(attack, enemy)
+    local bullet = attack._entity.bullet
+    if bullet.IsMissile and bullet.TargetEntity ~= enemy then
+        return
+    end
+
     attack._entity.identity.destroyProcess = 1
 end
 
@@ -40,10 +45,20 @@ function _Bullet:OnEnter(entity)
     local bullet = entity.bullet
     local transform = entity.transform
     local pos = transform.position
+    local target = _Point3.New(true, pos.x, pos.y, pos.z)
 
-    if (bullet.length > 0) then
+    if bullet.IsMissile then
+        local targetEntityPos = bullet.TargetEntity.transform.position
+        target:Set(targetEntityPos.x, targetEntityPos.y, targetEntityPos.z)
+
+        self:startMove(entity, target.x, target.y, target.z)
+    elseif bullet.WhetherHasTargetPos then
+        target:Set(bullet.TargetPosX, bullet.TargetPosY, bullet.TargetPosZ)
+
+        self:startMove(entity, target.x, target.y, target.z)
+    elseif (bullet.length > 0) then
         local tx = pos.x + bullet.length * transform.direction
-        local target = _Point3.New(true, tx, pos.y, pos.z)
+        target:Set(tx, pos.y, pos.z)
 
         if (bullet.angleY ~= 0) then
             target.x, target.y = _MATH.RotatePoint(tx, pos.y, pos.x, pos.y, math.rad(bullet.angleY) * transform.direction)
@@ -51,16 +66,7 @@ function _Bullet:OnEnter(entity)
             target.x, target.z = _MATH.RotatePoint(tx, pos.z, pos.x, pos.z, math.rad(bullet.angleZ) * transform.direction)
         end
 
-        if (bullet.obstacleType) then
-            bullet.moveTweener = _MOTION.NewMoveTweener(transform, entity.aspect)
-            bullet.moveTweener:Enter(bullet.time, pos, target, bullet.easing)
-        else
-            bullet.moveTweener = _Tweener.New(transform.position, target, bullet.easing, function ()
-                transform.positionTick = true
-            end)
-
-            bullet.moveTweener:Enter(bullet.time)
-        end
+        self:startMove(entity, target.x, target.y, target.z)
     end
 
     if (bullet.attackData) then
@@ -96,6 +102,22 @@ function _Bullet:Update(dt)
                 bullet.attack:Update()
             end
 
+            if bullet.IsMissile and bullet.moveTweener.isRunning then
+                local targetEntityPos = bullet.TargetEntity.transform.position
+                local currentTargetPos = bullet.moveTweener:GetTarget()
+                currentTargetPos.x = targetEntityPos.x
+                currentTargetPos.y = targetEntityPos.y
+                currentTargetPos.z = targetEntityPos.z
+
+                bullet.moveTweener:SetTime(bullet.time)
+
+                -- 如果导弹的目标实例已死亡，则使导弹行动停止
+                if bullet.TargetEntity.identity.destroyProcess > 0 then
+                    bullet.moveTweener:Exit()
+                    e.identity.destroyProcess = 1
+                end
+            end
+
             if (bullet.moveTweener and bullet.moveTweener.isRunning) then
                 bullet.moveTweener:Update(dt)
 
@@ -126,6 +148,25 @@ function _Bullet:Update(dt)
                 e.transform.radianTick = true
             end
         end
+    end
+end
+
+---@param entity Actor.Entity
+function _Bullet:startMove(entity, x, y, z)
+    local bullet = entity.bullet
+    local transform = entity.transform
+    local pos = transform.position
+    local target = _Point3.New(true, x, y, z)
+
+    if (bullet.obstacleType) then
+        bullet.moveTweener = _MOTION.NewMoveTweener(transform, entity.aspect)
+        bullet.moveTweener:Enter(bullet.time, pos, target, bullet.easing)
+    else
+        bullet.moveTweener = _Tweener.New(transform.position, target, bullet.easing, function()
+            transform.positionTick = true
+        end)
+
+        bullet.moveTweener:Enter(bullet.time)
     end
 end
 

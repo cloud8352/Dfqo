@@ -45,6 +45,15 @@ function _Bullet:Ctor(data, param)
     self.angleY = data.angleY or param.angleY or 0
     self.angleZ = data.angleZ or param.angleZ or 0
     self.rotateSpeed = data.rotateSpeed or 0
+
+    self.IsMissile = param.IsMissile or false
+    ---@type Actor.Entity
+    self.TargetEntity = param.TargetEntity
+
+    self.WhetherHasTargetPos = param.WhetherHasTargetPos or false
+    self.TargetPosX = param.TargetPosX or 0
+    self.TargetPosY = param.TargetPosY or 0
+    self.TargetPosZ = param.TargetPosZ or 0
 end
 
 return _Bullet

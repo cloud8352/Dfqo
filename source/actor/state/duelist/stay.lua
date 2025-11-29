@@ -29,6 +29,10 @@ function _Stay:Ctor(data, param, name)
 end
 
 function _Stay:NormalUpdate(dt, rate)
+    if false == _STATE.HasState(self._entity.states, self._nextState) then
+        return
+    end
+
     -- 判断上次移动状态结束时间
     if self._entity.states.later then
         if self._entity.states.later:GetName() ~= self.lastStateName then

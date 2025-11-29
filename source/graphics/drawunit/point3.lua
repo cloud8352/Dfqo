@@ -91,9 +91,11 @@ function _Point:Draw(size, color)
 end
 
 _FFI.cdef ("typedef struct {int x, y, z;} integerPoint3;")
+---@type Graphics.Drawunit.Point3
 local _IntegerPoint = _FFI.metatype ("integerPoint3", _metatable)
 
 _FFI.cdef ("typedef struct {double x, y, z;} floatPoint3;")
+---@type Graphics.Drawunit.Point3
 local _FloatPoint = _FFI.metatype ("floatPoint3", _metatable)
 
 ---@param isInt boolean
