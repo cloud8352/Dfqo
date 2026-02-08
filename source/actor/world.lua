@@ -132,6 +132,7 @@ function _WORLD.Init()
     require("actor.ai.attackJudge")
     require("actor.ai.searchMove")
     require("actor.ai.MultiStepMove")
+    require("actor.ai.MobaHeroMove")
 
     _MAP.AddLoadListener(self, _OnClean)
 end

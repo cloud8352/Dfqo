@@ -7,6 +7,7 @@
 --
 
 local _delta = 0
+---@type number 当前时间，单位：s
 local _time = 0
 local _fps = 0
 local _stddt = 20
@@ -21,7 +22,7 @@ function _TIME.GetDelta()
     return _stddt
 end
 
----@return number
+---@return number 当前时间，单位：s
 function _TIME.GetTime()
     return _time
 end

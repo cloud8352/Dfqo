@@ -119,7 +119,7 @@ function _DIRECTOR.StartGame(instanceData)
         y = 400,
         direction = 1,
         camp = 1,
-        dulist = {
+        duelist = {
             isEnemy = false
         }
     })

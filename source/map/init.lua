@@ -659,7 +659,7 @@ function _MAP.Make(path, entry)
                     table.insert(data.actor, {
                         path = "duelist/" .. path,
                         x = x, y = y, direction = direction, camp = 2,
-                        dulist = {
+                        duelist = {
                             isEnemy = true
                         }
                     })
@@ -677,7 +677,7 @@ function _MAP.Make(path, entry)
                     table.insert(data.actor, {
                         path = "duelist/" .. path,
                         x = x, y = y, direction = direction, camp = 2,
-                        dulist = {
+                        duelist = {
                             rank = 1, -- 敌人风险为1，意味着该单位为精英怪
                             isEnemy = true
                         }
@@ -690,12 +690,12 @@ function _MAP.Make(path, entry)
             then
                 local bossCount = math.random(1, #config.actor.enemy.boss)
     
-                local dulistParam = { rank = 2, isEnemy = true } -- 敌人风险为2，意味着该单位为boss
+                local duelistParam = { rank = 2, isEnemy = true } -- 敌人风险为2，意味着该单位为boss
                 objectMatrix:Assign(function(x, y)
                     local path = config.actor.enemy.boss[math.random(1, #config.actor.enemy.boss)]
                     local direction = math.random(1, 2) == 1 and 1 or -1
                     table.insert(data.actor,
-                        { path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, dulist = dulistParam })
+                        { path = "duelist/" .. path, x = x, y = y, direction = direction, camp = 2, duelist = duelistParam })
                 end, bossCount)
             end
         end

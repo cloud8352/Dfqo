@@ -107,7 +107,7 @@ function InventoryItemsSrv.CreateEntity(x, y, z, count, inventoryItemConfigPath)
         z = z,
         direction = 1,
         camp = 1,
-        dulist = {
+        duelist = {
             isEnemy = false
         }
     }

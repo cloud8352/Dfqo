@@ -246,7 +246,7 @@ struct MapLayerInfoStruct {
             ['y'] = 528,
             ['direction'] = 1,
             ['camp'] = 2,
-            ['dulist'] = {
+            ['duelist'] = {
                 ['isEnemy'] = true,
             },
 }
@@ -257,7 +257,7 @@ struct PosStruct {
     int Y = 0;
 };
 
-struct DulistInfoStruct {
+struct DuelistInfoStruct {
     bool IsEnemy = true;
 };
 
@@ -278,10 +278,10 @@ struct MapActorInfoStruct
     bool PathGateEnable = false;
     bool IsEntrance = false;
 
-    // dulist info
+    // duelist info
     int Direction = 1;
     int Camp = 2; // 1=we, 2=enemy
-    DulistInfoStruct DulistInfo;
+    DuelistInfoStruct DuelistInfo;
     TransportInfoStruct TransportInfo;
 
     MapActorInfoStruct() {}

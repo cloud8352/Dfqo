@@ -42,11 +42,6 @@ end
 
 ---@param entity Actor.Entity
 ---@param data table
----@param searchRange Graphics.Drawunit.Range
----@param moveRange Graphics.Drawunit.Range
----@param lockOn boolean
----@param intervalSection Graphics.Drawunit.Point
----@param campType string @all, same, enemy, else. default=enemy
 function MultiStepMove:Ctor(entity, data)
     _Base.Ctor(self, entity)
 

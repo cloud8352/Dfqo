@@ -408,6 +408,7 @@ function _Attack:Update(dt)
                 beatenConfig.element = self.element or nil
                 beatenConfig.entity = self._entity
                 beatenConfig.attack = self
+                beatenConfig.time = _TIME.GetTime()
 
                 e.battle.beatenCaller:Call(self._entity)
 

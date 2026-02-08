@@ -98,6 +98,7 @@ function _Battle:Ctor(data, param)
         entity = nil,
         ---@type Actor.Gear.Attack
         attack = nil,
+        time = 0, -- 被攻击时的时间，单位：s
     }
 end
 

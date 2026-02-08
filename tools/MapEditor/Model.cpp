@@ -768,12 +768,12 @@ void Model::saveMapInfoToFile(const QString &filePath)
         actorInfoJsonObj.insert("pathgateEnable", info.PathGateEnable);
         actorInfoJsonObj.insert("isEntrance", info.IsEntrance);
 
-        // dulist params
+        // duelist params
         actorInfoJsonObj.insert("direction", info.Direction);
         actorInfoJsonObj.insert("camp", info.Camp);
-        QJsonObject dulistJsonObj;
-        dulistJsonObj.insert("isEnemy", info.DulistInfo.IsEnemy);
-        actorInfoJsonObj.insert("dulist", dulistJsonObj);
+        QJsonObject duelistJsonObj;
+        duelistJsonObj.insert("isEnemy", info.DuelistInfo.IsEnemy);
+        actorInfoJsonObj.insert("duelist", duelistJsonObj);
 
         // transport params
         QJsonObject transportJsonObj;
@@ -1003,16 +1003,16 @@ void Model::LoadMap(const QString &mapFilePath)
         if (actorInfoJsonObj.keys().contains("isEntrance")) {
             actorInfo.IsEntrance = actorInfoJsonObj.value("isEntrance").toBool();
         }
-        // dulist params
+        // duelist params
         if (actorInfoJsonObj.keys().contains("direction")) {
             actorInfo.Direction = actorInfoJsonObj.value("direction").toInt();
         }
         if (actorInfoJsonObj.keys().contains("camp")) {
             actorInfo.Camp = actorInfoJsonObj.value("camp").toInt();
         }
-        if (actorInfoJsonObj.keys().contains("dulist")) {
-            const QJsonObject &dulistJsonObj = actorInfoJsonObj.value("dulist").toObject();
-            actorInfo.DulistInfo.IsEnemy = dulistJsonObj.value("isEnemy").toBool();
+        if (actorInfoJsonObj.keys().contains("duelist")) {
+            const QJsonObject &duelistJsonObj = actorInfoJsonObj.value("duelist").toObject();
+            actorInfo.DuelistInfo.IsEnemy = duelistJsonObj.value("isEnemy").toBool();
         }
         // transport params
         if (actorInfoJsonObj.keys().contains("Transport")) {

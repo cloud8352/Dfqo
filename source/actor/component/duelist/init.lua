@@ -43,21 +43,21 @@ function _Duelist:Ctor(data, param)
     self.isEnemy = data.isEnemy or false
 
     -- 应用参数 param
-    if param.dulist then
-        if param.dulist.moveSpeed then
-            self.moveSpeed = param.dulist.moveSpeed
+    if param.duelist then
+        if param.duelist.moveSpeed then
+            self.moveSpeed = param.duelist.moveSpeed
         end
-        if param.dulist.weight then
-            self.weight = param.dulist.weight + 1
+        if param.duelist.weight then
+            self.weight = param.duelist.weight + 1
         end
-        if param.dulist.rank then
-            self.rank = param.dulist.rank
+        if param.duelist.rank then
+            self.rank = param.duelist.rank
         end
-        if param.dulist.category then
-            self.category = param.dulist.category
+        if param.duelist.category then
+            self.category = param.duelist.category
         end
-        if param.dulist.isEnemy then
-            self.isEnemy = param.dulist.isEnemy
+        if param.duelist.isEnemy then
+            self.isEnemy = param.duelist.isEnemy
         end
     end
 end

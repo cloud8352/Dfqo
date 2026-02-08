@@ -101,4 +101,16 @@ function MasteredSkillsSrv.GetSkillInfoFromMasteredSkillsCmptByPath(masteredSkil
     return sameSkillInfo
 end
 
+---@param masteredSkillsCmpt Actor.Component.MasteredSkills
+---@return int
+function MasteredSkillsSrv.GetTotalLevels(masteredSkillsCmpt)
+    local count = 0
+    local list = masteredSkillsCmpt:GetList()
+    for _, info in pairs(list) do
+        count = count + info.Level
+    end
+
+    return count
+end
+
 return MasteredSkillsSrv
