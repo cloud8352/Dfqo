@@ -16,6 +16,7 @@ local _Caller = require("core.caller")
 ---@field public TaiSuCount int 太素个数
 ---@field public MobaTaiSuCount int 一次性游戏中的太素个数
 ---@field private partnerList table<int, Actor.Entity>
+---@field private enemyHeroList table<int, Actor.Entity>
 local _User = require("core.class")()
 
 function _User:Ctor()
@@ -25,6 +26,7 @@ function _User:Ctor()
     self.OnceGameTaiSuCount = 0
 
     self.partnerList = {}
+    self.enemyHeroList = {}
 end
 
 ---@param player Actor.Entity
@@ -72,8 +74,8 @@ function _User:AddPartner(partner)
     if (partner) then
         partner.ais.enable = true
         -- 设置伙伴可以过地图，否则到达下一个地图就会被销毁，原理见 source\actor\system\life.lua 的 OnClean 函数
-        partner.identity.canCross = true 
-        _DUELIST.SetAura(partner, "player")
+        partner.identity.canCross = true
+        _DUELIST.SetAura(partner, "partner")
     end
 
     table.insert(self.partnerList, partner)
@@ -97,6 +99,50 @@ end
 
 function _User:GetPartnerList()
     return self.partnerList
+end
+
+---@param hero Actor.Entity
+function _User:AddEnemyHero(hero)
+    -- 是否已在列表中
+    local sameHero = nil
+    for i, heroTmp in pairs(self.enemyHeroList) do
+        if heroTmp == hero then
+            sameHero = heroTmp
+            break
+        end
+    end
+    if (sameHero) then
+        return
+    end
+
+    if (hero) then
+        hero.ais.enable = true
+        -- 设置伙伴可以过地图，否则到达下一个地图就会被销毁，原理见 source\actor\system\life.lua 的 OnClean 函数
+        hero.identity.canCross = true
+        _DUELIST.SetAura(hero, "boss")
+    end
+
+    table.insert(self.enemyHeroList, hero)
+end
+
+---@param hero Actor.Entity
+function _User:RemoveHero(hero)
+    table.remove(self.enemyHeroList, hero)
+end
+
+function _User:ClearEnemyHeroList()
+    for _, e in pairs(self.enemyHeroList) do
+        e.identity.canCross = false
+        if e.identity.destroyProcess == 0 then
+            e.identity.destroyProcess = 1
+        end
+    end
+
+    self.enemyHeroList = {}
+end
+
+function _User:GetEnemyHeroList()
+    return self.enemyHeroList
 end
 
 return _User

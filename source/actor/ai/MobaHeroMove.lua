@@ -24,6 +24,7 @@ local _Point = require("graphics.drawunit.point")
 local _Range = require("graphics.drawunit.range")
 local _Move = require("actor.ai.move")
 local _Base = require("actor.ai.base")
+local Config = require("config")
 
 local TimeLib = require("lib.time")
 
@@ -103,8 +104,8 @@ function MobaHeroMove:Ctor(entity, data)
 
     self.backingToHome = false
 
-    ----- test
-    self.currentRoadSteps = self.UpperRoadSteps
+    ----- 判断开始去哪路
+    self:updateCurrentRoadSteps()
     self.nextStepIndex = 2
 end
 
@@ -174,6 +175,9 @@ function MobaHeroMove:Update(dt)
         end
         
         self.goingForward = true
+        if self.nextStepIndex == 1 then
+            self:updateCurrentRoadSteps()
+        end
         if self:haveMeArriveAtNextStepPoint() and self.nextStepIndex < #self.currentRoadSteps then
             self.nextStepIndex = self.nextStepIndex + 1
         end
@@ -299,6 +303,11 @@ function MobaHeroMove:searchAttackTarget()
 
         local ePos = e.transform.position
         local myPos = self._entity.transform.position
+        if math.abs(ePos.x - myPos.x) > searchRangeX or
+            math.abs(ePos.y - myPos.y) > searchRangeY
+        then
+            goto continue
+        end
         local distance = (ePos.x - myPos.x) ^ 2 + (ePos.y - myPos.y) ^ 2 + (ePos.z - myPos.z) ^ 2
         if 0 == nearestDistance
             or distance < nearestDistance
@@ -387,6 +396,109 @@ function MobaHeroMove:areThereFriendlyUnitsAroundTurret(turretEntity)
     end
 
     return false
+end
+
+---@param road int
+function MobaHeroMove:whetherThisRoadHasPartner(road)
+    ---@type table<int, Actor.Entity>
+    local partnerList = {}
+    if self._entity.battle.camp == 2 then
+        partnerList = Config.user:GetEnemyHeroList()
+    else
+        partnerList = Config.user:GetPartnerList()
+    end
+
+    for i, e in pairs(partnerList) do
+        if e.ais.CurrentMobaMapRoad == road then
+            return true
+        end
+    end
+
+    local roadSteps = self.UpperRoadSteps
+    if road == 2 then
+        roadSteps = self.MiddleRoadSteps
+    end
+    if road == 3 then
+        roadSteps = self.LowerRoadSteps
+    end
+
+    ---@type table<int, Graphics.Drawunit.Point>
+    local pointListNeedDetect = {}
+    local searchDistance = 200
+    ---@type Graphics.Drawunit.Point
+    local startSearchPoint = nil
+    ---@type Graphics.Drawunit.Point
+    local endSearchPoint = nil
+    for i = 2, #roadSteps do
+        startSearchPoint = roadSteps[i - 1]
+        table.insert(pointListNeedDetect, startSearchPoint)
+        endSearchPoint = roadSteps[i]
+        local dir = 1
+        if startSearchPoint.x > endSearchPoint.x then
+            dir = -1
+        end
+        local k = (endSearchPoint.y - startSearchPoint.y) / (endSearchPoint.x - startSearchPoint.x)
+        local b = (endSearchPoint.x * startSearchPoint.y - startSearchPoint.x * endSearchPoint.y)
+            / (endSearchPoint.x - startSearchPoint.x)
+        local searchX = startSearchPoint.x
+        local searchY = 0
+        while (1) do
+            searchX = searchX + dir * searchDistance
+            searchY = k * searchX + b
+            if math.abs(endSearchPoint.x - searchX) < searchDistance then
+                break
+            end
+
+            local point = _Point.New(true, searchX, searchY)
+            table.insert(pointListNeedDetect, point)
+        end
+    end
+
+    local thisRoadHasPartner = false
+    for i = 1, #pointListNeedDetect do
+        local pointNeedDetect = pointListNeedDetect[i]
+        for j = 1, #partnerList do
+            local entity = partnerList[j]
+            local pos = entity.transform.position
+            if math.abs(pos.x - pointNeedDetect.x) < searchDistance
+                and math.abs(pos.y - pointNeedDetect.y) < searchDistance
+            then
+                thisRoadHasPartner = true
+                break
+            end
+        end
+        if thisRoadHasPartner then
+            break
+        end
+    end
+
+    return thisRoadHasPartner
+end
+
+---@return int road
+function MobaHeroMove:getStartRoad()
+    if false == self:whetherThisRoadHasPartner(1) then
+        return 1
+    end
+    if false == self:whetherThisRoadHasPartner(2) then
+        return 2
+    end
+    if false == self:whetherThisRoadHasPartner(3) then
+        return 3
+    end
+
+    return 1
+end
+
+function MobaHeroMove:updateCurrentRoadSteps()
+    local road = self:getStartRoad()
+    self.currentRoadSteps = self.UpperRoadSteps
+    if road == 2 then
+        self.currentRoadSteps = self.MiddleRoadSteps
+    elseif road == 3 then
+        self.currentRoadSteps = self.LowerRoadSteps
+    end
+    self._entity.ais.CurrentMobaMapRoad = road
 end
 
 return MobaHeroMove

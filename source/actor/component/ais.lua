@@ -12,6 +12,7 @@ local _Container = require("core.container")
 ---@class Actor.Component.Ais
 ---@field enable boolean
 ---@field container Core.Container
+---@field CurrentMobaMapRoad int @ 0 - 待定，1 - 上路，2 - 中路，3 - 下路
 local _Ais = require("core.class")()
 
 function _Ais.HandleData(data)
@@ -26,6 +27,7 @@ function _Ais:Ctor(data)
     self.enable = true
     self.data = data
     self.container = _Container.New()
+    self.CurrentMobaMapRoad = 0
 end
 
 return _Ais
