@@ -119,7 +119,7 @@ private:
     void drawDrawingObjList(QPainter &painter, ViewTypeEnum viewType);
     DrawingObjStruct findHoveringDrawingObj(ViewTypeEnum viewType, const QPoint &curserPos);
     void findHoveringDrawingObjInAll(const QPoint &curserPos);
-    void addDrawingObj(const QPoint &cursorPos);
+    void addDrawingObj();
     void removeDrawingObj(QList<DrawingObjStruct> drawingObjList);
     uint createId();
     DrawingObjStruct *getDrawingObjById(uint id);

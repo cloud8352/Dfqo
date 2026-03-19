@@ -257,7 +257,7 @@ void MapWidget::mouseReleaseEvent(QMouseEvent *event)
     }
     if (event->button() == Qt::MouseButton::LeftButton) {
         if (m_placingDrawingObj.Id) {
-            addDrawingObj(event->pos());
+            addDrawingObj();
             update();
         }
     }
@@ -287,6 +287,34 @@ void MapWidget::mouseMoveEvent(QMouseEvent *event)
         if (m_placingDrawingObj.Id) {
             m_placingDrawingObj.X = event->pos().x();
             m_placingDrawingObj.Y = event->pos().y();
+            // 元素四角磁吸作用
+            const QList<DrawingObjStruct> &drawingList = m_mapOfTypeToDrawingObjList[Floor];
+            for (const DrawingObjStruct &obj : drawingList) {
+                if (
+                    (qAbs(obj.MainRect.right() - event->pos().x()) < 8) &&
+                    (qAbs(obj.MainRect.top() - event->pos().y()) < 8)
+                    ) {
+                    m_placingDrawingObj.X = obj.MainRect.right() + 1;
+                    m_placingDrawingObj.Y = obj.MainRect.top();
+                    break;
+                }
+                if (
+                    (qAbs(obj.MainRect.right() - event->pos().x()) < 8) &&
+                    (qAbs(obj.MainRect.bottom() - event->pos().y()) < 8)
+                    ) {
+                    m_placingDrawingObj.X = obj.MainRect.right() + 1;
+                    m_placingDrawingObj.Y = obj.MainRect.bottom() + 1;
+                    break;
+                }
+                if (
+                    (qAbs(obj.MainRect.left() - event->pos().x()) < 8) &&
+                    (qAbs(obj.MainRect.bottom() - event->pos().y()) < 8)
+                    ) {
+                    m_placingDrawingObj.X = obj.MainRect.left();
+                    m_placingDrawingObj.Y = obj.MainRect.bottom() + 1;
+                    break;
+                }
+            }
             m_placingDrawingObj.UpdateRects(0, 0);
             needUpdate = true;
         }
@@ -493,9 +521,13 @@ DrawingObjStruct MapWidget::createDrawingObjFromMapActorInfo(const MapActorInfoS
         appendDrawingAvatar(Skin, {spriteTag});
     }
     if (instanceInfo.AspectInfo.Type == "frameani") {
-        QString frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/stay";
+        QString stateParentPath = instanceInfo.AspectInfo.Path;
+        if (!instanceInfo.AspectInfo.Avatar.isEmpty()) {
+            stateParentPath = instanceInfo.AspectInfo.Avatar;
+        }
+        QString frameAniTag = "actor/" + stateParentPath + "/stay";
         if (!m_mapOfTagToFrameAniInfoList.contains(frameAniTag)) {
-            frameAniTag = "actor/" + instanceInfo.AspectInfo.Path + "/Stay";
+            frameAniTag = "actor/" + stateParentPath+ "/Stay";
         }
         const FrameAniInfoList &frameAniInfoList =
             m_mapOfTagToFrameAniInfoList.value(frameAniTag);
@@ -776,7 +808,7 @@ void MapWidget::findHoveringDrawingObjInAll(const QPoint &curserPos)
     m_hoveringDrawingObj = DrawingObjStruct();
 }
 
-void MapWidget::addDrawingObj(const QPoint &cursorPos)
+void MapWidget::addDrawingObj()
 {
     if (m_placingDrawingObj.ViewType == Actor and
         m_placingViewType != Actor) {
@@ -797,8 +829,8 @@ void MapWidget::addDrawingObj(const QPoint &cursorPos)
     DrawingObjStruct drawingObj;
     QList<DrawingObjStruct> &drawingObjList =
         m_mapOfTypeToDrawingObjList[m_placingViewType];
-    int x = cursorPos.x() - m_xOffset;
-    int y = cursorPos.y() - m_yOffset;
+    int x = m_placingDrawingObj.X - m_xOffset;
+    int y = m_placingDrawingObj.Y - m_yOffset;
 
     if (m_placingDrawingObj.ViewType == Actor) {
         MapActorInfoStruct actorInfo = m_placingDrawingObj.MapActorInfo;

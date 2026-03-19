@@ -287,7 +287,24 @@ namespace Lua {
 
 QJsonObject LuaStrToJsonObj(const QString &luaStr)
 {
-    QString contentStr = luaStr;
+    QString contentStr;
+    // 排除注释
+    bool isComment = false;
+    QChar lastC;
+    for (const QChar &c : luaStr) {
+        if (c == '-' && lastC == '-') {
+            isComment = true;
+            contentStr.remove(contentStr.size() - 1, 1);
+        }
+        if (!isComment) {
+            contentStr.append(c);
+        }
+        if (c == "\n" && isComment) {
+            isComment = false;
+        }
+
+        lastC = c;
+    }
     contentStr.remove(" ").remove("\n").remove("\r").remove("\t");
 
     int luaReturnStrIndex = contentStr.indexOf(LuaReturnStr);
