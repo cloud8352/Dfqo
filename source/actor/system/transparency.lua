@@ -45,7 +45,7 @@ function _Transparency:OnEnter(entity)
 
     t.collider = _Collider.New(colliderData)
     t.colorTweener = _ASPECT.NewColorTweener(entity.aspect)
-    t.colorTweener:SetTarget({alpha = 0})
+    t.colorTweener:SetTarget({ alpha = 0 })
 end
 
 function _Transparency:LateUpdate(dt)
@@ -53,9 +53,10 @@ function _Transparency:LateUpdate(dt)
         return
     end
 
-    local a = _ASPECT.GetBodySolidRectList(_CONFIG.user.player.aspect)
+    local userPlayer = _CONFIG.user.player
+    local a = _ASPECT.GetBodySolidRectList(userPlayer.aspect)
 
-    for n=1, self._list:GetLength() do
+    for n = 1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
         local transparency = e.transparency
 
@@ -74,8 +75,7 @@ end
 
 if (_CONFIG.debug.transparency) then
     function _Transparency:Draw()
-
-        for n=1, self._list:GetLength() do
+        for n = 1, self._list:GetLength() do
             local e = self._list:Get(n) ---@type Actor.Entity
             e.transparency.collider:Draw()
         end

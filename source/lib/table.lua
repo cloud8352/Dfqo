@@ -90,7 +90,7 @@ function _TABLE.DeepClone(obj)
         return setmetatable(NewTable, getmetatable(obj))--赋值元表
     end
     return Func(obj) --若表中有表，则把内嵌的表也复制了
-  end
+end
 
 function _TABLE.LightClone(tab)
     local new = {}

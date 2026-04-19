@@ -73,24 +73,22 @@ function MultiStepMove:Ctor(entity, data)
     self.nextStepIndex = 1
 end
 
-function MultiStepMove:Update(dt)
+---@return boolean thought
+function MultiStepMove:Think()
     if (not self:CanRun()) then
-        return
+        return false
     end
-
-    self._timer:Update(dt)
 
     if (not self.navigating and not self._timer.isRunning) then
         self._timer:Enter(math.random(self.intervalSection.x, self.intervalSection.y))
 
         local hasTarget, x, y = self:Select()
+        -- local hasTarget = false
         if hasTarget then
             local entityXPos, entityYPos = self._entity.transform.position:Get()
             if math.abs(entityXPos - x) > 50 or math.abs(entityYPos - y) > 20 then
                 self.goingToNextStep = false
-                self._hasTarget = hasTarget
-                self._target:Set(x, y)
-                self._moveAi:Tick(x, y)
+                self:MoveTo(x, y)
             end
         else
             if self.nextStepIndex <= #self.Steps then
@@ -101,10 +99,50 @@ function MultiStepMove:Update(dt)
                 self:MoveTo(point.x, y)
             end
         end
+
+        return true
     end
 
+    return false
+end
+
+---@return boolean whetherHasSpentLotsOfTime
+function MultiStepMove:Update(dt)
+    -- if (not self:CanRun()) then
+    --     return false
+    -- end
+
+    -- self._timer:Update(dt)
+
+    -- if (not self.navigating and not self._timer.isRunning) then
+    --     self._timer:Enter(math.random(self.intervalSection.x, self.intervalSection.y))
+
+    --     local hasTarget, x, y = self:Select()
+    --     if hasTarget then
+    --         local entityXPos, entityYPos = self._entity.transform.position:Get()
+    --         if math.abs(entityXPos - x) > 50 or math.abs(entityYPos - y) > 20 then
+    --             self.goingToNextStep = false
+    --             self._hasTarget = hasTarget
+    --             self._target:Set(x, y)
+    --             self._moveAi:Tick(x, y)
+    --         end
+    --     else
+    --         if self.nextStepIndex <= #self.Steps then
+    --             self.goingToNextStep = true
+    --             local point = self.Steps[self.nextStepIndex]
+
+    --             y = point.y + math.random(self.moveRange.ya, self.moveRange.yb) - (self.moveRange.ya + self.moveRange.yb) / 2
+    --             self:MoveTo(point.x, y)
+    --         end
+    --     end
+
+    --     return true
+    -- end
+    
+    self._timer:Update(dt)
+
     self:LockOn()
-    self._moveAi:Update(dt)
+    self._moveAi:Update(dt) --------------- 导致卡顿
 
     if (self.navigating and not self._moveAi:IsRunning()) then
         self.navigating = false
@@ -114,6 +152,8 @@ function MultiStepMove:Update(dt)
         self.nextStepIndex = self.nextStepIndex + 1
         self.goingToNextStep = false
     end
+
+    return false
 end
 
 function MultiStepMove:LockOn()

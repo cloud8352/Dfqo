@@ -51,12 +51,36 @@ function _Ais:Update(dt)
     for n = 1, self._list:GetLength() do
         local e = self._list:Get(n) ---@type Actor.Entity
         local ais = e.ais
+        local doNotThinkThisPeriod = false
 
         if (ais.enable) then
             for m = 1, ais.container:GetLength() do
                 local ai = ais.container:GetWithIndex(m) ---@type Actor.Ai
 
-                if (ai.login and ai.Update) then
+                if (ai.login) then
+                    -- 每个运行周期内，只进行一次Ai复杂判断，避免程序卡顿
+                    doNotThinkThisPeriod = ai:Think()
+                    if doNotThinkThisPeriod then
+                        break
+                    end
+                end
+            end
+
+            if doNotThinkThisPeriod then
+                break
+            end
+        end
+    end
+
+    for n = 1, self._list:GetLength() do
+        local e = self._list:Get(n) ---@type Actor.Entity
+        local ais = e.ais
+
+        if (ais.enable) then
+            for m = 1, ais.container:GetLength() do
+                local ai = ais.container:GetWithIndex(m) ---@type Actor.Ai
+
+                if (ai.login) then
                     ai:Update(dt)
                 end
             end

@@ -67,7 +67,8 @@ function _SolidRect:Ctor(x, y1, y2, z, w, h)
 
     self.rectGroup = {
         xy = _Rect.New(),
-        xz = _Rect.New()
+        xz = _Rect.New(),
+        JudgingXz = _Rect.New()
     }
 
     self:SetStruct(x, y1, y2, z, w, h)
@@ -149,6 +150,7 @@ function _SolidRect:Adjust()
 
     self.rectGroup.xy:Set(x, y1, w, h1, self._r, self._x, self._y)
     self.rectGroup.xz:Set(x, y2, w, h2, self._r, self._x, self._y)
+    self.rectGroup.JudgingXz:Set(x, y2, w, h2, self._r, self._x, self._y)
 end
 
 ---@return boolean
@@ -190,7 +192,7 @@ function _SolidRect:Collide(solidRect)
     local judgingSolidRectZ = solidRect:Get("z")
     local judgingSolidRectSy = solidRect:Get("sy")
     ---@type Graphics.Drawunit.Rect
-    local judgingRect = Table.DeepClone(solidRect.rectGroup.xz)
+    local judgingRect = solidRect.rectGroup.JudgingXz
     local judgingRectY = self._y + judgingSolidRectZ + 
         (-judgingSolidRectStructZ - judgingSolidRectStructH) * math.abs(judgingSolidRectSy)
     judgingRect:Set(nil, judgingRectY, nil, nil, nil, nil, nil)

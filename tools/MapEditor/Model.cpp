@@ -804,7 +804,7 @@ QString Model::getMapFilePathByFileDlg(FileDialogType dlgType)
 {
     const QString &localDataDirPath = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::GenericDataLocation);
 
-    QString defaultFilePath = QString("%1/love/com.ccc.dfqo/config/map/instance/1.cfg").arg(localDataDirPath);
+    QString defaultFilePath = QString("%1/love/com.ccc.dfqo.test0.4/config/map/instance/1.cfg").arg(localDataDirPath);
 
     QFileInfo fInfo(defaultFilePath);
     QDir dir = fInfo.dir();

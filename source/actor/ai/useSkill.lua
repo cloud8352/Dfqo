@@ -76,12 +76,11 @@ function _UseSkill:Ctor(entity, judgeTimeSection, coolDownTimeSection, readyTime
     self._timer = _Timer.New()
 end
 
-function _UseSkill:Update(dt)
+---@return boolean thought
+function _UseSkill:Think()
     if (not self:CanRun()) then
-        return
+        return false
     end
-
-    self._timer:Update(dt)
 
     if (not self._timer.isRunning) then
         if (self._action) then
@@ -90,8 +89,6 @@ function _UseSkill:Update(dt)
             local section = self.coolDownTimeSection
             self._timer:Enter(math.random(section.x, section.y))
             self._action = nil
-
-            return true
         else
             local a = self._entity.skills and self._entity.skills.container or nil
             local b = self._entity.equipments and self._entity.equipments.container or nil
@@ -110,7 +107,50 @@ function _UseSkill:Update(dt)
                 _FACTORY.New(_warningData, { entity = self._entity })
             end
         end
+
+        return true
     end
+
+    return false
+end
+
+function _UseSkill:Update(dt)
+    -- if (not self:CanRun()) then
+    --     return
+    -- end
+
+    -- self._timer:Update(dt)
+
+    -- if (not self._timer.isRunning) then
+    --     if (self._action) then
+    --         _INPUT.Press(self._entity.input, self._action:GetKey())
+
+    --         local section = self.coolDownTimeSection
+    --         self._timer:Enter(math.random(section.x, section.y))
+    --         self._action = nil
+
+    --         return true
+    --     else
+    --         local a = self._entity.skills and self._entity.skills.container or nil
+    --         local b = self._entity.equipments and self._entity.equipments.container or nil
+    --         self._action = _SkillTick(a) or _SuptoolTick(b)
+            
+
+    --         if (not self.immediately) then
+    --             local section = self._action and self.readyTimeSection or self.judgeTimeSection
+    --             self._timer:Enter(math.random(section.x, section.y))
+    --         else
+    --             self.immediately = false
+    --             self._timer:Exit()
+    --         end
+
+    --         if (self._action and self._timer.to > 0) then
+    --             _FACTORY.New(_warningData, { entity = self._entity })
+    --         end
+    --     end
+    -- end
+
+    self._timer:Update(dt)
 end
 
 function _UseSkill:Tick()

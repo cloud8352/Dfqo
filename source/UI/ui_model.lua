@@ -535,8 +535,8 @@ function UiModel:LoadMobaMap()
 
     -- create player
     local player = Factory.New(dataTmp, {
-        x = 700,
-        y = 500,
+        x = 200,
+        y = 1680,
         direction = 1,
         camp = 1
     })
@@ -550,22 +550,22 @@ function UiModel:LoadMobaMap()
     self.partnerList = _CONFIG.user:GetPartnerList()
 
     -- moba enemy hero
-    _CONFIG.user:ClearEnemyHeroList()
-    local enemy = Factory.New("duelist/Moba/Hero", {
-        x = 1610,
-        y = 400,
-        direction = -1,
-        camp = 2
-    })
-    _CONFIG.user:AddEnemyHero(enemy)
+    -- _CONFIG.user:ClearEnemyHeroList()
+    -- local enemy = Factory.New("duelist/Moba/Hero", {
+    --     x = 1610,
+    --     y = 400,
+    --     direction = -1,
+    --     camp = 2
+    -- })
+    -- _CONFIG.user:AddEnemyHero(enemy)
     
-    enemy = Factory.New("duelist/Moba/Hero", {
-        x = 1610,
-        y = 450,
-        direction = -1,
-        camp = 2
-    })
-    _CONFIG.user:AddEnemyHero(enemy)
+    -- enemy = Factory.New("duelist/Moba/Hero", {
+    --     x = 1610,
+    --     y = 450,
+    --     direction = -1,
+    --     camp = 2
+    -- })
+    -- _CONFIG.user:AddEnemyHero(enemy)
 
     -- load map
     local simplePath = "Moba/Moba1"

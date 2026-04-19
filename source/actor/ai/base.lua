@@ -25,4 +25,12 @@ end
 
 ---_Ai:Tick()
 
+---@return boolean thought
+function _Ai:Think()
+end
+
+---@param dt int
+function _Ai:Update(dt)
+end
+
 return _Ai
