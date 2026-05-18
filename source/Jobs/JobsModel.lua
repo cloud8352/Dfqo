@@ -8,49 +8,63 @@ local Table = require("lib.table")
 
 local JobsModel = {}
 
----@class JobsModel.MoveInfoStruct
----@field MoveTaskInfo MoveTaskInfoStruct
+---@class JobsModel.MainThreadTaskInfo
+---@field MoveInfo MoveInfo
 ---@field Transform Actor.Component.Transform
-local MoveInfoStruct = {
-    moveTaskInfo = JobsCommon.NewMoveTaskInfo(),
-    Transform = nil
+---@field GetPathInfo GetPathInfo
+---@field MoveAi Actor.Ai.Move
+local MainThreadTaskInfo = {
+    MoveInfo = JobsCommon.NewMoveInfo(),
+    Transform = nil,
+    GetPathInfo = JobsCommon.NewGetPathInfo(),
+    MoveAi = nil
 }
 
----@return JobsModel.MoveInfoStruct
-local function newMoveInfo()
-    return Table.DeepClone(MoveInfoStruct)
+---@return JobsModel.MainThreadTaskInfo
+local function newMainThreadTaskInfo()
+    return Table.DeepClone(MainThreadTaskInfo)
 end
 
----@type table<int, JobsModel.MoveInfoStruct>
-local MapOfRunningTaskIdToMoveInfo = {}
+---@type table<int, JobsModel.MainThreadTaskInfo>
+local MapOfRunningTaskIdToMainThreadTaskInfo = {}
 
 function JobsModel.Init()
     -- thread init
-    local thread = love.thread.newThread("source/Jobs/MotionMoveJob.lua")
+    local thread = love.thread.newThread("source/Jobs/MainJob.lua")
     thread:start()
 end
 
 function JobsModel.Update()
     while true do
-        ---@type MoveTaskInfoStruct
-        local finishedTaskInfo = JobsCommon.MotionMoveJobFinishedTaskChannel:pop()
+        ---@type TaskInfo
+        local finishedTaskInfo = JobsCommon.JobFinishedChannel:pop()
         if finishedTaskInfo == nil then
             break
         end
 
         -- 更新坐标
-        local moveInfo = MapOfRunningTaskIdToMoveInfo[finishedTaskInfo.Id]
-        local transform = moveInfo.Transform
-        if finishedTaskInfo.Type == JobsCommon.AxisType.X then
-            transform.position.x = finishedTaskInfo.DestXPos
-        elseif finishedTaskInfo.Type == JobsCommon.AxisType.Y then
-            transform.position.y = finishedTaskInfo.DestYPos
-        elseif finishedTaskInfo.Type == JobsCommon.AxisType.Z then
-            transform.position.z = finishedTaskInfo.DestZPos
+        local mainThreadTaskInfo = MapOfRunningTaskIdToMainThreadTaskInfo[finishedTaskInfo.Id]
+        local transform = mainThreadTaskInfo.Transform
+        if transform then
+            local moveInfo = finishedTaskInfo.MoveInfo
+            if moveInfo.Type == JobsCommon.AxisType.X then
+                transform.position.x = moveInfo.DestXPos
+            elseif moveInfo.Type == JobsCommon.AxisType.Y then
+                transform.position.y = moveInfo.DestYPos
+            elseif moveInfo.Type == JobsCommon.AxisType.Z then
+                transform.position.z = moveInfo.DestZPos
+            end
+            transform.positionTick = 1
         end
-        transform.positionTick = 1
 
-        MapOfRunningTaskIdToMoveInfo[finishedTaskInfo.Id] = nil
+        -- 获取路径
+        local moveAi = mainThreadTaskInfo.MoveAi
+        if moveAi then
+            local getPathInfo = finishedTaskInfo.GetPathInfo
+            moveAi:Slot_GetPathFinished(getPathInfo.RetPath)
+        end
+
+        MapOfRunningTaskIdToMainThreadTaskInfo[finishedTaskInfo.Id] = nil
     end
 end
 
@@ -60,11 +74,8 @@ end
 ---@param w int
 ---@param h int
 ---@param gridSize int
----@param posList table<int, PosStruct>
+---@param posList table<int, PosInfo>
 function JobsModel.InitThreadMapMatrix(name, x, y, w, h, gridSize, posList)
-    local funcChannelData = JobsCommon.NewFuncChannelData()
-    funcChannelData.FuncName = JobsCommon.MotionMoveJobFunNameInit
-
     local mapInfo = JobsCommon.NewMapInfo()
     mapInfo.Name = name
     mapInfo.X = x
@@ -73,30 +84,35 @@ function JobsModel.InitThreadMapMatrix(name, x, y, w, h, gridSize, posList)
     mapInfo.Height = h
 
     mapInfo.GridSize = gridSize
-
     mapInfo.ObstaclePosList = posList
-    funcChannelData.MapInfo = mapInfo
 
-    JobsCommon.MotionMoveJobFuncChannel:push(funcChannelData)
+    local taskInfo = JobsCommon.NewTaskInfo()
+    taskInfo.Id = JobsModel.createTaskId()
+    taskInfo.MapInfo = mapInfo
+    JobsCommon.JobChannel:push(taskInfo)
+
+    -- 添加到 主进程map
+    local mainThreadTaskInfo = newMainThreadTaskInfo()
+    MapOfRunningTaskIdToMainThreadTaskInfo[taskInfo.Id] = mainThreadTaskInfo
 end
 
 ---@param x int
 ---@param y int
 ---@param isObs boolean
 function JobsModel.SetThreadObstacle(x, y, isObs)
-    local pos = JobsCommon.NewPos()
-    pos.X = x
-    pos.Y = y
+    local taskInfo = JobsCommon.NewTaskInfo()
+    taskInfo.Id = JobsModel.createTaskId()
 
-    local obs = JobsCommon.NewObstacleInfo()
-    obs.Pos = pos
+    local obs = taskInfo.ObstacleInfo
     obs.IsObs = isObs
+    obs.Pos.X = x
+    obs.Pos.Y = y
 
-    local funcChannelData = JobsCommon.NewFuncChannelData()
-    funcChannelData.FuncName = JobsCommon.MotionMoveJobFunNameSetObstacle
-    funcChannelData.ObstacleInfo = obs
+    JobsCommon.JobChannel:push(taskInfo)
 
-    JobsCommon.MotionMoveJobFuncChannel:push(funcChannelData)
+    -- 添加到 主进程map
+    local mainThreadTaskInfo = newMainThreadTaskInfo()
+    MapOfRunningTaskIdToMainThreadTaskInfo[taskInfo.Id] = mainThreadTaskInfo
 end
 
 ---@param transform Actor.Component.Transform
@@ -104,8 +120,8 @@ end
 ---@param type int
 ---@param value number
 function JobsModel.AddMoveTask(transform, type, value)
-    for _, info in pairs(MapOfRunningTaskIdToMoveInfo) do
-        local typeTmp = info.MoveTaskInfo.Type
+    for _, info in pairs(MapOfRunningTaskIdToMainThreadTaskInfo) do
+        local typeTmp = info.MoveInfo.Type
         if info.Transform == transform
             and type == typeTmp
         then
@@ -113,48 +129,62 @@ function JobsModel.AddMoveTask(transform, type, value)
         end
     end
 
-    local funcChannelData = JobsCommon.NewFuncChannelData()
-    funcChannelData.FuncName = JobsCommon.MotionMoveJobFunNameAddMoveTask
+    local moveInfo = JobsCommon.NewMoveInfo()
+    moveInfo.Type = type
 
-    local taskInfo = JobsCommon.NewMoveTaskInfo()
-    taskInfo.Id = JobsModel.createTaskId()
-    taskInfo.Type = type
-
-    taskInfo.SrcXPos = transform.position.x
-    taskInfo.SrcYPos = transform.position.y
-    taskInfo.SrcZPos = transform.position.z
-
-    taskInfo.Value = value
-
-    funcChannelData.MoveTaskInfo = taskInfo
+    moveInfo.SrcXPos = transform.position.x
+    moveInfo.SrcYPos = transform.position.y
+    moveInfo.SrcZPos = transform.position.z
+    moveInfo.Value = value
 
     -- 发送到线程
-    JobsCommon.MotionMoveJobFuncChannel:push(funcChannelData)
+    local taskInfo = JobsCommon.NewTaskInfo()
+    taskInfo.Id = JobsModel.createTaskId()
+    taskInfo.MoveInfo = moveInfo
+    JobsCommon.JobChannel:push(taskInfo)
 
-    -- 添加到 map
-    local moveInfo = newMoveInfo()
-    moveInfo.MoveTaskInfo = taskInfo
-    moveInfo.Transform = transform
-    MapOfRunningTaskIdToMoveInfo[taskInfo.Id] = moveInfo
+    -- 添加到 主进程map
+    local mainThreadTaskInfo = newMainThreadTaskInfo()
+    mainThreadTaskInfo.MoveInfo = moveInfo
+    mainThreadTaskInfo.Transform = transform
+    MapOfRunningTaskIdToMainThreadTaskInfo[taskInfo.Id] = mainThreadTaskInfo
+end
+
+---@param moveAi Actor.Ai.Move
+---@param srcX int
+---@param srcY int
+---@param destX int
+---@param destY int
+function JobsModel.AddGetPathTask(moveAi, srcX, srcY, destX, destY)
+    local getPathInfo = JobsCommon.NewGetPathInfo()
+    getPathInfo.SrcXPos = srcX
+    getPathInfo.SrcYPos = srcY
+    getPathInfo.DestXPos = destX
+    getPathInfo.DestYPos = destY
+
+    -- 发送到线程
+    local taskInfo = JobsCommon.NewTaskInfo()
+    taskInfo.Id = JobsModel.createTaskId()
+    taskInfo.GetPathInfo = getPathInfo
+    JobsCommon.JobChannel:push(taskInfo)
+
+    -- 添加到 主进程map
+    local mainThreadTaskInfo = newMainThreadTaskInfo()
+    mainThreadTaskInfo.GetPathInfo = getPathInfo
+    mainThreadTaskInfo.MoveAi = moveAi
+    MapOfRunningTaskIdToMainThreadTaskInfo[taskInfo.Id] = mainThreadTaskInfo
 end
 
 --=== private functions
 
 function JobsModel.createTaskId()
     local id = 1
-    local idExisted = false
     while id < 999999 do
-        idExisted = false
-        for idTmp, _ in pairs(MapOfRunningTaskIdToMoveInfo) do
-            if id == idTmp then
-                idExisted = true
-                id = id + 1
-                break
-            end
-        end
-        if not idExisted then
+        if MapOfRunningTaskIdToMainThreadTaskInfo[id] == nil then
             return id
         end
+
+        id = id + 1
     end
 
     print("JobsModel.CreateTaskId()", "Running Task count more than 999999!!!")

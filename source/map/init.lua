@@ -28,7 +28,7 @@ local _Frameani = require("graphics.drawable.frameani")
 local _Particle = require("graphics.drawable.particle")
 local _BackGround = require("map.background")
 local _Camera = require("map.camera")
-local _Matrix = require("map.matrix")
+local _Matrix = require("map.Matrix")
 local JobsCommon = require("Jobs.JobsCommon")
 local JobsModel = require("Jobs.JobsModel")
 
@@ -295,20 +295,20 @@ local function _Load(path)
     end
 
     -- 初始化 JobsModel 线程地图矩阵
-    -- -@type table<int, PosStruct>
-    -- local obstaclePosList = {}
-    -- if (data.obstacle) then
-    --     for n = 1, #data.obstacle do
-    --         local pos = JobsCommon.NewPos()
-    --         pos.X = data.obstacle[n][1]
-    --         pos.Y = data.obstacle[n][2]
+    ---@type table<int, PosInfo>
+    local obstaclePosList = {}
+    if (data.obstacle) then
+        for n = 1, #data.obstacle do
+            local pos = JobsCommon.NewPosInfo()
+            pos.X = data.obstacle[n][1]
+            pos.Y = data.obstacle[n][2]
 
-    --         table.insert(obstaclePosList, pos)
-    --     end
-    -- end
+            table.insert(obstaclePosList, pos)
+        end
+    end
 
-    -- JobsModel.InitThreadMapMatrix(data.info.name, data.scope.x, data.scope.y,
-    --     data.scope.w, data.scope.h, 16, obstaclePosList)
+    JobsModel.InitThreadMapMatrix(data.info.name, data.scope.x, data.scope.y,
+        data.scope.w, data.scope.h, 16, obstaclePosList)
     -- JobsModel end --
 
     local pool = {}

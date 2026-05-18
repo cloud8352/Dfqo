@@ -47,7 +47,7 @@ end
 function love.load()
     -- 禁用文本输入
     TextInputLib.EnableTextInput(false)
-    -- JobsModel.Init()
+    JobsModel.Init()
 
     _SYSTEM.Init()
     math.randomseed(os.time())
@@ -62,7 +62,7 @@ function love.update(dt)
     if (dt > 0.1) then
         return
     end
-    -- JobsModel.Update()
+    JobsModel.Update()
     _TIME.Update(dt)
 
     while (_TIME.CanUpdate()) do

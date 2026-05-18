@@ -12,6 +12,7 @@ local _Map = require("map.init")
 local _Point = require("graphics.drawunit.point")
 local _Base = require("actor.ai.base")
 local GraphicsLib = require("lib.graphics")
+local JobsModel = require("Jobs.JobsModel")
 
 ---@param self Actor.Ai.Move
 local function _NextTarget(self)
@@ -93,14 +94,20 @@ function _Move:Tick(x, y)
 
     local matrix = _Map.GetMatrix()
     
+    -- if (not matrix:GetNode(x, y)) then
+    --     local position = self._entity.transform.position
+
+    --     self._path = matrix:GetPath(position.x, position.y, x, y)
+    --     -- self._path = matrix:GetSimplePath(position.x, position.y, x, y)
+    --     self._entity.aspect.path = self._path
+    --     self._index = 0
+    --     _NextTarget(self)
+    -- end
+
     if (not matrix:GetNode(x, y)) then
         local position = self._entity.transform.position
 
-        self._path = matrix:GetPath(position.x, position.y, x, y)
-        -- self._path = matrix:GetSimplePath(position.x, position.y, x, y)
-        self._entity.aspect.path = self._path
-        self._index = 0
-        _NextTarget(self)
+        JobsModel.AddGetPathTask(self, position.x, position.y, x, y)
     end
 
     return true
@@ -116,6 +123,27 @@ function _Move:GetTarget()
     end
     
     return self._path[#self._path]:Get()
+end
+
+---@param path table<int, PosInfo>
+function _Move:Slot_GetPathFinished(path)
+    if path == nil or #path == 0 then
+        return
+    end
+
+    if (not self:CanRun()) then
+        return
+    end
+
+    self._path = {}
+    for i, pos in pairs(path) do
+        local point = _Point.New(true, pos.X, pos.Y)
+        table.insert(self._path, point)
+    end
+
+    self._entity.aspect.path = self._path
+    self._index = 0
+    _NextTarget(self)
 end
 
 return _Move
