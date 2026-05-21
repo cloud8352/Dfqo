@@ -406,8 +406,8 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         uint id = m_movingDrawingObj.Id;
         DrawingObjStruct *obj = getDrawingObjById(id);
         if (obj) {
-            int x = obj->LayerSpriteInfo.X;
-            int y = obj->LayerSpriteInfo.Y - 1;
+            int x = obj->X;
+            int y = obj->Y - 1;
             setDrawingObjPos(id, x, y);
             update();
         }
@@ -416,8 +416,8 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         uint id = m_movingDrawingObj.Id;
         DrawingObjStruct *obj = getDrawingObjById(id);
         if (obj) {
-            int x = obj->LayerSpriteInfo.X;
-            int y = obj->LayerSpriteInfo.Y + 1;
+            int x = obj->X;
+            int y = obj->Y + 1;
             setDrawingObjPos(id, x, y);
             update();
         }
@@ -426,8 +426,8 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         uint id = m_movingDrawingObj.Id;
         DrawingObjStruct *obj = getDrawingObjById(id);
         if (obj) {
-            int x = obj->LayerSpriteInfo.X - 1;
-            int y = obj->LayerSpriteInfo.Y;
+            int x = obj->X - 1;
+            int y = obj->Y;
             setDrawingObjPos(id, x, y);
             update();
         }
@@ -436,8 +436,8 @@ void MapWidget::keyPressEvent(QKeyEvent *event)
         uint id = m_movingDrawingObj.Id;
         DrawingObjStruct *obj = getDrawingObjById(id);
         if (obj) {
-            int x = obj->LayerSpriteInfo.X + 1;
-            int y = obj->LayerSpriteInfo.Y;
+            int x = obj->X + 1;
+            int y = obj->Y;
             setDrawingObjPos(id, x, y);
             update();
         }

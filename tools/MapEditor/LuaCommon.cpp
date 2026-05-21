@@ -337,4 +337,10 @@ QString JsonObjToLuaStr(const QJsonObject &jsonObj)
     QString retStr = "return " + jsonObjToStr(jsonObj);
     return retStr;
 }
+
+QString JsonArrayToLuaStr(const QJsonArray &jsonArray)
+{
+    QString retStr = "return " + jsonArrayToStr(jsonArray);
+    return retStr;
+}
 }

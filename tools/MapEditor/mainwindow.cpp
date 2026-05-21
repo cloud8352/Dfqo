@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     , m_model(nullptr)
     , m_settingsDlg(nullptr)
     , m_spriteTrimDlg(nullptr)
+    , m_mapActorsMirroringDlg(nullptr)
     , m_spriteTreeItem(nullptr)
     , m_actorInstanceTreeItem(nullptr)
 {
@@ -25,6 +26,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_spriteTrimDlg = new SpriteTrimDlg(m_model, this);
     m_spriteTrimDlg->setVisible(false);
+
+    m_mapActorsMirroringDlg = new MapActorsMirroringDlg(m_model, this);
+    m_mapActorsMirroringDlg->setVisible(false);
 
     // ui init
     QMenuBar *menuBar = this->menuBar();
@@ -49,11 +53,14 @@ MainWindow::MainWindow(QWidget *parent)
     settingsMenu->addAction(appSettingsAction);
     menuBar->addMenu(settingsMenu);
 
-    QMenu *spriteTrimDlgMenu = new QMenu(this);
-    spriteTrimDlgMenu->setTitle("素材修剪工具");
-    QAction *openSpriteTrimDlgAction = new QAction("打开", this);
-    spriteTrimDlgMenu->addAction(openSpriteTrimDlgAction);
-    menuBar->addMenu(spriteTrimDlgMenu);
+    QMenu *toolsDlgMenu = new QMenu(this);
+    toolsDlgMenu->setTitle("工具");
+    QAction *openSpriteTrimDlgAction = new QAction("素材修剪工具", this);
+    toolsDlgMenu->addAction(openSpriteTrimDlgAction);
+
+    QAction *openMapActorsMirroringDlgAction = new QAction("地图角色实例镜像工具", this);
+    toolsDlgMenu->addAction(openMapActorsMirroringDlgAction);
+    menuBar->addMenu(toolsDlgMenu);
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -224,9 +231,12 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
 
-    connect(spriteTrimDlgMenu, &QMenu::triggered, this, [=](QAction *action) {
+    connect(toolsDlgMenu, &QMenu::triggered, this, [=](QAction *action) {
         if (action == openSpriteTrimDlgAction && !m_spriteTrimDlg->isVisible()) {
             m_spriteTrimDlg->setVisible(true);
+        }
+        if (action == openMapActorsMirroringDlgAction && !m_mapActorsMirroringDlg->isVisible()) {
+            m_mapActorsMirroringDlg->setVisible(true);
         }
     });
 

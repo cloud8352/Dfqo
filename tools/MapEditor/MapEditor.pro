@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     Calculator.cpp \
     LuaCommon.cpp \
+    MapActorsMirroring/MapActorsMirroringDlg.cpp \
     MapSettingsDlg.cpp \
     MapWidget.cpp \
     Model.cpp \
@@ -29,6 +30,7 @@ SOURCES += \
 HEADERS += \
     Calculator.h \
     LuaCommon.h \
+    MapActorsMirroring/MapActorsMirroringDlg.h \
     MapSettingsDlg.h \
     MapWidget.h \
     Model.h \

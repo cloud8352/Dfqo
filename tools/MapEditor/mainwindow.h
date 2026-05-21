@@ -4,6 +4,7 @@
 #include "MapWidget.h"
 #include "SettingsDlg.h"
 #include "SpriteTrim/SpriteTrimDlg.h"
+#include "MapActorsMirroring/MapActorsMirroringDlg.h"
 
 #include <QMainWindow>
 #include <QPushButton>
@@ -28,6 +29,7 @@ private:
     QModelIndex m_lastSelectedIndex;
     SettingsDlg *m_settingsDlg;
     SpriteTrimDlg *m_spriteTrimDlg;
+    MapActorsMirroringDlg *m_mapActorsMirroringDlg;
 
     QStandardItem *m_spriteTreeItem;
     QStandardItem *m_actorInstanceTreeItem;
