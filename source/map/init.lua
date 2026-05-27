@@ -28,7 +28,7 @@ local _Frameani = require("graphics.drawable.frameani")
 local _Particle = require("graphics.drawable.particle")
 local _BackGround = require("map.background")
 local _Camera = require("map.camera")
-local _Matrix = require("map.Matrix")
+local _Matrix = require("map.JpsMatrix")
 local JobsCommon = require("Jobs.JobsCommon")
 local JobsModel = require("Jobs.JobsModel")
 

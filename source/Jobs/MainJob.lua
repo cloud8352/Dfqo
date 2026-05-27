@@ -7,7 +7,7 @@ local _MATH = require("lib.math")
 
 -- map.matrix 需要依赖 love.graphics 模块
 require("love.graphics")
-local Matrix = require("map.Matrix")
+local Matrix = require("map.JpsMatrix")
 require("love.timer")
 
 local JobsCommon = require("Jobs.JobsCommon")
