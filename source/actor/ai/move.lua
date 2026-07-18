@@ -134,9 +134,11 @@ function _Move:Slot_GetPathFinished(path)
     if (not self:CanRun()) then
         return
     end
-
+    
     self._path = {}
-    for i, pos in pairs(path) do
+    -- path from thread is disorder, need sort
+    for i = 1, #path do
+        local pos = path[i]
         local point = _Point.New(true, pos.X, pos.Y)
         table.insert(self._path, point)
     end

@@ -143,15 +143,15 @@ function MobaHeroMove:Update(dt)
             break
         end
 
+        -- 血量低于50%时回城恢复
+        if self._entity.attributes.hp / self._entity.attributes.maxHp < 0.5 then
+            self.backingToHome = true
+        end
+
         -- 当附近存在敌方塔，但无友方单位时，则逃离敌方塔
         if turretEntity and false == self:areThereFriendlyUnitsAroundTurret(turretEntity) then
             self:escapeFromTurret(turretEntity)
             break
-        end
-
-        -- 血量低于50%时回城恢复
-        if self._entity.attributes.hp / self._entity.attributes.maxHp < 0.5 then
-            self.backingToHome = true
         end
 
         if self.backingToHome then
@@ -499,6 +499,7 @@ function MobaHeroMove:updateCurrentRoadSteps()
         self.currentRoadSteps = self.LowerRoadSteps
     end
     self._entity.ais.CurrentMobaMapRoad = road
+    print(2224, road)
 end
 
 return MobaHeroMove
