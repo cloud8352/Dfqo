@@ -28,7 +28,8 @@
         "Orochinagi",
         "Tsunade",
         "hitstop",
-        "Iori"
+        "Iori",
+        "Moba"
     ],
     "files.exclude": {
         "**/love2d": true,

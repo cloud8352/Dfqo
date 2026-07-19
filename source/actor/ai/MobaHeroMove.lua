@@ -401,11 +401,23 @@ end
 ---@param road int
 function MobaHeroMove:whetherThisRoadHasPartner(road)
     ---@type table<int, Actor.Entity>
-    local partnerList = {}
+    local heroList = {}
     if self._entity.battle.camp == 2 then
-        partnerList = Config.user:GetEnemyHeroList()
+        heroList = Config.user:GetEnemyHeroList()
     else
-        partnerList = Config.user:GetPartnerList()
+        heroList = Config.user:GetPartnerList()
+    end
+
+    ---@type table<int, Actor.Entity>
+    local partnerList = {}
+    for i, entity in pairs(heroList) do
+        if entity ~= self._entity then
+            table.insert(partnerList, entity)
+        end
+    end
+
+    if 0 == #partnerList then
+        return false
     end
 
     for i, e in pairs(partnerList) do
@@ -499,7 +511,6 @@ function MobaHeroMove:updateCurrentRoadSteps()
         self.currentRoadSteps = self.LowerRoadSteps
     end
     self._entity.ais.CurrentMobaMapRoad = road
-    print(2224, road)
 end
 
 return MobaHeroMove
