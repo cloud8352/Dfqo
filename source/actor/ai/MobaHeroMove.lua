@@ -125,12 +125,8 @@ function MobaHeroMove:Update(dt)
 
         -- 回城中，血量低于80%时，继续回城
         if self.backingToHome and self._entity.attributes.hp / self._entity.attributes.maxHp < 0.8 then
-            if self:haveMeArriveAtNextStepPoint() and self.nextStepIndex > 1 then
-                self.nextStepIndex = self.nextStepIndex - 1
-            end
             break
         end
-
         self.backingToHome = false
 
         -- -- 如果被敌方塔攻击，则停止攻击并逃离敌方塔
@@ -148,19 +144,15 @@ function MobaHeroMove:Update(dt)
 
         -- 血量低于50%时回城恢复
         if self._entity.attributes.hp / self._entity.attributes.maxHp < 0.5 then
-            self.backingToHome = true
+            self.backingToHome = true 
+            local point = self.currentRoadSteps[1]
+            self:MoveTo(point.x, point.y)
+            break
         end
 
         -- 当附近存在敌方塔，also无友方单位时，则逃离敌方塔
         if self:whetherDestHaveDangers(myPos.x, myPos.y) then
             self:escapeFromTurret(turretEntity)
-            break
-        end
-
-        if self.backingToHome then
-            if self:haveMeArriveAtNextStepPoint() and self.nextStepIndex > 1 then
-                self.nextStepIndex = self.nextStepIndex - 1
-            end
             break
         end
 
@@ -184,6 +176,10 @@ function MobaHeroMove:Update(dt)
                 end
 
                 -- if adjustTargetX, targetY is obstacle, need ajdust again
+                local matrix = Map.GetMatrix()
+                if matrix:GetNode(adjustTargetX, targetY) then
+                    adjustTargetX = targetX
+                end
 
                 self.targetPoint:Set(adjustTargetX, targetY)
                 self.moveAi:Tick(adjustTargetX, targetY)
@@ -213,8 +209,7 @@ function MobaHeroMove:Update(dt)
     end
 
     if self.backingToHome and not self.moveAi:IsRunning() then
-        local point = self.currentRoadSteps[self.nextStepIndex]
-        self:MoveTo(point.x, point.y)
+        self.nextStepIndex = 2
     end
 end
 
