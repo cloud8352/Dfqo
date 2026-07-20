@@ -62,6 +62,8 @@ function MobaHeroMove:Ctor(entity, data)
     self.moveAi = _Move.New(entity)
     self.camp = data.camp
 
+    self.normalAttackDistance = 100
+
     ---@type table<int, Graphics.Drawunit.Point>
     self.UpperRoadSteps = {}
     if data.UpperRoadSteps then
@@ -134,7 +136,8 @@ function MobaHeroMove:Update(dt)
         -- -- 如果被敌方塔攻击，则停止攻击并逃离敌方塔
         local beatenRecently = TimeLib.GetTime() - self._entity.battle.beatenConfig.time < 2
         local entityAttackingMe = self._entity.battle.beatenConfig.entity
-        local turretEntity = self:getNearbyTurret()
+        local myPos = self._entity.transform.position
+        local turretEntity = self:getNearbyTurret(myPos.x, myPos.y)
         if beatenRecently and entityAttackingMe and entityAttackingMe.duelist 
             and entityAttackingMe.duelist.category == "TurretBullet"
             and turretEntity
@@ -148,8 +151,8 @@ function MobaHeroMove:Update(dt)
             self.backingToHome = true
         end
 
-        -- 当附近存在敌方塔，但无友方单位时，则逃离敌方塔
-        if turretEntity and false == self:areThereFriendlyUnitsAroundTurret(turretEntity) then
+        -- 当附近存在敌方塔，also无友方单位时，则逃离敌方塔
+        if self:whetherDestHaveDangers(myPos.x, myPos.y) then
             self:escapeFromTurret(turretEntity)
             break
         end
@@ -168,8 +171,22 @@ function MobaHeroMove:Update(dt)
             local targetX, targetY = target.transform.position:Get()
             local entityXPos, entityYPos = self._entity.transform.position:Get()
             if math.abs(entityXPos - targetX) > 50 or math.abs(entityYPos - targetY) > 20 then
-                self.targetPoint:Set(targetX + 100, targetY)
-                self.moveAi:Tick(targetX + 100, targetY)
+                local dirOfMyToTarget = 1
+                if targetX > entityXPos then
+                    dirOfMyToTarget = -1
+                end
+                local adjustTargetX = targetX + dirOfMyToTarget * self.normalAttackDistance
+                if self:whetherDestHaveDangers(adjustTargetX, targetY) then
+                    adjustTargetX = targetX - dirOfMyToTarget * self.normalAttackDistance
+                    if self:whetherDestHaveDangers(adjustTargetX, targetY) then
+                        break
+                    end
+                end
+
+                -- if adjustTargetX, targetY is obstacle, need ajdust again
+
+                self.targetPoint:Set(adjustTargetX, targetY)
+                self.moveAi:Tick(adjustTargetX, targetY)
             end
             break
         end
@@ -189,7 +206,10 @@ function MobaHeroMove:Update(dt)
 
     if self.goingForward and not self.moveAi:IsRunning() then
         local point = self.currentRoadSteps[self.nextStepIndex]
-        self:MoveTo(point.x, point.y)
+
+        if false == self:whetherDestHaveDangers(point.x, point.y) then
+            self:MoveTo(point.x, point.y)
+        end
     end
 
     if self.backingToHome and not self.moveAi:IsRunning() then
@@ -203,11 +223,11 @@ end
 ---@param isOnly boolean
 ---@param lockOn boolean
 function MobaHeroMove:MoveTo(x, y, isOnly, lockOn)
-    self.targetPoint:Set(x, y)
-    if self:haveMeArriveAtNextStepPoint() then
+    if x == self.targetPoint.x and y == self.targetPoint.y then
         return
     end
 
+    self.targetPoint:Set(x, y)
     self.moveAi:Tick(x, y)
 
     if (isOnly) then
@@ -247,8 +267,8 @@ function MobaHeroMove:searchAttackTarget()
     -- 判断是否存在可以攻击的英雄
     -- 战斗力评分：技能总级数*血量
     local myStrength = MasteredSkillsSrv.GetTotalLevels(self._entity.MasteredSkills) * self._entity.attributes.hp
-    local searchRangeX = 200
-    local searchRangeY = 150
+    local searchRangeX = 500
+    local searchRangeY = 350
     local minStrengthEnemyHero = nil
     local enemyHeroMinStrength = 0
     local enemyHeroTotalStrength = 0
@@ -334,13 +354,15 @@ function MobaHeroMove:haveMeArriveAtNextStepPoint()
     return true
 end
 
-function MobaHeroMove:getNearbyTurret()
+---@param x int
+---@param y int
+function MobaHeroMove:getNearbyTurret(x, y)
     local camp = self.camp or self._entity.battle.camp
-    local myPos = self._entity.transform.position
 
     for n = _list:GetLength(), 1, -1 do
         local e = _list:Get(n) ---@type Actor.Entity
         if e.battle == nil or self._entity == e or e.battle.banCountMap.hide == 1
+            or e.duelist == nil or e.duelist.category ~= "Turret"
             or false == _BATTLE.CondCamp(camp, e.battle.camp, "enemy")
         then
             -- 如果不是敌人，则忽略
@@ -348,7 +370,7 @@ function MobaHeroMove:getNearbyTurret()
         end
 
         local ePos = e.transform.position
-        if math.abs(ePos.x - myPos.x) < 250 and math.abs(ePos.y - myPos.y) < 250 then
+        if math.abs(ePos.x - x) < 300 and math.abs(ePos.y - y) < 300 then
             return e
         end
 
@@ -365,9 +387,9 @@ function MobaHeroMove:escapeFromTurret(turretEntity)
     local moveToX = 0
     local moveToY = self._entity.transform.position.y
     if myOriPos.x > turretEntityPos.x then
-        moveToX = turretEntityPos.x + 240
+        moveToX = turretEntityPos.x + 300
     else
-        moveToX = turretEntityPos.x - 240
+        moveToX = turretEntityPos.x - 300
     end
 
     self:MoveTo(moveToX, moveToY)
@@ -511,6 +533,20 @@ function MobaHeroMove:updateCurrentRoadSteps()
         self.currentRoadSteps = self.LowerRoadSteps
     end
     self._entity.ais.CurrentMobaMapRoad = road
+end
+
+---@param x int
+---@param y int
+function MobaHeroMove:whetherDestHaveDangers(x, y)
+    -- 当dest target附近存在敌方塔，also无友方单位时
+    local turretEntity = self:getNearbyTurret(x, y)
+    if nil == turretEntity then
+        return false
+    end
+    if self:areThereFriendlyUnitsAroundTurret(turretEntity) then
+        return false
+    end
+    return true
 end
 
 return MobaHeroMove
