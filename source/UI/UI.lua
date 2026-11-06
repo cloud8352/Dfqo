@@ -400,7 +400,6 @@ function UI.Init(director)
     UI.npcInteractBtn:MocConnectSignal(UI.npcInteractBtn.Signal_BtnClicked, UI)
     -- moba
     UI.mobaBtn:MocConnectSignal(UI.mobaBtn.Signal_BtnClicked, UI)
-    UI.model:MocConnectSignal(UI.model.Signal_LoadMobaMapFinished, UI)
     UI.model:MocConnectSignal(UI.model.Signal_OnceGameTaiSuCountChanged, UI)
     UI.model:MocConnectSignal(UI.model.Signal_TaiSuCountChanged, UI)
     -- shop
@@ -507,7 +506,13 @@ function UI.Slot_BtnClicked(my, sender)
         UI.showNpcDlg()
     end
     if UI.mobaBtn == sender then
-        UI.model:LoadMobaMap()
+        UI.model:SetInMobaMode(true)
+        local actorInfo = UI.model:GetCurrentUserActorInfo()
+        UI.director.StartMoba(actorInfo)
+
+        -- 更新ui上太素数量
+        local taiSuCount = UI.model:GetOnceGameTaiSuCount()
+        UI.taiSuCountLabel:SetText("太素：" .. tostring(taiSuCount))
     end
     if UI.shopBtn == sender then
         local isVisible = UI.shopWindow:IsVisible()
@@ -770,13 +775,6 @@ end
 ---@param isVisible boolean
 function UI.Slot_ReqSetVisibilityNpcInteractBtn(my, sender, isVisible)
     UI.npcInteractBtn:SetVisible(isVisible)
-end
-
----@param my Obj
----@param sender Obj
-function UI.Slot_LoadMobaMapFinished(my, sender)
-    local taiSuCount = UI.model:GetOnceGameTaiSuCount()
-    UI.taiSuCountLabel:SetText("太素：" .. tostring(taiSuCount))
 end
 
 ---@param my Obj

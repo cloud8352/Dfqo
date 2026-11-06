@@ -15,6 +15,7 @@ local LifeSrv = require("actor.service.LifeSrv")
 
 local _Tweener = require("util.gear.tweener")
 local _Curtain = require("graphics.curtain")
+local MobaDirector = require("MobaDirector")
 
 ---@class DIRECTOR
 local _DIRECTOR = { rate = 1 }
@@ -33,6 +34,7 @@ function _DIRECTOR.Init()
 
     _WORLD.Init()
     _MAP.Init(_WORLD.Draw)
+    MobaDirector.Init(_DIRECTOR)
 
     -- _DIRECTOR.StartGame()
 end
@@ -50,9 +52,10 @@ function _DIRECTOR.Update(dt)
     dt = dt * _DIRECTOR.rate
     _WORLD.Update(dt, _DIRECTOR.rate)
     _MAP.Update(dt)
+    MobaDirector.Update(dt)
 end
 
-function _DIRECTOR.firstUpdate()
+function _DIRECTOR.FirstUpdate()
     local dt = 0
     _MAP.LoadTick()
     
@@ -128,7 +131,7 @@ function _DIRECTOR.StartGame(instanceData)
     partner.attributes.hpRecovery = 150
     _CONFIG.user:AddPartner(partner)
 
-    _DIRECTOR.firstUpdate() -- Flush player.
+    _DIRECTOR.FirstUpdate() -- Flush player.
 
     _CONFIG.user:SetPlayer(player)
 
@@ -145,6 +148,11 @@ end
 ---@param h number
 function _DIRECTOR.OnWindowResize(w, h)
     UI.OnWindowResize(w, h)
+end
+
+---@param actorInfo UserActorInfoStruct
+function _DIRECTOR.StartMoba(actorInfo)
+    MobaDirector.Start(actorInfo)
 end
 
 return _DIRECTOR

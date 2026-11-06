@@ -483,95 +483,10 @@ function UiModel:SelectGameMap(mapId)
     _MAP.Load(simplePath)
 end
 
-function UiModel:LoadMobaMap()
-    self.isInMobaMode = true
-
-    -- reset OnceGameTaiSuCount
-    _CONFIG.user.OnceGameTaiSuCount = 10000
-
-    self:loadUserActorInfoList()
-
-    local actorInfo = self:findUserActorInfoById(self.currentUserActorId)
-    if actorInfo == nil then
-        return
-    end
-    self.currentUserActorId = 2
-    ---@type Actor.RESMGR.InstanceData
-    local dataTmp = Table.DeepClone(actorInfo.Data)
-
-    -- clear inventoryItems
-    local classTmp = dataTmp.InventoryItems.class
-    dataTmp.InventoryItems = {}
-    dataTmp.InventoryItems.class = classTmp
-
-    -- reset skills
-    for k, v in pairs(dataTmp.skills) do
-        if (k ~= "class" and type(v) ~= "boolean") then
-            ---@type Actor.RESMGR.SkillData
-            local skillResDataTmp = Table.DeepClone(v)
-            skillResDataTmp.time = skillResDataTmp.time * Common.MobaSkillCdScale
-            dataTmp.skills[k] = skillResDataTmp
-        end
-    end
-
-    -- reset mastered skills
-    local actorEntity = actorInfo.Entity
-    ---@type table<int, MasteredSkillData>
-    local masteredSkillDataList = {}
-    dataTmp.MasteredSkills.List = masteredSkillDataList
-    for i, skillInfo in pairs(actorEntity.MasteredSkills.List) do
-        ---@type MasteredSkillData
-        local masteredSkillData = {}
-        masteredSkillData.Path = skillInfo.resDataPath
-        masteredSkillData.Exp = skillInfo.Exp
-        masteredSkillData.CdTime = skillInfo.cdTime * Common.MobaSkillCdScale
-        table.insert(masteredSkillDataList, masteredSkillData)
-    end
-
-    -- reset HpRecovery
-    dataTmp.attributes.maxHp = actorEntity.attributes.maxHp * 2
-    dataTmp.attributes.hp = actorEntity.attributes.maxHp
-    dataTmp.attributes.hpRecovery = 30
-
-    -- create player
-    local player = Factory.New(dataTmp, {
-        x = 200,
-        y = 1680,
-        direction = 1,
-        camp = 1
-    })
-
-
-    self.director.firstUpdate() -- Flush player.
-
-    _CONFIG.user:ClearPartnerList()
-    _CONFIG.user:SetPlayer(player)
-
-    self.partnerList = _CONFIG.user:GetPartnerList()
-
-    -- moba enemy hero
-    _CONFIG.user:ClearEnemyHeroList()
-    local enemy = Factory.New("duelist/Moba/Hero", {
-        x = 8400,
-        y = 1660,
-        direction = -1,
-        camp = 2
-    })
-    _CONFIG.user:AddEnemyHero(enemy)
-    
-    enemy = Factory.New("duelist/Moba/Hero", {
-        x = 8400,
-        y = 1700,
-        direction = -1,
-        camp = 2
-    })
-    _CONFIG.user:AddEnemyHero(enemy)
-
-    -- load map
-    local simplePath = "Moba/Moba1"
-    _MAP.Load(simplePath)
-
-    self:Signal_LoadMobaMapFinished()
+---@param is boolean
+function UiModel:SetInMobaMode(is)
+    self.isInMobaMode = is
+    self:loadMapSimplePathList()
 end
 
 ---@param type ActorAttributeType
@@ -1054,6 +969,12 @@ function UiModel:PayForReduceCdTime(skillConfigPath)
     SoundLib.Play(SkillConsumableUsedSoundData)
     self:addTaiSuCount(-100)
     MasteredSkillsSrv.ReduceSkillCdTimePercent(self.player.MasteredSkills, skillConfigPath, 0.05)
+end
+
+---@return UserActorInfoStruct @can be nil
+function UiModel:GetCurrentUserActorInfo()
+    local actorInfo = self:findUserActorInfoById(self.currentUserActorId)
+    return actorInfo
 end
 
 --- signals
@@ -1558,25 +1479,6 @@ function UiModel:Signal_ReqSetVisibilityNpcInteractBtn(isVisible)
         end
 
         func(receiver, self, isVisible)
-
-        ::continue::
-    end
-end
-
-function UiModel:Signal_LoadMobaMapFinished()
-    local receiverList = self.mapOfSignalToReceiverList[self.Signal_LoadMobaMapFinished]
-    if receiverList == nil then
-        return
-    end
-
-    for _, receiver in pairs(receiverList) do
-        ---@type function
-        local func = receiver.Slot_LoadMobaMapFinished
-        if func == nil then
-            goto continue
-        end
-
-        func(receiver, self)
 
         ::continue::
     end
